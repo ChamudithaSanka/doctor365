@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const connectDB = require("./config/db");
 
 dotenv.config();
 
@@ -18,6 +19,17 @@ app.get("/health", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`${process.env.SERVICE_NAME || "payment-service"} running on port ${PORT}`);
-});
+async function startServer() {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`${process.env.SERVICE_NAME || "payment-service"} running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Service startup failed:", error.message);
+    process.exit(1);
+  }
+}
+
+startServer();
