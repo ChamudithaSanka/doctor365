@@ -1,0 +1,130 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: doctor365-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: doctor365-auth-service
+    restart: unless-stopped
+    env_file:
+      - ./services/auth-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_auth
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+
+  patient-service:
+    build: ./services/patient-service
+    container_name: doctor365-patient-service
+    restart: unless-stopped
+    env_file:
+      - ./services/patient-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_patient
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongo
+
+  doctor-service:
+    build: ./services/doctor-service
+    container_name: doctor365-doctor-service
+    restart: unless-stopped
+    env_file:
+      - ./services/doctor-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_doctor
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongo
+
+  appointment-service:
+    build: ./services/appointment-service
+    container_name: doctor365-appointment-service
+    restart: unless-stopped
+    env_file:
+      - ./services/appointment-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_appointment
+    ports:
+      - "5004:5004"
+    depends_on:
+      - mongo
+
+  telemedicine-service:
+    build: ./services/telemedicine-service
+    container_name: doctor365-telemedicine-service
+    restart: unless-stopped
+    env_file:
+      - ./services/telemedicine-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_telemedicine
+    ports:
+      - "5005:5005"
+    depends_on:
+      - mongo
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: doctor365-payment-service
+    restart: unless-stopped
+    env_file:
+      - ./services/payment-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_payment
+    ports:
+      - "5006:5006"
+    depends_on:
+      - mongo
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: doctor365-notification-service
+    restart: unless-stopped
+    env_file:
+      - ./services/notification-service/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/doctor365_notification
+    ports:
+      - "5007:5007"
+    depends_on:
+      - mongo
+
+  gateway:
+    build: ./gateway
+    container_name: doctor365-gateway
+    restart: unless-stopped
+    env_file:
+      - ./gateway/.env
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:5001
+      PATIENT_SERVICE_URL: http://patient-service:5002
+      DOCTOR_SERVICE_URL: http://doctor-service:5003
+      APPOINTMENT_SERVICE_URL: http://appointment-service:5004
+      TELEMEDICINE_SERVICE_URL: http://telemedicine-service:5005
+      PAYMENT_SERVICE_URL: http://payment-service:5006
+      NOTIFICATION_SERVICE_URL: http://notification-service:5007
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth-service
+      - patient-service
+      - doctor-service
+      - appointment-service
+      - telemedicine-service
+      - payment-service
+      - notification-service
+
+volumes:
+  mongo_data:
