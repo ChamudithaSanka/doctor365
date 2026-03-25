@@ -30,12 +30,24 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Proxy middleware configuration - preserves Authorization header
+const proxyConfig = {
+  changeOrigin: true,
+  onProxyReq: (proxyReq, req) => {
+    // Preserve Authorization header for protected routes
+    if (req.headers.authorization) {
+      proxyReq.setHeader('Authorization', req.headers.authorization);
+    }
+  },
+};
+
 app.use(
   "/api/auth",
   createProxyMiddleware({
     target: services.auth,
     changeOrigin: true,
     pathRewrite: { "^/api/auth": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
@@ -45,6 +57,7 @@ app.use(
     target: services.patient,
     changeOrigin: true,
     pathRewrite: { "^/api/patients": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
@@ -54,6 +67,7 @@ app.use(
     target: services.doctor,
     changeOrigin: true,
     pathRewrite: { "^/api/doctors": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
@@ -63,6 +77,7 @@ app.use(
     target: services.appointment,
     changeOrigin: true,
     pathRewrite: { "^/api/appointments": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
@@ -72,6 +87,7 @@ app.use(
     target: services.telemedicine,
     changeOrigin: true,
     pathRewrite: { "^/api/telemedicine": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
@@ -81,6 +97,7 @@ app.use(
     target: services.payment,
     changeOrigin: true,
     pathRewrite: { "^/api/payments": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
@@ -90,6 +107,7 @@ app.use(
     target: services.notification,
     changeOrigin: true,
     pathRewrite: { "^/api/notifications": "" },
+    onProxyReq: proxyConfig.onProxyReq,
   })
 );
 
