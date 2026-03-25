@@ -1,0 +1,9 @@
+{
+  "name": "shared-auth-utils",
+  "version": "1.0.0",
+  "description": "Shared authentication utilities",
+  "main": "authUtils.js",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
+  }
+}

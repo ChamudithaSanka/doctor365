@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { generateTokens, verifyRefreshToken } = require('../utils/jwtUtils');
+const { generateTokens, verifyRefreshToken } = require('../../../../shared/authUtils');
 
 exports.register = async (req, res) => {
   try {
