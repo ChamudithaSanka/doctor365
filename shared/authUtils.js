@@ -76,3 +76,8 @@ module.exports = {
   verifyRefreshToken,
   verifyToken,
 };
+
+/*
+Create a shared folder with JWT utilities
+All 6 services import it
+Each service can verify tokens locally without calling auth-service */
