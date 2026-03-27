@@ -10,7 +10,6 @@ $folders = @(
 
 foreach ($f in $folders) {
   Push-Location $f
-  npm init -y
-  npm install express dotenv cors mongoose jsonwebtoken bcrypt
+  npm i
   Pop-Location
 }
