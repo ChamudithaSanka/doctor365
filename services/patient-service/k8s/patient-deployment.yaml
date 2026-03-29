@@ -36,8 +36,8 @@ spec:
           value: development
         - name: MONGODB_URI
           valueFrom:
-            configMapKeyRef:
-              name: patient-config
+            secretKeyRef:
+              name: patient-db-secret
               key: mongodb-uri
         - name: JWT_SECRET
           valueFrom:

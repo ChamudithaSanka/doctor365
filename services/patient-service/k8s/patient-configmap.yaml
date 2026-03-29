@@ -4,4 +4,4 @@ metadata:
   name: patient-config
   namespace: default
 data:
-  mongodb-uri: "mongodb+srv://chamudithasanka98_db_user:1K0G3OTBjgs849lN@cluster0.gzrwxt7.mongodb.net/patient_db?retryWrites=true&w=majority"
+  node-env: "development"
