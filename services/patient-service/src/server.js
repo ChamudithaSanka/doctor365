@@ -10,12 +10,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+const patientRoutes = require("./routes/patientRoutes");
+app.use("/api/patients", patientRoutes);
+
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     service: process.env.SERVICE_NAME || "patient-service",
   });
 });
+
+const errorHandler = require("./middleware/errorMiddleware");
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
