@@ -40,6 +40,48 @@ const patientSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    medicalHistory: [
+      {
+        date: {
+          type: Date,
+          required: true,
+        },
+        condition: {
+          type: String,
+          required: true,
+        },
+        treatment: {
+          type: String,
+          required: true,
+        },
+        doctorName: String,
+      },
+    ],
+    prescriptions: [
+      {
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+        doctorName: {
+          type: String,
+          required: true,
+        },
+        medication: [
+          {
+            name: String,
+            dosage: String,
+            frequency: String,
+            duration: String,
+          },
+        ],
+        instructions: String,
+        isDigital: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
     reports: [
       {
         title: {

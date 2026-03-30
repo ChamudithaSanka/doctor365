@@ -246,6 +246,86 @@ const deletePatientReport = async (req, res, next) => {
   }
 };
 
+// @desc    Get all patients
+// @route   GET /
+// @access  Private (Admin)
+const getAllPatients = async (req, res, next) => {
+  try {
+    const patients = await Patient.find({});
+    res.status(200).json({
+      success: true,
+      count: patients.length,
+      data: patients,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get prescriptions for current patient
+// @route   GET /me/prescriptions
+// @access  Private (Patient)
+const getPrescriptions = async (req, res, next) => {
+  try {
+    const patient = await Patient.findOne({ userId: req.user.userId });
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: patient.prescriptions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add a prescription to a patient
+// @route   POST /:id/prescriptions
+// @access  Private (Doctor, Admin)
+const addPrescription = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    const { doctorName, medication, instructions } = req.body;
+
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    patient.prescriptions.push({
+      doctorName,
+      medication,
+      instructions,
+      date: new Date(),
+    });
+
+    await patient.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Prescription added successfully',
+      data: patient.prescriptions[patient.prescriptions.length - 1],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMe,
   updateMe,
@@ -253,4 +333,7 @@ module.exports = {
   uploadPatientReports,
   getPatientReports,
   deletePatientReport,
+  getAllPatients,
+  getPrescriptions,
+  addPrescription,
 };

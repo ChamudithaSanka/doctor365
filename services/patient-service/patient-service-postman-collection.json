@@ -8,15 +8,35 @@
 	"item": [
 		{
 			"name": "1. Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has status ok\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"ok\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/health",
+					"raw": "{{base_url}}/api/patients/health",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"health"
 					]
 				}
@@ -25,6 +45,25 @@
 		},
 		{
 			"name": "2. Create/Update Patient Profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Profile updated successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.collectionVariables.set(\"patient_id\", jsonData.data._id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -48,11 +87,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_url}}/me",
+					"raw": "{{base_url}}/api/patients/me",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me"
 					]
 				}
@@ -61,6 +102,25 @@
 		},
 		{
 			"name": "3. Get Patient Profile (Me)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Patient data is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.firstName).to.eql(\"John\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -75,11 +135,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/me",
+					"raw": "{{base_url}}/api/patients/me",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me"
 					]
 				}
@@ -88,15 +150,30 @@
 		},
 		{
 			"name": "4. Negative - Unauthorized (No Token)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/me",
+					"raw": "{{base_url}}/api/patients/me",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me"
 					]
 				}
@@ -105,6 +182,19 @@
 		},
 		{
 			"name": "5. Negative - Validation Failure",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -120,7 +210,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"firstName\": \"John\"\n    // Missing other required fields like dateOfBirth, gender, etc.\n}",
+					"raw": "{\n    \"firstName\": \"John\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -128,11 +218,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_url}}/me",
+					"raw": "{{base_url}}/api/patients/me",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me"
 					]
 				}
@@ -141,6 +233,19 @@
 		},
 		{
 			"name": "6. Upload Medical Reports",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -170,11 +275,13 @@
 					]
 				},
 				"url": {
-					"raw": "{{base_url}}/me/reports",
+					"raw": "{{base_url}}/api/patients/me/reports",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me",
 						"reports"
 					]
@@ -184,6 +291,25 @@
 		},
 		{
 			"name": "7. Get My Reports",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Reports retrieved successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data).to.be.an(\"array\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -198,11 +324,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/me/reports",
+					"raw": "{{base_url}}/api/patients/me/reports",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me",
 						"reports"
 					]
@@ -212,6 +340,19 @@
 		},
 		{
 			"name": "8. Delete Report",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -226,11 +367,13 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/me/reports/:reportId",
+					"raw": "{{base_url}}/api/patients/me/reports/:reportId",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
+						"patients",
 						"me",
 						"reports",
 						":reportId"
@@ -239,6 +382,167 @@
 						{
 							"key": "reportId",
 							"value": "REPORT_ID_HERE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. Get All Patients (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Admin can see all patients\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.count).to.be.at.least(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/patients/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"patients",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. Get My Prescriptions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Prescriptions array returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data).to.be.an(\"array\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{patient_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/patients/me/prescriptions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"patients",
+						"me",
+						"prescriptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. Add Prescription (Doctor/Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Prescription added successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.doctorName).to.eql(\"Dr. Smith\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{doctor_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"doctorName\": \"Dr. Smith\",\n    \"medication\": [\n        {\n            \"name\": \"Amoxicillin\",\n            \"dosage\": \"500mg\",\n            \"frequency\": \"Twice a day\",\n            \"duration\": \"7 days\"\n        }\n    ],\n    \"instructions\": \"Take after meals\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/patients/:id/prescriptions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"patients",
+						":id",
+						"prescriptions"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "PATIENT_USER_ID_HERE"
 						}
 					]
 				}
@@ -254,7 +558,17 @@
 		},
 		{
 			"key": "patient_token",
-			"value": "YOUR_JWT_TOKEN_HERE",
+			"value": "YOUR_PATIENT_TOKEN_HERE",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "YOUR_ADMIN_TOKEN_HERE",
+			"type": "string"
+		},
+		{
+			"key": "doctor_token",
+			"value": "YOUR_DOCTOR_TOKEN_HERE",
 			"type": "string"
 		}
 	]
