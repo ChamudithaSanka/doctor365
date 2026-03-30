@@ -14,13 +14,6 @@ app.use(express.json());
 const patientRoutes = require("./routes/patientRoutes");
 app.use("/api/patients", patientRoutes);
 
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    service: process.env.SERVICE_NAME || "patient-service",
-  });
-});
-
 const errorHandler = require("./middleware/errorMiddleware");
 app.use(errorHandler);
 

@@ -1,12 +1,33 @@
 const express = require('express');
-const { getMe, updateMe, getPatientById, uploadPatientReports, getPatientReports, deletePatientReport } = require('../controllers/patientController');
+const { 
+  getMe, 
+  updateMe, 
+  getPatientById, 
+  uploadPatientReports, 
+  getPatientReports, 
+  deletePatientReport,
+  getAllPatients,
+  getPrescriptions,
+  addPrescription
+} = require('../controllers/patientController');
 const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 const { uploadReports } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
-// Apply verifyToken middleware to all routes in this router
+// Health check route - unauthenticated for Kubernetes probes
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: process.env.SERVICE_NAME || 'patient-service',
+  });
+});
+
+// Apply verifyToken middleware to all routes below in this router
 router.use(verifyToken);
+
+router.route('/')
+  .get(restrictTo('admin'), getAllPatients);
 
 router.route('/me')
   .get(restrictTo('patient', 'admin'), getMe)
@@ -19,7 +40,13 @@ router.route('/me/reports')
 router.route('/me/reports/:reportId')
   .delete(restrictTo('patient'), deletePatientReport);
 
+router.route('/me/prescriptions')
+  .get(restrictTo('patient'), getPrescriptions);
+
 router.route('/:id')
   .get(restrictTo('admin', 'doctor'), getPatientById);
+
+router.route('/:id/prescriptions')
+  .post(restrictTo('doctor', 'admin'), addPrescription);
 
 module.exports = router;
