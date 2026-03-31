@@ -67,6 +67,10 @@ const patientSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        doctorId: {
+          type: String,
+          required: true,
+        },
         medication: [
           {
             name: String,

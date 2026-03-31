@@ -1,4 +1,5 @@
 const express = require('express');
+const { body } = require('express-validator');
 const { 
   getMe, 
   updateMe, 
@@ -12,6 +13,7 @@ const {
 } = require('../controllers/patientController');
 const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 const { uploadReports } = require('../middleware/uploadMiddleware');
+const { validate } = require('../middleware/validationMiddleware');
 
 const router = express.Router();
 
@@ -29,9 +31,21 @@ router.use(verifyToken);
 router.route('/')
   .get(restrictTo('admin'), getAllPatients);
 
+// Patient profile validation rules
+const patientValidation = [
+  body('firstName').notEmpty().withMessage('First name is required'),
+  body('lastName').notEmpty().withMessage('Last name is required'),
+  body('dateOfBirth').isISO8601().withMessage('Please provide a valid date of birth'),
+  body('gender').isIn(['male', 'female', 'other']).withMessage('Invalid gender'),
+  body('phone').matches(/^(\+94|0)?[7-9]\d{8}$/).withMessage('Please provide a valid Sri Lankan phone number'),
+  body('address').notEmpty().withMessage('Address is required'),
+  body('emergencyContact').matches(/^(\+94|0)?[7-9]\d{8}$/).withMessage('Please provide a valid emergency contact number'),
+  validate
+];
+
 router.route('/me')
   .get(restrictTo('patient', 'admin'), getMe)
-  .put(restrictTo('patient', 'admin'), updateMe);
+  .put(restrictTo('patient', 'admin'), patientValidation, updateMe);
 
 router.route('/me/reports')
   .get(restrictTo('patient', 'doctor', 'admin'), getPatientReports)
@@ -46,7 +60,16 @@ router.route('/me/prescriptions')
 router.route('/:id')
   .get(restrictTo('admin', 'doctor'), getPatientById);
 
+// Prescription validation rules
+const prescriptionValidation = [
+  body('doctorName').notEmpty().withMessage('Doctor name is required'),
+  body('medication').isArray({ min: 1 }).withMessage('At least one medication is required'),
+  body('medication.*.name').notEmpty().withMessage('Medication name is required'),
+  body('medication.*.dosage').notEmpty().withMessage('Dosage is required'),
+  validate
+];
+
 router.route('/:id/prescriptions')
-  .post(restrictTo('doctor', 'admin'), addPrescription);
+  .post(restrictTo('doctor', 'admin'), prescriptionValidation, addPrescription);
 
 module.exports = router;

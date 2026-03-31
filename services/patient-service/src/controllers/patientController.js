@@ -251,10 +251,29 @@ const deletePatientReport = async (req, res, next) => {
 // @access  Private (Admin)
 const getAllPatients = async (req, res, next) => {
   try {
-    const patients = await Patient.find({});
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalCount = await Patient.countDocuments();
+    const patients = await Patient.find({})
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
     res.status(200).json({
       success: true,
       count: patients.length,
+      pagination: {
+        totalCount,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      },
       data: patients,
     });
   } catch (error) {
@@ -309,6 +328,7 @@ const addPrescription = async (req, res, next) => {
 
     patient.prescriptions.push({
       doctorName,
+      doctorId: req.user.userId, // Link to the doctor's user ID from the token
       medication,
       instructions,
       date: new Date(),
