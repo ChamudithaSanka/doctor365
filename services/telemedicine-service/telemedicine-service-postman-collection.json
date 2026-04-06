@@ -7,7 +7,59 @@
   },
   "item": [
     {
-      "name": "1. Health Check",
+      "name": "0. Generate Test Token (REQUIRED FIRST)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Token generated successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.token).to.exist;",
+              "});",
+              "",
+              "pm.test(\"Token saved to collection variable\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.collectionVariables.set(\"doctor_token\", jsonData.token);",
+              "    console.log(\"✅ Doctor token saved:\", jsonData.token.substring(0, 20) + \"...\");",
+              "    console.log(\"✅ User:\", jsonData.payload.userId, \"-\", jsonData.payload.email);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userId\": \"doc-test-001\",\n    \"email\": \"doctor@test.com\",\n    \"role\": \"doctor\",\n    \"name\": \"Dr. Test Doctor\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/generate-token",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "generate-token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1. Health Check - Jitsi SECURE Mode",
       "event": [
         {
           "listen": "test",
@@ -21,6 +73,19 @@
               "    var jsonData = pm.response.json();",
               "    pm.expect(jsonData.status).to.eql(\"ok\");",
               "    pm.expect(jsonData.service).to.eql(\"telemedicine-service\");",
+              "});",
+              "",
+              "pm.test(\"Jitsi configuration present\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.jitsi).to.exist;",
+              "    pm.expect(jsonData.jitsi.mode).to.eql(\"SECURE\");",
+              "});",
+              "",
+              "pm.test(\"Jitsi SECURE MODE enabled with 8x8.vc\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.jitsi.domain).to.eql(\"8x8.vc\");",
+              "    pm.expect(jsonData.jitsi.jwtEnabled).to.be.true;",
+              "    pm.expect(jsonData.jitsi.appId).to.exist;",
               "});"
             ],
             "type": "text/javascript"
@@ -31,12 +96,11 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/telemedicine/health",
+          "raw": "{{base_url}}/health",
           "host": [
             "{{base_url}}"
           ],
           "path": [
-            "telemedicine",
             "health"
           ]
         }
@@ -44,7 +108,7 @@
       "response": []
     },
     {
-      "name": "2. Create Telemedicine Session",
+      "name": "2. Create Telemedicine Session with JWT",
       "event": [
         {
           "listen": "test",
@@ -54,12 +118,44 @@
               "    pm.response.to.have.status(201);",
               "});",
               "",
-              "pm.test(\"Session created successfully\", function () {",
+              "pm.test(\"Session created with Jitsi meeting\", function () {",
               "    var jsonData = pm.response.json();",
               "    pm.expect(jsonData.success).to.be.true;",
               "    pm.expect(jsonData.data).to.have.property('_id');",
               "    pm.expect(jsonData.data.status).to.eql('scheduled');",
+              "    pm.expect(jsonData.data.meetingProvider).to.eql('jitsi');",
               "    pm.collectionVariables.set(\"session_id\", jsonData.data._id);",
+              "});",
+              "",
+              "pm.test(\"Meeting details present in response\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.meetingDetails).to.exist;",
+              "    pm.expect(jsonData.meetingDetails.url).to.exist;",
+              "    pm.expect(jsonData.meetingDetails.roomId).to.exist;",
+              "    pm.expect(jsonData.meetingDetails.jwt).to.exist;",
+              "    pm.expect(jsonData.meetingDetails.mode).to.eql('SECURE');",
+              "});",
+              "",
+              "pm.test(\"JWT token is properly formatted\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var jwt = jsonData.meetingDetails.jwt;",
+              "    // JWT has 3 parts separated by dots",
+              "    var parts = jwt.split('.');",
+              "    pm.expect(parts.length).to.equal(3);",
+              "});",
+              "",
+              "pm.test(\"Meeting URL contains 8x8.vc domain\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.meetingDetails.url).to.include('8x8.vc');",
+              "});",
+              "",
+              "pm.test(\"Meeting room ID saved in session\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.meetingRoomId).to.equal(jsonData.meetingDetails.roomId);",
+              "    pm.expect(jsonData.data.meetingJWT).to.exist;",
+              "    pm.collectionVariables.set(\"meeting_room_id\", jsonData.meetingDetails.roomId);",
+              "    pm.collectionVariables.set(\"meeting_jwt\", jsonData.meetingDetails.jwt);",
+              "    pm.collectionVariables.set(\"meeting_url\", jsonData.meetingDetails.url);",
               "});"
             ],
             "type": "text/javascript"
@@ -81,7 +177,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"appointmentId\": \"apt-001\",\n    \"patientId\": \"patient-001\",\n    \"meetingProvider\": \"jitsi\"\n}",
+          "raw": "{\n    \"appointmentId\": \"apt-{{$timestamp}}\",\n    \"patientId\": \"patient-001\",\n    \"meetingProvider\": \"jitsi\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -151,7 +247,7 @@
       "response": []
     },
     {
-      "name": "4. Get Session by Appointment ID",
+      "name": "5. Get Session by Appointment ID - with JWT",
       "event": [
         {
           "listen": "test",
@@ -200,7 +296,68 @@
       "response": []
     },
     {
-      "name": "5. Start Session",
+      "name": "4.5 Verify JWT Token in Session",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Session has meeting JWT token\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data.meetingJWT).to.exist;",
+              "    pm.expect(jsonData.data.meetingRoomId).to.exist;",
+              "});",
+              "",
+              "pm.test(\"JWT token is properly formatted (RS256 signature)\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var jwt = jsonData.data.meetingJWT;",
+              "    // JWT has 3 parts separated by dots",
+              "    var parts = jwt.split('.');",
+              "    pm.expect(parts.length).to.equal(3);",
+              "    // Decode header",
+              "    var headerJson = atob(parts[0]);",
+              "    var header = JSON.parse(headerJson);",
+              "    pm.expect(header.alg).to.equal('RS256');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{doctor_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/telemedicine/sessions/{{session_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "telemedicine",
+            "sessions",
+            "{{session_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Start Session",
       "event": [
         {
           "listen": "test",
@@ -250,7 +407,7 @@
       "response": []
     },
     {
-      "name": "6. End Session",
+      "name": "7. End Session",
       "event": [
         {
           "listen": "test",
@@ -309,7 +466,7 @@
       "response": []
     },
     {
-      "name": "7. Get All User Sessions",
+      "name": "8. Get All User Sessions",
       "event": [
         {
           "listen": "test",
@@ -356,7 +513,7 @@
       "response": []
     },
     {
-      "name": "8. Unauthorized Test - Missing Token",
+      "name": "9. Unauthorized Test - Missing Token",
       "event": [
         {
           "listen": "test",
@@ -393,7 +550,7 @@
       "response": []
     },
     {
-      "name": "9. Validation Test - Missing Required Fields",
+      "name": "10. Validation Test - Missing Required Fields",
       "event": [
         {
           "listen": "test",

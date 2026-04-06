@@ -1,19 +1,12 @@
 const TelemedicineSession = require('../models/TelemedicineSession');
-
-// Helper function to generate meeting link
-const generateMeetingLink = (appointmentId, provider = 'jitsi') => {
-  if (provider === 'jitsi') {
-    return `https://meet.jitsi/${appointmentId}-${Date.now()}`;
-  }
-  // Add other providers as needed
-  return `https://meeting.provider/${appointmentId}`;
-};
+const jitsiUtils = require('../utils/jitsiUtils');
 
 // POST /telemedicine/sessions - Create a new telemedicine session (doctor)
 exports.createSession = async (req, res, next) => {
   try {
     const { appointmentId, patientId, meetingProvider } = req.body;
     const doctorId = req.user.userId;
+    const userName = req.user.name || req.user.email || doctorId;
 
     // Validate required fields
     if (!appointmentId || !patientId) {
@@ -38,18 +31,34 @@ exports.createSession = async (req, res, next) => {
       });
     }
 
-    // Generate meeting link
-    const meetingLink = generateMeetingLink(appointmentId, meetingProvider || 'jitsi');
+    // Create real Jitsi meeting with JWT for SECURE MODE
+    const meetingResult = await jitsiUtils.createMeeting(appointmentId, {
+      userId: doctorId,
+      name: userName,
+      email: req.user.email,
+    });
 
-    // Create session
+    if (!meetingResult.success) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'MEETING_CREATION_ERROR',
+          message: meetingResult.error,
+        },
+      });
+    }
+
+    // Create session with real Jitsi meeting details
     const session = new TelemedicineSession({
       appointmentId,
       doctorId,
       patientId,
-      meetingProvider: meetingProvider || 'jitsi',
-      meetingLink,
+      meetingProvider: 'jitsi',
+      meetingRoomId: meetingResult.meetingRoomId,
+      meetingLink: meetingResult.meetingUrl,
+      meetingJWT: meetingResult.meetingJWT,
       status: 'scheduled',
-      sessionToken: `token_${appointmentId}_${Date.now()}`,
+      sessionToken: meetingResult.meetingRoomId,
     });
 
     await session.save();
@@ -57,7 +66,15 @@ exports.createSession = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       data: session,
-      message: 'Telemedicine session created successfully',
+      message: 'Telemedicine session created successfully with secure Jitsi meeting',
+      meetingDetails: {
+        url: meetingResult.meetingUrl,
+        roomId: meetingResult.meetingRoomId,
+        jwt: meetingResult.meetingJWT,
+        mode: meetingResult.config.mode,
+        domain: meetingResult.config.domain,
+        jwtEnabled: meetingResult.config.jwtEnabled,
+      }
     });
   } catch (error) {
     next(error);
