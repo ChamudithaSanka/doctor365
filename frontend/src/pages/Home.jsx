@@ -1,3 +1,7 @@
+import { Link } from 'react-router-dom'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+
 const doctors = [
   {
     name: 'Dr. Anjali Perera',
@@ -34,35 +38,7 @@ const steps = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <div>
-            <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-            <p className="text-sm text-slate-500">Smart healthcare appointments and telemedicine</p>
-          </div>
-
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
-            <a href="#features" className="transition hover:text-blue-700">Features</a>
-            <a href="#doctors" className="transition hover:text-blue-700">Doctors</a>
-            <a href="#how-it-works" className="transition hover:text-blue-700">How it works</a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <a
-              href="#"
-              className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50"
-            >
-              Login
-            </a>
-            <a
-              href="#"
-              className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
-            >
-              Sign up
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main>
         <section className="relative overflow-hidden">
@@ -242,18 +218,20 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <a href="#" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-slate-100">
+                  <Link to="/login" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-slate-100">
                     Get Started
-                  </a>
-                  <a href="#" className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                  </Link>
+                  <Link to="/login" className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
                     Sign In
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
         </section>
       </main>
+
+      <Footer />
     </div>
   )
 }
