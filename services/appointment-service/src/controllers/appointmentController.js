@@ -91,8 +91,8 @@ exports.getAppointmentById = async (req, res, next) => {
     // Check if user has access
     if (
       req.user.role !== 'admin' &&
-      appointment.patientId.toString() !== req.user.userId &&
-      appointment.doctorId.toString() !== req.user.userId
+      appointment.patientId !== req.user.userId &&
+      appointment.doctorId !== req.user.userId
     ) {
       return res.status(403).json({
         success: false,
@@ -155,7 +155,7 @@ exports.updateAppointmentStatus = async (req, res, next) => {
     // Doctor can only update their own appointments or if status is being set to completed
     if (
       req.user.role === 'doctor' &&
-      appointment.doctorId.toString() !== req.user.userId
+      appointment.doctorId !== req.user.userId
     ) {
       return res.status(403).json({
         success: false,
@@ -201,7 +201,7 @@ exports.updateAppointment = async (req, res, next) => {
     // Patient can only update their own pending appointments
     if (
       req.user.role === 'patient' &&
-      (appointment.patientId.toString() !== req.user.userId ||
+      (appointment.patientId !== req.user.userId ||
         appointment.status !== 'pending')
     ) {
       return res.status(403).json({
@@ -258,7 +258,7 @@ exports.deleteAppointment = async (req, res, next) => {
     // Patient can only delete their own pending appointments
     if (
       req.user.role === 'patient' &&
-      (appointment.patientId.toString() !== req.user.userId ||
+      (appointment.patientId !== req.user.userId ||
         appointment.status !== 'pending')
     ) {
       return res.status(403).json({

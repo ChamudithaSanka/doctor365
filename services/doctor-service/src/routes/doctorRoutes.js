@@ -1,19 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const doctorController = require('../controllers/doctorController');
-const { verifyToken } = require('../../../../shared/authUtils');
-const { isAdmin, isDoctor } = require('../middleware/roleMiddleware');
+const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', doctorController.getDoctors);
 router.get('/:id', doctorController.getDoctorById);
 
+// Apply verifyToken middleware to all routes below
+router.use(verifyToken);
+
 // Protected routes (Doctor only)
-router.get('/me', verifyToken, isDoctor, doctorController.getMe);
-router.post('/me', verifyToken, isDoctor, doctorController.updateMe);
-router.put('/me', verifyToken, isDoctor, doctorController.updateMe);
+router.get('/me', restrictTo('doctor'), doctorController.getMe);
+router.put('/me', restrictTo('doctor'), doctorController.updateMe);
 
 // Protected routes (Admin only)
-router.patch('/:id/verify', verifyToken, isAdmin, doctorController.verifyDoctor);
+router.patch('/:id/verify', restrictTo('admin'), doctorController.verifyDoctor);
 
 module.exports = router;
