@@ -10,6 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: process.env.SERVICE_NAME || "patient-service",
+  });
+});
+
 // Routes
 const patientRoutes = require("./routes/patientRoutes");
 app.use("/api/patients", patientRoutes);
