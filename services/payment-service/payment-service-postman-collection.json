@@ -1,0 +1,225 @@
+{
+  "info": {
+    "name": "Payment Service API",
+    "_postman_id": "d4e8f9ga-58b3-5b1b-c88c-0dcfd2f7e0ga",
+    "description": "Postman collection for payment-service endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5006"
+    },
+    {
+      "key": "jwtToken",
+      "value": ""
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Verify payment service health endpoint."
+      }
+    },
+    {
+      "name": "2. Create Payment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data._id) {",
+              "    pm.collectionVariables.set('paymentId', json.data._id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentId\": \"680000000000000000000010\",\n  \"amount\": 150.00,\n  \"currency\": \"USD\",\n  \"paymentMethod\": \"credit_card\",\n  \"transactionId\": \"txn_1234567890_unique\",\n  \"metadata\": {\n    \"cardLast4\": \"4242\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        },
+        "description": "Create a new payment. Only patients can create payments."
+      }
+    },
+    {
+      "name": "3. Get My Payments",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/payments/me?page=1&limit=10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "me"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Get all payments for the authenticated patient."
+      }
+    },
+    {
+      "name": "4. Get Payment by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/payments/{{paymentId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "{{paymentId}}"
+          ]
+        },
+        "description": "Get a specific payment by ID. Patient can view only their own, admin can view any."
+      }
+    },
+    {
+      "name": "5. Update Payment Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"paid\",\n  \"metadata\": {\n    \"providerConfirmation\": \"conf_9876543210\",\n    \"timestamp\": \"2026-04-06T10:15:30Z\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payments/{{paymentId}}/status",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "{{paymentId}}",
+            "status"
+          ]
+        },
+        "description": "Update payment status. Admin only endpoint for provider callbacks."
+      }
+    },
+    {
+      "name": "6. Negative Test - Unauthorized (Get My Payments)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/payments/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "me"
+          ]
+        },
+        "description": "Expected: 401 when Authorization header is missing."
+      }
+    },
+    {
+      "name": "7. Negative Test - Validation Failure (Create Payment)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentId\": \"680000000000000000000010\",\n  \"amount\": 150.00\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        },
+        "description": "Expected: 400 VALIDATION_ERROR for missing paymentMethod and transactionId."
+      }
+    }
+  ]
+}
