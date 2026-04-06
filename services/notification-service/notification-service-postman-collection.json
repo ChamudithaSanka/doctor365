@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "Notification Service API",
+    "_postman_id": "c3d7f6ea-47a2-4a0a-b77a-9cbebc1d6e9f",
+    "description": "Postman collection for notification-service endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5007"
+    },
+    {
+      "key": "jwtToken",
+      "value": ""
+    },
+    {
+      "key": "internalToken",
+      "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Verify service health endpoint."
+      }
+    },
+    {
+      "name": "2. Create Notification (Internal)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data._id) {",
+              "    pm.collectionVariables.set('notificationId', json.data._id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-internal-token",
+            "value": "{{internalToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"680000000000000000000001\",\n  \"type\": \"in-app\",\n  \"title\": \"Appointment Confirmed\",\n  \"message\": \"Your appointment is confirmed for 2026-04-10 10:00\",\n  \"metadata\": {\n    \"appointmentId\": \"680000000000000000000010\",\n    \"doctorId\": \"680000000000000000000020\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/notifications",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "Internal endpoint for creating notifications. Requires x-internal-token."
+      }
+    },
+    {
+      "name": "3. Get My Notifications",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/me?page=1&limit=10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "me"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Get notifications for the authenticated user."
+      }
+    },
+    {
+      "name": "4. Mark Notification as Read",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "{{notificationId}}",
+            "read"
+          ]
+        },
+        "description": "Mark one notification as read for the owner only."
+      }
+    },
+    {
+      "name": "5. Negative Test - Unauthorized (Get My Notifications)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "me"
+          ]
+        },
+        "description": "Expected: 401 when Authorization header is missing."
+      }
+    },
+    {
+      "name": "6. Negative Test - Validation Failure (Create Notification)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-internal-token",
+            "value": "{{internalToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"in-app\",\n  \"title\": \"Missing userId and message\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/notifications",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "Expected: 400 VALIDATION_ERROR for missing required fields."
+      }
+    }
+  ]
+}

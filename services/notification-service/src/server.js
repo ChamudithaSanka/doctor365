@@ -10,12 +10,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const notificationRoutes = require('./routes/notificationRoutes');
+const errorHandler = require('./middleware/errorMiddleware');
+
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     service: process.env.SERVICE_NAME || "notification-service",
   });
 });
+
+app.use('/notifications', notificationRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
