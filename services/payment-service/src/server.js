@@ -10,12 +10,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const paymentRoutes = require('./routes/paymentRoutes');
+const errorHandler = require('./middleware/errorMiddleware');
+
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     service: process.env.SERVICE_NAME || "payment-service",
   });
 });
+
+app.use('/payments', paymentRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
