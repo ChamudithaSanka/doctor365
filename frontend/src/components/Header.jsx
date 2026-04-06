@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 
 const navItems = [
@@ -7,6 +8,47 @@ const navItems = [
 ]
 
 export default function Header() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [dashboardPath, setDashboardPath] = useState('/patient/dashboard')
+
+  useEffect(() => {
+    const syncAuthState = () => {
+      const token = localStorage.getItem('doctor365_accessToken')
+      const rawUser = localStorage.getItem('doctor365_user')
+
+      if (!token || !rawUser) {
+        setIsLoggedIn(false)
+        setDashboardPath('/patient/dashboard')
+        return
+      }
+
+      try {
+        const user = JSON.parse(rawUser)
+        const role = user?.role
+
+        if (role === 'doctor') {
+          setDashboardPath('/doctor/dashboard')
+        } else if (role === 'admin') {
+          setDashboardPath('/admin/dashboard')
+        } else {
+          setDashboardPath('/patient/dashboard')
+        }
+
+        setIsLoggedIn(true)
+      } catch {
+        setIsLoggedIn(false)
+        setDashboardPath('/patient/dashboard')
+      }
+    }
+
+    syncAuthState()
+    window.addEventListener('storage', syncAuthState)
+
+    return () => {
+      window.removeEventListener('storage', syncAuthState)
+    }
+  }, [])
+
   return (
     <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
@@ -24,18 +66,29 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <NavLink
-            to="/login"
-            className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50"
-          >
-            Login
-          </NavLink>
-          <NavLink
-            to="/login"
-            className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
-          >
-            Sign up
-          </NavLink>
+          {isLoggedIn ? (
+            <NavLink
+              to={dashboardPath}
+              className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+            >
+              Dashboard
+            </NavLink>
+          ) : (
+            <>
+              <NavLink
+                to="/login"
+                className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50"
+              >
+                Login
+              </NavLink>
+              <NavLink
+                to="/register"
+                className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+              >
+                Sign up
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
     </header>
