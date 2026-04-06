@@ -218,7 +218,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Link to="/login" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-slate-100">
+                  <Link to="/register" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-slate-100">
                     Get Started
                   </Link>
                   <Link to="/login" className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
