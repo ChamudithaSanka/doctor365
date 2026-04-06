@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const appointmentRoutes = require("./routes/appointmentRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
 
 dotenv.config();
 
@@ -10,6 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -17,7 +20,13 @@ app.get("/health", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// Routes
+app.use("/api/appointments", appointmentRoutes);
+
+// Error handling middleware
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5004;
 
 async function startServer() {
   try {
