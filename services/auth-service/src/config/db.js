@@ -7,7 +7,10 @@ async function connectDB() {
     throw new Error("MONGODB_URI is not set");
   }
 
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 5000,
+  });
   console.log(`${process.env.SERVICE_NAME || "service"} connected to MongoDB`);
 }
 
