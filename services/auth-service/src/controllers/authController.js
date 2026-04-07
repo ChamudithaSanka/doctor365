@@ -245,3 +245,34 @@ exports.logout = async (req, res) => {
     });
   }
 };
+
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('email firstName lastName role isVerified');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        },
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+      message: 'User retrieved successfully',
+    });
+  } catch (error) {
+    console.error('Get user by id error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Error retrieving user',
+      },
+    });
+  }
+};

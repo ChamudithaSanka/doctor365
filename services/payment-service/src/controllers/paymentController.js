@@ -1,4 +1,5 @@
 const Payment = require('../models/Payment');
+const { getPatientPhone } = require('../utils/contactLookup');
 const { sendInternalNotification } = require('../utils/notificationClient');
 const {
   formatAmount,
@@ -17,6 +18,12 @@ const generateOrderId = () => {
 
 const notifyPaymentResult = async ({ payment, status }) => {
   const isSuccess = status === 'paid';
+  const contact = payment.customerEmail || payment.customerPhone
+    ? {
+        email: payment.customerEmail,
+        phone: payment.customerPhone,
+      }
+    : null;
 
   await sendInternalNotification({
     userId: payment.patientId,
@@ -25,6 +32,13 @@ const notifyPaymentResult = async ({ payment, status }) => {
     message: isSuccess
       ? `Your payment of ${payment.currency} ${payment.amount} for appointment ${payment.appointmentId} was successful.`
       : `Your payment of ${payment.currency} ${payment.amount} for appointment ${payment.appointmentId} failed.`,
+    recipientEmail: contact?.email || undefined,
+    recipientPhone: contact?.phone || undefined,
+    channels: {
+      inApp: true,
+      email: Boolean(contact?.email),
+      sms: Boolean(contact?.phone),
+    },
     metadata: {
       paymentId: payment._id,
       appointmentId: payment.appointmentId,
@@ -118,6 +132,8 @@ const initiatePayHereCheckout = async (req, res, next) => {
       paymentMethod: 'payhere',
       transactionId: generatedOrderId,
       status: 'pending',
+      customerEmail: email,
+      customerPhone: phone,
       metadata: {
         ...(metadata || {}),
         payhere: {
@@ -299,6 +315,8 @@ const createPayment = async (req, res, next) => {
       currency: currency || 'USD',
       paymentMethod,
       transactionId,
+      customerEmail: req.user.email || null,
+      customerPhone: await getPatientPhone(req.headers.authorization),
       metadata: metadata || {},
       status: 'pending',
     });

@@ -58,6 +58,14 @@ const paymentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
+    customerEmail: {
+      type: String,
+      default: null,
+    },
+    customerPhone: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

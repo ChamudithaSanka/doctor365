@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
+const { getPatientPhone, getUserContact } = require('../utils/contactLookup');
 const { sendInternalNotification } = require('../utils/notificationClient');
 
 const getAppointmentDateTime = (appointmentDate, appointmentTime) => {
@@ -47,6 +48,15 @@ exports.createAppointment = async (req, res, next) => {
       status: 'pending',
     });
 
+    const [patientPhone, doctorContact] = await Promise.all([
+      getPatientPhone(req.headers.authorization),
+      getUserContact(doctorId),
+    ]);
+
+    appointment.patientEmail = req.user.email || null;
+    appointment.patientPhone = patientPhone;
+    appointment.doctorEmail = doctorContact?.email || null;
+
     await appointment.save();
 
     await sendInternalNotification({
@@ -54,6 +64,13 @@ exports.createAppointment = async (req, res, next) => {
       type: 'appointment.booked',
       title: 'Appointment booked',
       message: `Your appointment for ${appointmentDate} at ${appointmentTime} has been booked.`,
+      recipientEmail: appointment.patientEmail || undefined,
+      recipientPhone: appointment.patientPhone || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.patientEmail),
+        sms: Boolean(appointment.patientPhone),
+      },
       metadata: {
         appointmentId: appointment._id,
         doctorId,
@@ -67,6 +84,12 @@ exports.createAppointment = async (req, res, next) => {
       type: 'appointment.booked',
       title: 'New appointment booked',
       message: `A new appointment has been booked for ${appointmentDate} at ${appointmentTime}.`,
+      recipientEmail: appointment.doctorEmail || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.doctorEmail),
+        sms: false,
+      },
       metadata: {
         appointmentId: appointment._id,
         patientId: req.user.userId,
@@ -219,6 +242,13 @@ exports.updateAppointmentStatus = async (req, res, next) => {
         type: 'appointment.cancelled',
         title: 'Appointment cancelled',
         message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
         metadata: {
           appointmentId: appointment._id,
           doctorId: appointment.doctorId,
@@ -231,6 +261,12 @@ exports.updateAppointmentStatus = async (req, res, next) => {
         type: 'appointment.cancelled',
         title: 'Appointment cancelled',
         message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+        recipientEmail: appointment.doctorEmail || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.doctorEmail),
+          sms: false,
+        },
         metadata: {
           appointmentId: appointment._id,
           patientId: appointment.patientId,
@@ -310,6 +346,13 @@ exports.updateAppointment = async (req, res, next) => {
         type: 'appointment.rescheduled',
         title: 'Appointment rescheduled',
         message: `Your appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
         metadata: {
           appointmentId: appointment._id,
           doctorId: appointment.doctorId,
@@ -321,6 +364,12 @@ exports.updateAppointment = async (req, res, next) => {
         type: 'appointment.rescheduled',
         title: 'Appointment rescheduled',
         message: `An appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
+        recipientEmail: appointment.doctorEmail || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.doctorEmail),
+          sms: false,
+        },
         metadata: {
           appointmentId: appointment._id,
           patientId: appointment.patientId,
@@ -377,6 +426,13 @@ exports.deleteAppointment = async (req, res, next) => {
       type: 'appointment.cancelled',
       title: 'Appointment cancelled',
       message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+      recipientEmail: appointment.patientEmail || undefined,
+      recipientPhone: appointment.patientPhone || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.patientEmail),
+        sms: Boolean(appointment.patientPhone),
+      },
       metadata: {
         appointmentId: appointment._id,
         doctorId: appointment.doctorId,
@@ -388,6 +444,12 @@ exports.deleteAppointment = async (req, res, next) => {
       type: 'appointment.cancelled',
       title: 'Appointment cancelled',
       message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+      recipientEmail: appointment.doctorEmail || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.doctorEmail),
+        sms: false,
+      },
       metadata: {
         appointmentId: appointment._id,
         patientId: appointment.patientId,

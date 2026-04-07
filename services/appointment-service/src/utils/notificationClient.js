@@ -1,6 +1,15 @@
 const DEFAULT_NOTIFICATION_SERVICE_URL = 'http://localhost:5007';
 
-const sendInternalNotification = async ({ userId, type, title, message, metadata = {} }) => {
+const sendInternalNotification = async ({
+  userId,
+  type,
+  title,
+  message,
+  metadata = {},
+  recipientEmail,
+  recipientPhone,
+  channels = { inApp: true },
+}) => {
   const notificationServiceUrl = process.env.NOTIFICATION_SERVICE_URL || DEFAULT_NOTIFICATION_SERVICE_URL;
   const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
 
@@ -21,7 +30,9 @@ const sendInternalNotification = async ({ userId, type, title, message, metadata
         type,
         title,
         message,
-        channels: { inApp: true },
+        channels,
+        recipientEmail,
+        recipientPhone,
         metadata,
       }),
     });
