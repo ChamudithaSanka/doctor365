@@ -6,6 +6,8 @@ import AppShell from './layouts/AppShell'
 import PatientDashboard from './pages/patient/PatientDashboard'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import ComingSoon from './pages/shared/ComingSoon'
+import AccessDenied from './pages/shared/AccessDenied'
+import NotFound from './pages/shared/NotFound'
 
 function App() {
   return (
@@ -47,8 +49,8 @@ function App() {
           />
           <Route path="/admin/dashboard" element={<Navigate to="/403" replace />} />
         </Route>
-        <Route path="/403" element={<ComingSoon title="403 - Access denied" description="You do not have permission to access this page." />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/403" element={<AccessDenied />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
