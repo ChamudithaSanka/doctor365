@@ -249,9 +249,9 @@ Purpose: Track all appointment states.
 - Confirmation dialog
 
 ## 7. Build Order
-1. Public pages
-2. Auth pages
-3. Authenticated shell
+1. Public pages (done)
+2. Auth pages (done)
+3. Authenticated shell (done)
 4. Patient dashboard and patient flows
 5. Doctor dashboard and doctor flows
 6. Admin dashboard and admin flows
