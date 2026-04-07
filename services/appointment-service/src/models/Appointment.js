@@ -44,6 +44,10 @@ const appointmentSchema = new mongoose.Schema(
       trim: true,
       maxlength: [1000, 'Notes cannot exceed 1000 characters'],
     },
+    reminderSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -1,5 +1,22 @@
 const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
+const { sendInternalNotification } = require('../utils/notificationClient');
+
+const getAppointmentDateTime = (appointmentDate, appointmentTime) => {
+  if (!appointmentDate || !appointmentTime) {
+    return null;
+  }
+
+  const date = new Date(appointmentDate);
+  const [hours, minutes] = String(appointmentTime).split(':').map((value) => Number(value));
+
+  if (Number.isNaN(date.getTime()) || Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+};
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
@@ -31,6 +48,32 @@ exports.createAppointment = async (req, res, next) => {
     });
 
     await appointment.save();
+
+    await sendInternalNotification({
+      userId: req.user.userId,
+      type: 'appointment.booked',
+      title: 'Appointment booked',
+      message: `Your appointment for ${appointmentDate} at ${appointmentTime} has been booked.`,
+      metadata: {
+        appointmentId: appointment._id,
+        doctorId,
+        appointmentDate,
+        appointmentTime,
+      },
+    });
+
+    await sendInternalNotification({
+      userId: doctorId,
+      type: 'appointment.booked',
+      title: 'New appointment booked',
+      message: `A new appointment has been booked for ${appointmentDate} at ${appointmentTime}.`,
+      metadata: {
+        appointmentId: appointment._id,
+        patientId: req.user.userId,
+        appointmentDate,
+        appointmentTime,
+      },
+    });
 
     res.status(201).json({
       success: true,
@@ -169,6 +212,32 @@ exports.updateAppointmentStatus = async (req, res, next) => {
     appointment.status = status;
     await appointment.save();
 
+    if (status === 'cancelled') {
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.cancelled',
+        title: 'Appointment cancelled',
+        message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+          status,
+        },
+      });
+
+      await sendInternalNotification({
+        userId: appointment.doctorId,
+        type: 'appointment.cancelled',
+        title: 'Appointment cancelled',
+        message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+        metadata: {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId,
+          status,
+        },
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: appointment,
@@ -226,7 +295,34 @@ exports.updateAppointment = async (req, res, next) => {
       appointment.notes = notes;
     }
 
+    const dateChanged = Boolean(appointmentDate) && new Date(appointmentDate).getTime() !== appointment.appointmentDate.getTime();
+    const timeChanged = Boolean(appointmentTime) && appointmentTime !== appointment.appointmentTime;
+
     await appointment.save();
+
+    if (dateChanged || timeChanged) {
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.rescheduled',
+        title: 'Appointment rescheduled',
+        message: `Your appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+        },
+      });
+
+      await sendInternalNotification({
+        userId: appointment.doctorId,
+        type: 'appointment.rescheduled',
+        title: 'Appointment rescheduled',
+        message: `An appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
+        metadata: {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId,
+        },
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -271,6 +367,28 @@ exports.deleteAppointment = async (req, res, next) => {
     }
 
     await Appointment.findByIdAndDelete(req.params.id);
+
+    await sendInternalNotification({
+      userId: appointment.patientId,
+      type: 'appointment.cancelled',
+      title: 'Appointment cancelled',
+      message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+      metadata: {
+        appointmentId: appointment._id,
+        doctorId: appointment.doctorId,
+      },
+    });
+
+    await sendInternalNotification({
+      userId: appointment.doctorId,
+      type: 'appointment.cancelled',
+      title: 'Appointment cancelled',
+      message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+      metadata: {
+        appointmentId: appointment._id,
+        patientId: appointment.patientId,
+      },
+    });
 
     res.status(200).json({
       success: true,

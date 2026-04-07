@@ -1,5 +1,24 @@
 const mongoose = require('mongoose');
 
+const channelDeliverySchema = new mongoose.Schema(
+  {
+    status: {
+      type: String,
+      enum: ['queued', 'sent', 'failed'],
+      default: 'queued',
+    },
+    sentAt: {
+      type: Date,
+      default: null,
+    },
+    error: {
+      type: String,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
 const notificationSchema = new mongoose.Schema(
   {
     userId: {
@@ -10,10 +29,7 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       required: [true, 'Notification type is required'],
-      enum: {
-        values: ['email', 'sms', 'in-app'],
-        message: 'Type must be one of: email, sms, in-app',
-      },
+      trim: true,
     },
     title: {
       type: String,
@@ -30,10 +46,43 @@ const notificationSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ['queued', 'sent', 'failed', 'read'],
-        message: 'Status must be one of: queued, sent, failed, read',
+        values: ['queued', 'sent', 'partial', 'failed', 'read'],
+        message: 'Status must be one of: queued, sent, partial, failed, read',
       },
       default: 'queued',
+    },
+    channels: {
+      inApp: {
+        type: Boolean,
+        default: true,
+      },
+      email: {
+        type: Boolean,
+        default: false,
+      },
+      sms: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    deliveryStatus: {
+      inApp: {
+        type: channelDeliverySchema,
+        default: () => ({ status: 'sent', sentAt: new Date() }),
+      },
+      email: {
+        type: channelDeliverySchema,
+        default: () => ({}),
+      },
+      sms: {
+        type: channelDeliverySchema,
+        default: () => ({}),
+      },
+      overall: {
+        type: String,
+        enum: ['queued', 'sent', 'partial', 'failed'],
+        default: 'queued',
+      },
     },
     metadata: {
       type: mongoose.Schema.Types.Mixed,
