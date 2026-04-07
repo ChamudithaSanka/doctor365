@@ -9,6 +9,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const paymentRoutes = require('./routes/paymentRoutes');
 const errorHandler = require('./middleware/errorMiddleware');
