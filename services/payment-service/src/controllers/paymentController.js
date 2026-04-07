@@ -433,10 +433,6 @@ const updatePaymentStatus = async (req, res, next) => {
       await notifyPaymentResult({ payment, status });
     }
 
-    if (status === 'paid' || status === 'failed') {
-      await notifyPaymentResult({ payment, status });
-    }
-
     return res.status(200).json({
       success: true,
       data: payment,

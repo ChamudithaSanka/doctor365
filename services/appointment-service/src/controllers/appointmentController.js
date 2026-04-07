@@ -209,10 +209,11 @@ exports.updateAppointmentStatus = async (req, res, next) => {
       });
     }
 
+    const previousStatus = appointment.status;
     appointment.status = status;
     await appointment.save();
 
-    if (status === 'cancelled') {
+    if (status === 'cancelled' && previousStatus !== 'cancelled') {
       await sendInternalNotification({
         userId: appointment.patientId,
         type: 'appointment.cancelled',
@@ -282,6 +283,9 @@ exports.updateAppointment = async (req, res, next) => {
       });
     }
 
+    const previousAppointmentDate = appointment.appointmentDate;
+    const previousAppointmentTime = appointment.appointmentTime;
+
     if (appointmentDate) {
       appointment.appointmentDate = new Date(appointmentDate);
     }
@@ -295,8 +299,8 @@ exports.updateAppointment = async (req, res, next) => {
       appointment.notes = notes;
     }
 
-    const dateChanged = Boolean(appointmentDate) && new Date(appointmentDate).getTime() !== appointment.appointmentDate.getTime();
-    const timeChanged = Boolean(appointmentTime) && appointmentTime !== appointment.appointmentTime;
+    const dateChanged = Boolean(appointmentDate) && new Date(appointmentDate).getTime() !== previousAppointmentDate.getTime();
+    const timeChanged = Boolean(appointmentTime) && appointmentTime !== previousAppointmentTime;
 
     await appointment.save();
 
