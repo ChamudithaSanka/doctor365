@@ -1,9 +1,82 @@
 const User = require('../models/User');
 const { generateTokens, verifyRefreshToken } = require('../../../../shared/authUtils');
 
+const patientServiceBaseUrl = process.env.PATIENT_SERVICE_URL || 'http://localhost:5002';
+
+const validatePatientRegistration = (payload) => {
+  const requiredFields = [
+    'dateOfBirth',
+    'gender',
+    'phone',
+    'address',
+    'emergencyContact',
+  ];
+
+  const missingFields = requiredFields.filter((field) => !payload[field]);
+  return missingFields;
+};
+
+const normalizePhone = (value) => String(value || '').replace(/[\s-]/g, '');
+
+const normalizePatientPayload = (payload) => ({
+  firstName: String(payload.firstName || '').trim(),
+  lastName: String(payload.lastName || '').trim(),
+  dateOfBirth: String(payload.dateOfBirth || '').trim(),
+  gender: String(payload.gender || '').trim().toLowerCase(),
+  phone: normalizePhone(payload.phone),
+  address: String(payload.address || '').trim(),
+  emergencyContact: normalizePhone(payload.emergencyContact),
+  medicalHistorySummary: String(payload.medicalHistorySummary || '').trim(),
+});
+
+const createPatientProfile = async (accessToken, payload) => {
+  const response = await fetch(`${patientServiceBaseUrl}/api/patients/me`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const serviceMessage = data?.error?.message || data?.message || 'Unable to create patient profile';
+    const error = new Error(serviceMessage);
+    error.status = response.status;
+    error.details = data?.error?.details;
+    throw error;
+  }
+};
+
 exports.register = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, role } = req.body;
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      dateOfBirth,
+      gender,
+      phone,
+      address,
+      emergencyContact,
+      medicalHistorySummary,
+    } = req.body;
+
+    const targetRole = role || 'patient';
+    const normalizedPatientPayload = normalizePatientPayload({
+      firstName,
+      lastName,
+      dateOfBirth,
+      gender,
+      phone,
+      address,
+      emergencyContact,
+      medicalHistorySummary,
+    });
 
     // Validate input
     if (!email || !password || !firstName || !lastName) {
@@ -27,6 +100,26 @@ exports.register = async (req, res) => {
       });
     }
 
+    if (targetRole === 'patient') {
+      const missingPatientFields = validatePatientRegistration({
+        dateOfBirth: normalizedPatientPayload.dateOfBirth,
+        gender: normalizedPatientPayload.gender,
+        phone: normalizedPatientPayload.phone,
+        address: normalizedPatientPayload.address,
+        emergencyContact: normalizedPatientPayload.emergencyContact,
+      });
+
+      if (missingPatientFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: `Missing required patient fields: ${missingPatientFields.join(', ')}`,
+          },
+        });
+      }
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -43,15 +136,34 @@ exports.register = async (req, res) => {
     const user = new User({
       email,
       password,
-      firstName,
-      lastName,
-      role: role || 'patient',
+      firstName: normalizedPatientPayload.firstName || firstName,
+      lastName: normalizedPatientPayload.lastName || lastName,
+      role: targetRole,
     });
 
     await user.save();
 
     // Generate tokens
     const { accessToken, refreshToken } = generateTokens(user._id, user.email, user.role);
+
+    if (targetRole === 'patient') {
+      try {
+        await createPatientProfile(accessToken, normalizedPatientPayload);
+      } catch (profileError) {
+        await User.findByIdAndDelete(user._id);
+
+        const statusCode = profileError.status >= 400 && profileError.status < 500 ? 400 : 502;
+
+        return res.status(statusCode).json({
+          success: false,
+          error: {
+            code: 'PATIENT_PROFILE_SETUP_FAILED',
+            message: `User was not created because patient profile setup failed: ${profileError.message}`,
+            details: profileError.details || [],
+          },
+        });
+      }
+    }
 
     // Save refresh token to database
     user.refreshToken = refreshToken;
