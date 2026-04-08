@@ -86,7 +86,7 @@ export default function Doctors() {
       const maxFeeValue = maxFee === '' ? null : Number(maxFee)
       const hasFeeMatch = maxFeeValue === null || (!Number.isNaN(feeValue) && feeValue <= maxFeeValue)
 
-      const hasAvailabilityData = Array.isArray(doctor.availability) && doctor.availability.length > 0
+      const hasAvailabilityData = Boolean(doctor.availabilityStartTime && doctor.availabilityEndTime)
       const hasAvailabilityMatch =
         availability === 'all' ||
         (availability === 'available' && hasAvailabilityData) ||
@@ -196,7 +196,10 @@ export default function Doctors() {
           <div className="grid gap-4 lg:grid-cols-2">
             {filteredDoctors.map((doctor) => {
               const fullName = `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim() || 'Doctor'
-              const hasAvailability = Array.isArray(doctor.availability) && doctor.availability.length > 0
+              const hasAvailability = Boolean(doctor.availabilityStartTime && doctor.availabilityEndTime)
+              const availabilityLabel = hasAvailability
+                ? `${doctor.availabilityStartTime} - ${doctor.availabilityEndTime}`
+                : 'No working hours listed'
 
               return (
                 <article key={doctor._id || doctor.userId} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -222,7 +225,7 @@ export default function Doctors() {
                     </div>
                     <div className="rounded-2xl bg-slate-50 p-3">
                       <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Availability</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{hasAvailability ? `${doctor.availability.length} slot(s)` : 'No slots listed'}</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{availabilityLabel}</p>
                     </div>
                   </div>
 

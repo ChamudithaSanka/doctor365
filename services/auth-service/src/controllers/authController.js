@@ -3,6 +3,8 @@ const { generateTokens, verifyRefreshToken } = require('../../../../shared/authU
 
 const patientServiceBaseUrl = process.env.PATIENT_SERVICE_URL || 'http://localhost:5002';
 
+const sanitizeText = (value) => String(value || '').trim();
+
 const validatePatientRegistration = (payload) => {
   const requiredFields = [
     'dateOfBirth',
@@ -57,7 +59,6 @@ exports.register = async (req, res) => {
       password,
       firstName,
       lastName,
-      role,
       dateOfBirth,
       gender,
       phone,
@@ -66,7 +67,7 @@ exports.register = async (req, res) => {
       medicalHistorySummary,
     } = req.body;
 
-    const targetRole = role || 'patient';
+    const targetRole = 'patient';
     const normalizedPatientPayload = normalizePatientPayload({
       firstName,
       lastName,
@@ -85,17 +86,6 @@ exports.register = async (req, res) => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Please provide all required fields',
-        },
-      });
-    }
-
-    // Validate role
-    if (role && !['patient', 'doctor', 'admin'].includes(role)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_ROLE',
-          message: 'Role must be one of: patient, doctor, admin',
         },
       });
     }
@@ -192,6 +182,67 @@ exports.register = async (req, res) => {
       error: {
         code: 'INTERNAL_ERROR',
         message: 'Error during registration',
+      },
+    });
+  }
+};
+
+exports.createDoctor = async (req, res) => {
+  try {
+    const { email, password, firstName, lastName } = req.body;
+
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Please provide email, password, firstName, and lastName',
+        },
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'EMAIL_EXISTS',
+          message: 'Email already registered',
+        },
+      });
+    }
+
+    const user = new User({
+      email: sanitizeText(email).toLowerCase(),
+      password,
+      firstName: sanitizeText(firstName),
+      lastName: sanitizeText(lastName),
+      role: 'doctor',
+      isVerified: true,
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        },
+      },
+      message: 'Doctor auth account created successfully',
+    });
+  } catch (error) {
+    console.error('Create doctor error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Error creating doctor account',
       },
     });
   }

@@ -3,6 +3,32 @@ const Appointment = require('../models/Appointment');
 const { getPatientPhone, getUserContact } = require('../utils/contactLookup');
 const { sendInternalNotification } = require('../utils/notificationClient');
 
+const doctorServiceBaseUrl = process.env.DOCTOR_SERVICE_URL || 'http://localhost:5003';
+
+const parseTimeToMinutes = (timeValue) => {
+  const [hours, minutes] = String(timeValue || '').split(':').map((value) => Number(value));
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const fetchDoctorProfile = async (doctorId) => {
+  try {
+    const response = await fetch(`${doctorServiceBaseUrl}/api/doctors/${doctorId}`);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data?.data || null;
+  } catch {
+    return null;
+  }
+};
+
 const getAppointmentDateTime = (appointmentDate, appointmentTime) => {
   if (!appointmentDate || !appointmentTime) {
     return null;
@@ -33,6 +59,65 @@ exports.createAppointment = async (req, res, next) => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Please provide doctorId, appointmentDate, appointmentTime, and reason',
+        },
+      });
+    }
+
+    const doctor = await fetchDoctorProfile(doctorId);
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Doctor not found',
+        },
+      });
+    }
+
+    const requestedMinutes = parseTimeToMinutes(appointmentTime);
+    const startMinutes = parseTimeToMinutes(doctor.availabilityStartTime || '08:00');
+    const endMinutes = parseTimeToMinutes(doctor.availabilityEndTime || '17:00');
+    const slotMinutes = Number(doctor.slotMinutes || 30);
+
+    if (
+      requestedMinutes === null ||
+      startMinutes === null ||
+      endMinutes === null ||
+      requestedMinutes < startMinutes ||
+      requestedMinutes >= endMinutes
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TIME',
+          message: `Doctor is available between ${doctor.availabilityStartTime || '08:00'} and ${doctor.availabilityEndTime || '17:00'}`,
+        },
+      });
+    }
+
+    if (((requestedMinutes - startMinutes) % slotMinutes) !== 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SLOT',
+          message: `Please choose a ${slotMinutes}-minute slot starting from ${doctor.availabilityStartTime || '08:00'}`,
+        },
+      });
+    }
+
+    const existingAppointment = await Appointment.findOne({
+      doctorId,
+      appointmentDate: new Date(appointmentDate),
+      appointmentTime,
+      status: { $ne: 'cancelled' },
+    });
+
+    if (existingAppointment) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'SLOT_TAKEN',
+          message: 'That time slot is already booked. Please choose the next available slot.',
         },
       });
     }

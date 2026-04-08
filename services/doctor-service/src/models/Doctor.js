@@ -1,23 +1,5 @@
 const mongoose = require('mongoose');
 
-const availabilitySchema = new mongoose.Schema({
-  day: {
-    type: String,
-    required: true,
-    enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-  },
-  startTime: {
-    type: String,
-    required: true,
-    match: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/ // HH:mm format
-  },
-  endTime: {
-    type: String,
-    required: true,
-    match: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/ // HH:mm format
-  }
-}, { _id: false });
-
 const doctorSchema = new mongoose.Schema(
   {
     userId: {
@@ -52,10 +34,28 @@ const doctorSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    availability: [availabilitySchema],
-    hospitalOrClinic: {
+    availabilityStartTime: {
       type: String,
       required: true,
+      default: '08:00',
+      match: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+    },
+    availabilityEndTime: {
+      type: String,
+      required: true,
+      default: '17:00',
+      match: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+    },
+    slotMinutes: {
+      type: Number,
+      required: true,
+      default: 30,
+      min: 5,
+    },
+    hospitalOrClinic: {
+      type: String,
+      required: false,
+      default: 'Online',
     },
     isVerified: {
       type: Boolean,
