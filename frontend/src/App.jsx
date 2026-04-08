@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import AppShell from './layouts/AppShell'
 import PatientDashboard from './pages/patient/PatientDashboard'
+import Doctors from './pages/patient/Doctors'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
@@ -19,9 +20,14 @@ function App() {
         <Route element={<AppShell />}>
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctors" element={<Doctors />} />
           <Route
-            path="/doctors"
-            element={<ComingSoon title="Doctors" description="Browse and search doctors from this section." />}
+            path="/doctors/:id"
+            element={<ComingSoon title="Doctor Details" description="Doctor profile details and booking context will be available here." />}
+          />
+          <Route
+            path="/appointments/book"
+            element={<ComingSoon title="Book Appointment" description="Booking flow will be available here." />}
           />
           <Route
             path="/appointments"
