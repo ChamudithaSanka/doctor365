@@ -64,7 +64,7 @@ app.post("/generate-token", (req, res) => {
 });
 
 // Telemedicine Routes (all protected)
-app.use("/telemedicine", telemedicineRoutes);
+app.use("/api/telemedicine", telemedicineRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorMiddleware);
