@@ -1,0 +1,773 @@
+{
+  "info": {
+    "_postman_id": "doctor365-telemedicine-complete-v1-1",
+    "name": "Doctor365 Telemedicine Service - Complete Setup (v1.1 Updated)",
+    "description": "Complete API collection for Doctor365 Telemedicine Service with Jitsi Cloud (8x8.vc) integration. UPDATED: New validation, error codes, and response structures.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Setup & Configuration",
+      "item": [
+        {
+          "name": "README - Start Here (v1.1 Updated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://postman-echo.com/get",
+              "protocol": "https",
+              "host": ["postman-echo", "com"],
+              "path": ["get"]
+            },
+            "description": "## Doctor365 Telemedicine Service - Updated April 8, 2026\n\n### ✨ What's New in v1.1:\n- ✅ New error codes: INVALID_APPOINTMENT_ID, INVALID_SESSION_ID, INVALID_AUTH_FORMAT, NO_AUTH_HEADER, TOKEN_EXPIRED\n- ✅ Validation: ObjectId format checking for appointment/session IDs\n- ✅ Enhanced response: endSession now returns consultationSummary\n- ✅ Better error messages: Include role and status context\n- ✅ New tests: Format validation, state transitions, auth errors\n\n### Setup Instructions:\n1. Import Environment: `Doctor365_Telemedicine_Environment.postman_environment.json`\n2. Select Environment: Top-right dropdown\n3. Start Service: `npm run dev`\n4. Generate Tokens: Go to \"01. Generate Test Tokens\"\n5. Follow numbered folders sequentially\n\n### New Error Codes to Expect:\n- INVALID_APPOINTMENT_ID: Appointment ID not MongoDB ObjectId format\n- INVALID_SESSION_ID: Session ID not MongoDB ObjectId format\n- INVALID_AUTH_FORMAT: Missing 'Bearer ' prefix\n- NO_AUTH_HEADER: Missing Authorization header\n- TOKEN_EXPIRED: JWT has expired\n- INVALID_TOKEN: JWT is invalid\n- CONFLICT: Resource already exists (409)\n- NOT_FOUND: Resource not found (404)\n- FORBIDDEN: Permission denied (includes role)\n- INVALID_STATE: Cannot transition state (includes current status)\n- VALIDATION_ERROR: Required fields violated\n"
+          }
+        },
+        {
+          "name": "Service Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{service_url}}/health",
+              "protocol": "http",
+              "host": ["localhost:5005"],
+              "path": ["health"]
+            },
+            "description": "Verify service is running and MongoDB is connected"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01. Generate Test Tokens",
+      "item": [
+        {
+          "name": "Generate Doctor Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('doctor_token', response.token);",
+                  "  pm.environment.set('doctor_id', response.payload.userId);",
+                  "  pm.test('Doctor token generated successfully', function() {",
+                  "    pm.expect(response.token).to.exist;",
+                  "    pm.expect(response.payload.userId).to.equal('doc-001');",
+                  "  });",
+                  "  console.log('✅ Doctor token: ' + response.token.substring(0, 20) + '...');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"userId\": \"doc-001\",\"email\": \"doctor@hospital.com\",\"role\": \"doctor\",\"name\": \"Dr. Sarah Johnson\"}"},
+            "url": {"raw": "{{service_url}}/generate-token", "host": ["localhost:5005"], "path": ["generate-token"]},
+            "description": "Generate JWT token for doctor. Used for testing doctor-only endpoints."
+          }
+        },
+        {
+          "name": "Generate Patient Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('patient_token', response.token);",
+                  "  pm.environment.set('patient_id', response.payload.userId);",
+                  "  pm.test('Patient token generated successfully', function() {",
+                  "    pm.expect(response.token).to.exist;",
+                  "    pm.expect(response.payload.userId).to.equal('pat-001');",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"userId\": \"pat-001\",\"email\": \"patient@email.com\",\"role\": \"patient\",\"name\": \"John Doe\"}"},
+            "url": {"raw": "{{service_url}}/generate-token", "host": ["localhost:5005"], "path": ["generate-token"]},
+            "description": "Generate JWT token for patient. Used for testing patient access restrictions."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Create Session",
+      "item": [
+        {
+          "name": "✅ Create Session (Success)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Response code is 201 Created', function() { pm.expect(pm.response.code).to.equal(201); });",
+                  "pm.test('Session has valid structure', function() {",
+                  "  pm.expect(response.data).to.have.all.keys('sessionId', 'appointmentId', 'doctorId', 'patientId', 'meetingLink', 'meetingRoomId', 'meetingProvider', 'status', 'createdAt');",
+                  "});",
+                  "pm.test('Status is scheduled', function() { pm.expect(response.data.status).to.equal('scheduled'); });",
+                  "pm.test('Meeting link contains 8x8.vc', function() { pm.expect(response.data.meetingLink).to.include('8x8.vc'); });",
+                  "pm.environment.set('session_id', response.data.sessionId);",
+                  "pm.environment.set('meeting_link', response.data.meetingLink);",
+                  "console.log('✅ Session created: ' + response.data.sessionId);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"507f1f77bcf86cd799439011\",\"patientId\": \"pat-001\",\"notes\": \"\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Create new telemedicine session. Doctor authorization required. Generates unique meeting link with 8x8.vc and JWT token."
+          }
+        },
+        {
+          "name": "❌ Create: Patient Attempt (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 403 Forbidden', function() { pm.expect(pm.response.code).to.equal(403); });",
+                  "pm.test('Error code is FORBIDDEN', function() { pm.expect(response.error.code).to.equal('FORBIDDEN'); });",
+                  "pm.test('Error message includes role requirement', function() { pm.expect(response.error.message).to.include('doctor'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{patient_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"507f1f77bcf86cd799439012\",\"patientId\": \"pat-001\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Verify patient role cannot create sessions. Only doctors allowed."
+          }
+        },
+        {
+          "name": "❌ Create: Invalid Appointment ID Format (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 400 Bad Request', function() { pm.expect(pm.response.code).to.equal(400); });",
+                  "pm.test('Error code is INVALID_APPOINTMENT_ID', function() { pm.expect(response.error.code).to.equal('INVALID_APPOINTMENT_ID'); });",
+                  "pm.test('Error message about format', function() { pm.expect(response.error.message).to.include('format'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"invalid-id\",\"patientId\": \"pat-001\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Test ObjectId format validation. Appointment ID must be MongoDB ObjectId (24 hex characters)."
+          }
+        },
+        {
+          "name": "❌ Create: Duplicate Session (409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 409 Conflict', function() { pm.expect(pm.response.code).to.equal(409); });",
+                  "pm.test('Error code is CONFLICT', function() { pm.expect(response.error.code).to.equal('CONFLICT'); });",
+                  "pm.test('Error mentions existing session', function() { pm.expect(response.error.message).to.include('already exists'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"507f1f77bcf86cd799439011\",\"patientId\": \"pat-001\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Try creating duplicate session for same appointment. Should fail with 409 CONFLICT."
+          }
+        },
+        {
+          "name": "❌ Create: Missing Required Fields (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 400 Bad Request', function() { pm.expect(pm.response.code).to.equal(400); });",
+                  "pm.test('Error code is VALIDATION_ERROR', function() { pm.expect(response.error.code).to.equal('VALIDATION_ERROR'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"507f1f77bcf86cd799439013\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Test required field validation. Both appointmentId and patientId required."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Get Sessions",
+      "item": [
+        {
+          "name": "Get Session by Appointment ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/appointment/507f1f77bcf86cd799439011", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "appointment", "507f1f77bcf86cd799439011"]},
+            "description": "Get session by appointment ID. Only assigned doctor and patient can access."
+          }
+        },
+        {
+          "name": "Get Session by ID (Complete Details)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Response is 200 OK', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Session has all details', function() {",
+                  "  pm.expect(response.data).to.have.all.keys('sessionId', 'appointmentId', 'doctorId', 'patientId', 'meetingProvider', 'meetingRoomId', 'meetingLink', 'status', 'startedAt', 'endedAt', 'duration', 'notes', 'createdAt', 'updatedAt');",
+                  "});",
+                  "pm.test('Status is valid', function() {",
+                  "  pm.expect(['scheduled', 'active', 'ended']).to.include(response.data.status);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{session_id}}", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{session_id}}"]},
+            "description": "Get complete session details by ID. Returns all fields including meeting link."
+          }
+        },
+        {
+          "name": "Get Sessions (Paginated List)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Response includes pagination', function() {",
+                  "  pm.expect(response.data).to.have.keys('sessions', 'pagination');",
+                  "});",
+                  "pm.test('Pagination has required fields', function() {",
+                  "  pm.expect(response.data.pagination).to.have.all.keys('total', 'limit', 'offset', 'hasMore');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions?limit=10&offset=0", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"], "query": [{"key": "limit", "value": "10"}, {"key": "offset", "value": "0"}]},
+            "description": "Get paginated sessions for authenticated user. Supports: limit (max 50), offset, status filter."
+          }
+        },
+        {
+          "name": "❌ Get: Invalid Session ID Format (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 400', function() { pm.expect(pm.response.code).to.equal(400); });",
+                  "pm.test('Error code is INVALID_SESSION_ID', function() { pm.expect(response.error.code).to.equal('INVALID_SESSION_ID'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/not-a-valid-id", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "not-a-valid-id"]},
+            "description": "Test ObjectId format validation for session ID."
+          }
+        },
+        {
+          "name": "❌ Get: Non-existent Session (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 404 Not Found', function() { pm.expect(pm.response.code).to.equal(404); });",
+                  "pm.test('Error code is NOT_FOUND', function() { pm.expect(response.error.code).to.equal('NOT_FOUND'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/507f1f77bcf86cd799439999", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "507f1f77bcf86cd799439999"]},
+            "description": "Try accessing non-existent session ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Start Session",
+      "item": [
+        {
+          "name": "✅ Start Session (Doctor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 200 OK', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Session status changed to active', function() { pm.expect(response.data.status).to.equal('active'); });",
+                  "pm.test('StartedAt timestamp present', function() { pm.expect(response.data.startedAt).to.exist; });",
+                  "console.log('🎥 Consultation started at ' + response.data.startedAt);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{session_id}}/start", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{session_id}}", "start"]},
+            "description": "Start telemedicine consultation. Only assigned doctor can start. Transitions scheduled → active."
+          }
+        },
+        {
+          "name": "❌ Start: Patient Attempt (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 403 Forbidden', function() { pm.expect(pm.response.code).to.equal(403); });",
+                  "pm.test('Error code is FORBIDDEN', function() { pm.expect(response.error.code).to.equal('FORBIDDEN'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{session_id}}/start", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{session_id}}", "start"]},
+            "description": "Verify patient cannot start sessions. Doctor-only operation."
+          }
+        },
+        {
+          "name": "❌ Start: Invalid Session ID (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Error code is INVALID_SESSION_ID', function() { pm.expect(response.error.code).to.equal('INVALID_SESSION_ID'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/invalid-id/start", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "invalid-id", "start"]},
+            "description": "Test ObjectId format validation."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. End Session",
+      "item": [
+        {
+          "name": "✅ End Session with Clinical Notes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 200 OK', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Session status is ended', function() { pm.expect(response.data.status).to.equal('ended'); });",
+                  "pm.test('ConsultationSummary has durationMinutes', function() {",
+                  "  pm.expect(response.data.consultationSummary).to.have.all.keys('startedAt', 'endedAt', 'durationMinutes');",
+                  "  pm.expect(response.data.consultationSummary.durationMinutes).to.be.a('number');",
+                  "});",
+                  "pm.test('Clinical notes stored', function() { pm.expect(response.data.clinicalNotes).to.exist; });",
+                  "console.log('✅ Consultation ended. Duration: ' + response.data.consultationSummary.durationMinutes + ' minutes');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"notes\": \"Patient presented with acute respiratory symptoms. Prescribed antiviral medication. Follow-up appointment in 3 days.\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{session_id}}/end", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{session_id}}", "end"]},
+            "description": "End consultation. Updated: Response now includes consultationSummary with durationMinutes (calculated from timestamps)."
+          }
+        },
+        {
+          "name": "❌ End: Patient Attempt (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 403 Forbidden', function() { pm.expect(pm.response.code).to.equal(403); });",
+                  "pm.test('Error code is FORBIDDEN', function() { pm.expect(response.error.code).to.equal('FORBIDDEN'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{patient_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"notes\": \"test\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{session_id}}/end", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{session_id}}", "end"]},
+            "description": "Verify patient cannot end sessions."
+          }
+        },
+        {
+          "name": "❌ End: Invalid Session ID (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Error code is INVALID_SESSION_ID', function() { pm.expect(response.error.code).to.equal('INVALID_SESSION_ID'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"notes\": \"test\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/invalid/end", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "invalid", "end"]},
+            "description": "Test ObjectId format validation."
+          }
+        },
+        {
+          "name": "❌ End: Notes Too Long (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Error code is VALIDATION_ERROR', function() { pm.expect(response.error.code).to.equal('VALIDATION_ERROR'); });",
+                  "pm.test('Error mentions max length', function() { pm.expect(response.error.message).to.include('1000'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"notes\": \"Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{session_id}}/end", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{session_id}}", "end"]},
+            "description": "Test notes validation. Maximum 1000 characters allowed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Error Scenarios",
+      "item": [
+        {
+          "name": "❌ Auth: Missing Authorization Header (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 401 Unauthorized', function() { pm.expect(pm.response.code).to.equal(401); });",
+                  "pm.test('Error code is NO_AUTH_HEADER', function() { pm.expect(response.error.code).to.equal('NO_AUTH_HEADER'); });",
+                  "pm.test('Error message mentions header', function() { pm.expect(response.error.message).to.include('header'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Test missing Authorization header error."
+          }
+        },
+        {
+          "name": "❌ Auth: Invalid Format (missing Bearer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 401', function() { pm.expect(pm.response.code).to.equal(401); });",
+                  "pm.test('Error code is INVALID_AUTH_FORMAT', function() { pm.expect(response.error.code).to.equal('INVALID_AUTH_FORMAT'); });",
+                  "pm.test('Error mentions Bearer format', function() { pm.expect(response.error.message).to.include('Bearer'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "invalid-token-without-bearer"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Test invalid Authorization format (missing 'Bearer ' prefix)."
+          }
+        },
+        {
+          "name": "❌ Auth: Malformed Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 401', function() { pm.expect(pm.response.code).to.equal(401); });",
+                  "pm.test('Error code includes INVALID_TOKEN or related', function() {",
+                  "  pm.expect(['INVALID_TOKEN', 'AUTH_ERROR']).to.include(response.error.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer invalid.malformed.token"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Test malformed JWT token error."
+          }
+        },
+        {
+          "name": "❌ Validation: Missing Required Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Status is 400', function() { pm.expect(pm.response.code).to.equal(400); });",
+                  "pm.test('Error code is VALIDATION_ERROR', function() { pm.expect(response.error.code).to.equal('VALIDATION_ERROR'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"507f1f77bcf86cd799439013\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]},
+            "description": "Test missing patientId validation."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Integration Workflow - Full Consultation",
+      "item": [
+        {
+          "name": "1️⃣ Generate Doctor Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.environment.set('workflow_doctor_token', response.token);",
+                  "pm.test('Doctor token generated', function() { pm.expect(response.token).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"userId\": \"doc-workflow-001\",\"email\": \"dr.workflow@hospital.com\",\"role\": \"doctor\",\"name\": \"Dr. Workflow Test\"}"},
+            "url": {"raw": "{{service_url}}/generate-token", "host": ["localhost:5005"], "path": ["generate-token"]}
+          }
+        },
+        {
+          "name": "2️⃣ Generate Patient Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.environment.set('workflow_patient_token', response.token);",
+                  "pm.test('Patient token generated', function() { pm.expect(response.token).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"userId\": \"pat-workflow-001\",\"email\": \"patient.workflow@email.com\",\"role\": \"patient\",\"name\": \"Patient Workflow Test\"}"},
+            "url": {"raw": "{{service_url}}/generate-token", "host": ["localhost:5005"], "path": ["generate-token"]}
+          }
+        },
+        {
+          "name": "3️⃣ Create Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.environment.set('workflow_session_id', response.data.sessionId);",
+                  "pm.test('Session created in scheduled state', function() { pm.expect(response.data.status).to.equal('scheduled'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{workflow_doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"appointmentId\": \"507f1f77bcf86cd799440001\",\"patientId\": \"pat-workflow-001\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions"]}
+          }
+        },
+        {
+          "name": "4️⃣ Doctor Starts Consultation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Session transitioned to active', function() { pm.expect(response.data.status).to.equal('active'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{workflow_doctor_token}}"}],
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{workflow_session_id}}/start", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{workflow_session_id}}", "start"]}
+          }
+        },
+        {
+          "name": "5️⃣ Doctor Ends Consultation with Notes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let response = pm.response.json();",
+                  "pm.test('Session ended successfully', function() { pm.expect(response.data.status).to.equal('ended'); });",
+                  "pm.test('ConsultationSummary has all fields', function() {",
+                  "  pm.expect(response.data.consultationSummary).to.have.all.keys('startedAt', 'endedAt', 'durationMinutes');",
+                  "});",
+                  "pm.test('Duration calculated correctly', function() {",
+                  "  pm.expect(response.data.consultationSummary.durationMinutes).to.be.greaterThan(0);",
+                  "});",
+                  "console.log('✅ Full workflow complete. Duration: ' + response.data.consultationSummary.durationMinutes + ' min');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{workflow_doctor_token}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"notes\": \"Patient consultation successfully completed. Diagnosis: Common upper respiratory infection. Treatment prescribed. Follow-up in 5 days.\"}"},
+            "url": {"raw": "{{service_url}}/api/telemedicine/sessions/{{workflow_session_id}}/end", "host": ["localhost:5005"], "path": ["api", "telemedicine", "sessions", "{{workflow_session_id}}", "end"]}
+          }
+        }
+      ]
+    }
+  ]
+}
