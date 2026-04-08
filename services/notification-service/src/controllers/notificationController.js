@@ -1,11 +1,65 @@
 const Notification = require('../models/Notification');
+const { sendEmailNotification } = require('../utils/emailService');
+const { sendSmsNotification } = require('../utils/smsService');
+
+const normalizeChannels = (input) => {
+  const channels = {
+    inApp: true,
+    email: false,
+    sms: false,
+  };
+
+  if (!input) {
+    return channels;
+  }
+
+  if (Array.isArray(input)) {
+    input.forEach((channel) => {
+      if (channel === 'email') {
+        channels.email = true;
+      }
+
+      if (channel === 'sms') {
+        channels.sms = true;
+      }
+
+      if (channel === 'inApp') {
+        channels.inApp = true;
+      }
+    });
+
+    return channels;
+  }
+
+  if (typeof input === 'object') {
+    channels.email = Boolean(input.email);
+    channels.sms = Boolean(input.sms);
+  }
+
+  return channels;
+};
+
+const getRecipientDetails = (reqBody, metadata = {}) => ({
+  email: reqBody.recipientEmail || metadata.recipientEmail || metadata.email || null,
+  phone: reqBody.recipientPhone || metadata.recipientPhone || metadata.phone || null,
+});
 
 // @desc    Create notification (internal)
 // @route   POST /notifications
 // @access  Internal only
 const createNotification = async (req, res, next) => {
   try {
-    const { userId, type, title, message, metadata } = req.body;
+    const {
+      userId,
+      type,
+      title,
+      message,
+      metadata = {},
+      channels: rawChannels,
+    } = req.body;
+
+    const channels = normalizeChannels(rawChannels);
+    const recipients = getRecipientDetails(req.body, metadata);
 
     if (!userId || !type || !title || !message) {
       return res.status(400).json({
@@ -17,18 +71,164 @@ const createNotification = async (req, res, next) => {
       });
     }
 
+    if (channels.email && !recipients.email) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Please provide recipientEmail for email notifications',
+        },
+      });
+    }
+
+    if (channels.sms && !recipients.phone) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Please provide recipientPhone for SMS notifications',
+        },
+      });
+    }
+
     const notification = await Notification.create({
       userId,
       type,
       title,
       message,
       metadata: metadata || {},
+      channels,
       status: 'queued',
+      deliveryStatus: {
+        inApp: {
+          status: 'sent',
+          sentAt: new Date(),
+          error: null,
+        },
+        email: {
+          status: 'queued',
+          sentAt: null,
+          error: null,
+        },
+        sms: {
+          status: 'queued',
+          sentAt: null,
+          error: null,
+        },
+        overall: 'queued',
+      },
     });
+
+    const deliveryTasks = [];
+
+    if (channels.email) {
+      deliveryTasks.push(
+        sendEmailNotification({
+          to: recipients.email,
+          subject: title,
+          text: message,
+          metadata,
+        })
+      );
+    }
+
+    if (channels.sms) {
+      deliveryTasks.push(
+        sendSmsNotification({
+          to: recipients.phone,
+          body: `${title}\n${message}`,
+        })
+      );
+    }
+
+    const deliveryResults = await Promise.allSettled(deliveryTasks);
+    let resultIndex = 0;
+    let hadFailure = false;
+    let hadExternalSuccess = false;
+
+    const updatedDeliveryStatus = {
+      inApp: {
+        status: 'sent',
+        sentAt: new Date(),
+        error: null,
+      },
+      email: {
+        status: 'queued',
+        sentAt: null,
+        error: null,
+      },
+      sms: {
+        status: 'queued',
+        sentAt: null,
+        error: null,
+      },
+      overall: 'sent',
+    };
+
+    if (channels.email) {
+      const emailResult = deliveryResults[resultIndex];
+      resultIndex += 1;
+
+      if (emailResult?.status === 'fulfilled') {
+        updatedDeliveryStatus.email = {
+          status: 'sent',
+          sentAt: new Date(),
+          error: null,
+        };
+        hadExternalSuccess = true;
+      } else {
+        updatedDeliveryStatus.email = {
+          status: 'failed',
+          sentAt: null,
+          error: emailResult?.reason?.message || 'Email delivery failed',
+        };
+        hadFailure = true;
+      }
+    }
+
+    if (channels.sms) {
+      const smsResult = deliveryResults[resultIndex];
+      resultIndex += 1;
+
+      if (smsResult?.status === 'fulfilled') {
+        updatedDeliveryStatus.sms = {
+          status: 'sent',
+          sentAt: new Date(),
+          error: null,
+        };
+        hadExternalSuccess = true;
+      } else {
+        updatedDeliveryStatus.sms = {
+          status: 'failed',
+          sentAt: null,
+          error: smsResult?.reason?.message || 'SMS delivery failed',
+        };
+        hadFailure = true;
+      }
+    }
+
+    if (hadFailure) {
+      updatedDeliveryStatus.overall = hadExternalSuccess ? 'partial' : 'partial';
+    }
+
+    let persistedNotification = notification;
+
+    try {
+      persistedNotification = await Notification.findByIdAndUpdate(
+        notification._id,
+        {
+          status: updatedDeliveryStatus.overall,
+          deliveryStatus: updatedDeliveryStatus,
+        },
+        { new: true }
+      );
+    } catch (updateError) {
+      console.error('Failed to update notification delivery status:', updateError);
+    }
 
     return res.status(201).json({
       success: true,
-      data: notification,
+      data: persistedNotification,
       message: 'Notification created successfully',
     });
   } catch (error) {

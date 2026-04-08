@@ -258,10 +258,10 @@ Purpose: Track all appointment states.
 7. Shared UI polish and responsive behavior
 
 ## 8. Recommended MVP Priority
-### Phase 1
-- Home
-- Login
-- Register
+### Phase 
+- Home (done)
+- Login (done)
+- Register (done)
 - Patient dashboard
 - Doctor list/details
 - Book appointment
@@ -272,7 +272,7 @@ Purpose: Track all appointment states.
 - Appointment management
 - Consultation session
 - Profile
-- 403 / 404
+- 403 / 404 (done)
 
 ### Phase 2
 - Medical reports

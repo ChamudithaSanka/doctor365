@@ -4,7 +4,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import AppShell from './layouts/AppShell'
 import PatientDashboard from './pages/patient/PatientDashboard'
+import Doctors from './pages/patient/Doctors'
+import DoctorDetails from './pages/patient/DoctorDetails'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
+import AdminDoctors from './pages/admin/AdminDoctors'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
 import NotFound from './pages/shared/NotFound'
@@ -19,9 +22,11 @@ function App() {
         <Route element={<AppShell />}>
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctors" element={<Doctors />} />
+          <Route path="/doctors/:id" element={<DoctorDetails />} />
           <Route
-            path="/doctors"
-            element={<ComingSoon title="Doctors" description="Browse and search doctors from this section." />}
+            path="/appointments/book"
+            element={<ComingSoon title="Book Appointment" description="Booking flow will be available here." />}
           />
           <Route
             path="/appointments"
@@ -47,7 +52,8 @@ function App() {
             path="/consultation"
             element={<ComingSoon title="Consultations" description="Start or manage telemedicine sessions here." />}
           />
-          <Route path="/admin/dashboard" element={<Navigate to="/403" replace />} />
+          <Route path="/admin/dashboard" element={<Navigate to="/admin/doctors" replace />} />
+          <Route path="/admin/doctors" element={<AdminDoctors />} />
         </Route>
         <Route path="/403" element={<AccessDenied />} />
         <Route path="*" element={<NotFound />} />

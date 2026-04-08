@@ -44,6 +44,22 @@ const appointmentSchema = new mongoose.Schema(
       trim: true,
       maxlength: [1000, 'Notes cannot exceed 1000 characters'],
     },
+    patientEmail: {
+      type: String,
+      default: null,
+    },
+    patientPhone: {
+      type: String,
+      default: null,
+    },
+    doctorEmail: {
+      type: String,
+      default: null,
+    },
+    reminderSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

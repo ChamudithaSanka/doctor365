@@ -17,6 +17,9 @@ const navigationByRole = {
     { label: 'Notifications', to: '/notifications' },
     { label: 'Profile', to: '/profile' },
   ],
+  admin: [
+    { label: 'Doctor setup', to: '/admin/doctors' },
+  ],
 }
 
 function readAuthUser() {
@@ -63,7 +66,7 @@ export default function AppShell() {
         <div className="border-b border-slate-200 px-6 py-6">
           <Link to="/" className="block">
             <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-            <p className="text-sm text-slate-500">{role === 'doctor' ? 'Doctor workspace' : 'Patient workspace'}</p>
+            <p className="text-sm text-slate-500">{role === 'doctor' ? 'Doctor workspace' : role === 'admin' ? 'Admin workspace' : 'Patient workspace'}</p>
           </Link>
         </div>
 
@@ -103,7 +106,7 @@ export default function AppShell() {
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <Link to="/" className="block" onClick={() => setMobileOpen(false)}>
                 <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-                <p className="text-xs text-slate-500">{role === 'doctor' ? 'Doctor workspace' : 'Patient workspace'}</p>
+                <p className="text-xs text-slate-500">{role === 'doctor' ? 'Doctor workspace' : role === 'admin' ? 'Admin workspace' : 'Patient workspace'}</p>
               </Link>
               <button type="button" className="rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600" onClick={() => setMobileOpen(false)}>
                 Close

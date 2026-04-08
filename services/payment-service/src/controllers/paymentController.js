@@ -1,4 +1,6 @@
 const Payment = require('../models/Payment');
+const { getPatientPhone } = require('../utils/contactLookup');
+const { sendInternalNotification } = require('../utils/notificationClient');
 const {
   formatAmount,
   generateCheckoutHash,
@@ -12,6 +14,40 @@ const generateOrderId = () => {
     .toString()
     .padStart(6, '0');
   return `PH-${Date.now()}-${random}`;
+};
+
+const notifyPaymentResult = async ({ payment, status }) => {
+  const isSuccess = status === 'paid';
+  const contact = payment.customerEmail || payment.customerPhone
+    ? {
+        email: payment.customerEmail,
+        phone: payment.customerPhone,
+      }
+    : null;
+
+  await sendInternalNotification({
+    userId: payment.patientId,
+    type: isSuccess ? 'payment.paid' : 'payment.failed',
+    title: isSuccess ? 'Payment successful' : 'Payment failed',
+    message: isSuccess
+      ? `Your payment of ${payment.currency} ${payment.amount} for appointment ${payment.appointmentId} was successful.`
+      : `Your payment of ${payment.currency} ${payment.amount} for appointment ${payment.appointmentId} failed.`,
+    recipientEmail: contact?.email || undefined,
+    recipientPhone: contact?.phone || undefined,
+    channels: {
+      inApp: true,
+      email: Boolean(contact?.email),
+      sms: Boolean(contact?.phone),
+    },
+    metadata: {
+      paymentId: payment._id,
+      appointmentId: payment.appointmentId,
+      orderId: payment.orderId,
+      status,
+      amount: payment.amount,
+      currency: payment.currency,
+    },
+  });
 };
 
 // @desc    Initialize PayHere checkout
@@ -96,6 +132,8 @@ const initiatePayHereCheckout = async (req, res, next) => {
       paymentMethod: 'payhere',
       transactionId: generatedOrderId,
       status: 'pending',
+      customerEmail: email,
+      customerPhone: phone,
       metadata: {
         ...(metadata || {}),
         payhere: {
@@ -212,7 +250,12 @@ const handlePayHereNotify = async (req, res, next) => {
     const mappedStatus = mapPayHereStatusCode(statusCode);
 
     if (!(payment.status === 'paid' && (mappedStatus === 'pending' || mappedStatus === 'failed'))) {
+      const previousStatus = payment.status;
       payment.status = mappedStatus;
+
+      if (mappedStatus !== previousStatus && (mappedStatus === 'paid' || mappedStatus === 'failed')) {
+        await notifyPaymentResult({ payment, status: mappedStatus });
+      }
     }
 
     if (mappedStatus === 'paid' && !payment.paidAt) {
@@ -272,6 +315,8 @@ const createPayment = async (req, res, next) => {
       currency: currency || 'USD',
       paymentMethod,
       transactionId,
+      customerEmail: req.user.email || null,
+      customerPhone: await getPatientPhone(req.headers.authorization),
       metadata: metadata || {},
       status: 'pending',
     });
@@ -401,6 +446,10 @@ const updatePaymentStatus = async (req, res, next) => {
     }
 
     await payment.save();
+
+    if (status === 'paid' || status === 'failed') {
+      await notifyPaymentResult({ payment, status });
+    }
 
     return res.status(200).json({
       success: true,
