@@ -10,6 +10,12 @@ const initialFormState = {
   email: '',
   password: '',
   role: 'patient',
+  dateOfBirth: '',
+  gender: '',
+  phone: '',
+  address: '',
+  emergencyContact: '',
+  medicalHistorySummary: '',
 }
 
 export default function Register() {
@@ -41,9 +47,15 @@ export default function Register() {
 
       navigate('/')
     } catch (err) {
+      const details = err?.response?.data?.error?.details
+      const detailsMessage = Array.isArray(details) && details.length > 0
+        ? ` (${details.map((item) => `${item.field}: ${item.message}`).join(', ')})`
+        : ''
+
       setError(
-        err?.response?.data?.error?.message ||
+        `${err?.response?.data?.error?.message ||
           'Unable to register right now. Please check the form and try again.'
+        }${detailsMessage}`
       )
     } finally {
       setLoading(false)
@@ -176,6 +188,114 @@ export default function Register() {
                   <option value="doctor">Doctor</option>
                 </select>
               </div>
+
+              {formData.role === 'patient' ? (
+                <>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="dateOfBirth" className="block text-sm font-medium text-slate-700">
+                        Date of birth
+                      </label>
+                      <input
+                        id="dateOfBirth"
+                        name="dateOfBirth"
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
+                        Gender
+                      </label>
+                      <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      >
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+                        Phone
+                      </label>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="07XXXXXXXX"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="emergencyContact" className="block text-sm font-medium text-slate-700">
+                        Emergency contact
+                      </label>
+                      <input
+                        id="emergencyContact"
+                        name="emergencyContact"
+                        type="tel"
+                        placeholder="07XXXXXXXX"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={formData.emergencyContact}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-slate-700">
+                      Address
+                    </label>
+                    <input
+                      id="address"
+                      name="address"
+                      type="text"
+                      placeholder="Street, city"
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="medicalHistorySummary" className="block text-sm font-medium text-slate-700">
+                      Medical history summary (optional)
+                    </label>
+                    <textarea
+                      id="medicalHistorySummary"
+                      name="medicalHistorySummary"
+                      rows={3}
+                      placeholder="Any important conditions or notes"
+                      value={formData.medicalHistorySummary}
+                      onChange={handleChange}
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </>
+              ) : null}
 
               <button
                 type="submit"

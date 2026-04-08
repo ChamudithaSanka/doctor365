@@ -36,7 +36,7 @@ const patientValidation = [
   body('firstName').notEmpty().withMessage('First name is required'),
   body('lastName').notEmpty().withMessage('Last name is required'),
   body('dateOfBirth').isISO8601().withMessage('Please provide a valid date of birth'),
-  body('gender').isIn(['male', 'female', 'other']).withMessage('Invalid gender'),
+  body('gender').isIn(['male', 'female']).withMessage('Invalid gender'),
   body('phone').matches(/^(\+94|0)?[7-9]\d{8}$/).withMessage('Please provide a valid Sri Lankan phone number'),
   body('address').notEmpty().withMessage('Address is required'),
   body('emergencyContact').matches(/^(\+94|0)?[7-9]\d{8}$/).withMessage('Please provide a valid emergency contact number'),
