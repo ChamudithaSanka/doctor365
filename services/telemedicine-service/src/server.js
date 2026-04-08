@@ -3,9 +3,6 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const connectDB = require("./config/db");
-const telemedicineRoutes = require("./routes/telemedicineRoutes");
-const errorMiddleware = require("./middleware/errorMiddleware");
-const jitsiUtils = require("./utils/jitsiUtils");
 
 dotenv.config();
 
@@ -17,11 +14,9 @@ app.use(express.json());
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-  const jitsiConfig = jitsiUtils.getConfig();
   res.status(200).json({
     status: "ok",
     service: process.env.SERVICE_NAME || "telemedicine-service",
-    jitsi: jitsiConfig,
   });
 });
 
@@ -65,30 +60,14 @@ app.post("/generate-token", (req, res) => {
   }
 });
 
-// Routes
-app.use("/telemedicine", telemedicineRoutes);
-
-// Error handling middleware (must be last)
-app.use(errorMiddleware);
-
 const PORT = process.env.PORT || 5005;
 
 async function startServer() {
   try {
     await connectDB();
 
-    // Log Jitsi configuration on startup
-    const jitsiConfig = jitsiUtils.getConfig();
-    console.log(`\n📞 JITSI CONFIGURATION:`);
-    console.log(`   Mode: ${jitsiConfig.mode || 'N/A'}`);
-    console.log(`   Domain: ${jitsiConfig.domain || 'N/A'}`);
-    console.log(`   JWT Enabled: ${jitsiConfig.jwtEnabled || false}`);
-    console.log(`   App ID: ${jitsiConfig.appId ? '✓ Configured' : 'Not configured'}`);
-    console.log(`   App Secret: ${jitsiConfig.appSecret ? '✓ Configured' : 'Not configured'}\n`);
-
     app.listen(PORT, () => {
       console.log(`${process.env.SERVICE_NAME || "telemedicine-service"} running on port ${PORT}`);
-      console.log(`🎥 Ready to create SECURE Jitsi meetings with JWT authentication ✨`);
       console.log(`🔑 Test token generation: POST /generate-token (development only)\n`);
     });
   } catch (error) {
