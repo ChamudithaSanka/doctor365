@@ -32,10 +32,10 @@ Use for patient, doctor, and admin areas.
 - `/patient/dashboard` - Patient dashboard
 - `/doctors` - Doctor list and search
 - `/doctors/:id` - Doctor details
-- `/appointments/book` - Book appointment
+- `/appointments/book` - Booking form page
 - `/appointments` - My appointments
 - `/appointments/:id` - Appointment detail
-- `/payments/:appointmentId` - Payment status
+- `/payments/:appointmentId` - Checkout / payment page (PayHere)
 - `/notifications` - Notifications
 - `/profile` - Profile
 - `/reports` - Medical reports
@@ -45,18 +45,17 @@ Use for patient, doctor, and admin areas.
 
 ## 2.3 Doctor Pages
 - `/doctor/dashboard` - Doctor dashboard
-- `/doctor/appointments` - Appointment management
-- `/doctor/profile` - Doctor profile and availability manager
+- `/doctor/appointments` - View appointments
+- `/doctor/profile` - Combined doctor profile and availability manager
 - `/doctor/reports` - Patient reports review
 - `/doctor/prescriptions/new` - Prescription issuing page
 - `/consultation/:appointmentId` - Telemedicine session page
 - `/notifications` - Notifications
-- `/profile` - Profile
 
 ## 2.4 Admin Pages
 - `/admin/dashboard` - Admin dashboard
+- `/admin/doctors` - Create doctor accounts and profiles
 - `/admin/users` - User management
-- `/admin/doctor-verification` - Doctor verification
 - `/admin/transactions` - Transactions and payments monitoring
 - `/admin/notifications` - Notifications center
 - `/admin/payment-results` - Payment result page
@@ -76,23 +75,26 @@ Purpose: Show a single doctor profile.
 - Book appointment CTA
 
 ### 3.3 Book Appointment
-Purpose: Create a new appointment.
+Purpose: Create a new appointment and move to payment.
 - Doctor selection
-- Date and time selection
+- Date and time selection from available slots
 - Reason input
-- Submit booking
+- Show doctor details and editable booking summary
+- Proceed to checkout / payment after booking
 
 ### 3.4 My Appointments
 Purpose: View current and past appointments.
 - Upcoming appointments
 - Past appointments
 - Cancel / reschedule actions where allowed
+- Shows booked, paid, completed, and cancelled states
 
 ### 3.5 Payment Status
 Purpose: Show payment state for an appointment.
 - Pending / success / failed states
 - Reference and amount
 - Retry payment action if needed
+- Checkout via PayHere before the appointment becomes upcoming
 
 ### 3.6 Notifications
 Purpose: Show patient alerts.
@@ -103,9 +105,6 @@ Purpose: Show patient alerts.
 
 ### 3.7 Profile
 Purpose: View and edit patient profile.
-- Basic personal details
-- Contact details
-- Emergency contact
 
 ### 3.8 Medical Reports
 Purpose: Manage uploaded reports.
@@ -129,7 +128,7 @@ Purpose: Full appointment timeline page.
 - Booking details
 - Payment details
 - Consultation access
-- Status timeline
+- Status
 
 ### 3.12 Telemedicine Session
 Purpose: Join the consultation session.
@@ -142,14 +141,15 @@ Purpose: Join the consultation session.
 ### 4.1 Dashboard
 Purpose: Overview of workload.
 - Today appointments
-- Pending requests
 - Active consultations
 - Quick stats
+- View-only schedule overview
 
 ### 4.2 Appointments
-Purpose: Manage patient bookings.
-- Accept / reject / update status
+Purpose: View patient bookings.
 - View appointment details
+- Review schedule and status
+- No accept / reject workflow
 
 ### 4.3 Consultation Session
 Purpose: Run telemedicine session.
@@ -165,23 +165,16 @@ Purpose: Read system and patient updates.
 - Status updates
 
 ### 4.5 Profile
-Purpose: View doctor profile.
-- Basic profile data
-- Specialization
-- Consultation fee
+two sections:
+- Personal Info: view/edit basic profile data
+- Availability / Consultation Settings: edit fee and other info
 
-### 4.6 Doctor Profile and Availability Manager
-Purpose: Manage doctor schedule.
-- Edit availability slots
-- Set schedule by day/time
-- Update consultation fee and clinic details
-
-### 4.7 Patient Reports Review
+### 4.6 Patient Reports Review
 Purpose: Review uploaded patient reports.
 - List reports by patient
-- Open, download, or inspect report files
+- Open, download
 
-### 4.8 Prescription Issuing Page
+### 4.7 Prescription Issuing Page
 Purpose: Create digital prescription.
 - Patient info
 - Medication form
@@ -192,47 +185,30 @@ Purpose: Create digital prescription.
 
 ### 5.1 Admin Dashboard
 Purpose: Platform overview.
-- KPIs
+- stat cards
 - User counts
 - Appointment counts
-- Revenue / payment summaries
 
 ### 5.2 User Management
 Purpose: Manage all users.
 - Patients
 - Doctors
 - Admins
-- Search and status controls
 
-### 5.3 Doctor Verification
-Purpose: Approve or reject doctor accounts.
-- Verification status
-- License review actions
+### 5.3 Doctor Creation
+Purpose: Admin creates doctor accounts and links profiles.
+- Create auth user first
+- Create doctor profile with userId
+- Set verified status on create
 
-### 5.4 Transactions and Payments Monitoring
-Purpose: Track payment activity.
-- Transaction list
-- Success / failed / pending breakdown
+### 5.4 Notifications Center
+Purpose: Show all notifications.
 
-### 5.5 Notifications Center
-Purpose: Monitor platform notifications.
-- Delivery status
-- Read status
-- Notification history
+### 5.5 Payments Page
+Purpose: Show all payments.
 
-### 5.6 Payment Result Page
-Purpose: Show payment outcome.
-- Success
-- Failed
-- Pending
-- Retry or return actions
-
-### 5.7 Appointment Status Tracking
-Purpose: Track all appointment states.
-- Pending
-- Accepted
-- Completed
-- Cancelled
+### 5.6 Appointments Page
+Purpose: Show all payments.
 
 ## 6. Shared Components
 - Responsive header
@@ -264,12 +240,13 @@ Purpose: Track all appointment states.
 - Register (done)
 - Patient dashboard
 - Doctor list/details
-- Book appointment
+- Booking form
+- Checkout / payment
 - My appointments
 - Payment status
 - Notifications
 - Doctor dashboard
-- Appointment management
+- Appointment viewing
 - Consultation session
 - Profile
 - 403 / 404 (done)
@@ -278,14 +255,14 @@ Purpose: Track all appointment states.
 - Medical reports
 - Medical history
 - Prescriptions
-- Doctor profile and availability manager
+- Combined doctor profile and availability manager
 - Patient reports review
 - Prescription issuing
 
 ### Phase 3
 - Admin dashboard
 - User management
-- Doctor verification
+- Doctor creation
 - Transactions monitoring
 - Notifications center
 - Payment result page
@@ -298,4 +275,4 @@ The frontend is considered complete when:
 - Each role lands in the correct shell and page set
 - All main flows can be reached through navigation
 - Placeholder pages are replaced with functional UI
-- API integration is wired for auth, appointments, notifications, and payments
+- API integration is wired for auth, appointments, notifications, payments, and admin doctor creation
