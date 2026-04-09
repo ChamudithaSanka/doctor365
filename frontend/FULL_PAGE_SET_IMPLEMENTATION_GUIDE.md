@@ -56,9 +56,8 @@ Use for patient, doctor, and admin areas.
 - `/admin/dashboard` - Admin dashboard
 - `/admin/doctors` - Create doctor accounts and profiles
 - `/admin/users` - User management
-- `/admin/transactions` - Transactions and payments monitoring
+- `/admin/transactions` - Transactions page
 - `/admin/notifications` - Notifications center
-- `/admin/payment-results` - Payment result page
 - `/admin/appointments` - Appointment status tracking
 
 ## 3. Patient Page Requirements
@@ -204,7 +203,7 @@ Purpose: Admin creates doctor accounts and links profiles.
 ### 5.4 Notifications Center
 Purpose: Show all notifications.
 
-### 5.5 Payments Page
+### 5.5 Transactions Page
 Purpose: Show all payments.
 
 ### 5.6 Appointments Page
