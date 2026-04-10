@@ -1,13 +1,25 @@
-# Telemedicine Service
+# Telemedicine Service - Doctor365
 
-## Purpose
-The Telemedicine Service manages secure video consultation sessions using **Jitsi Meet**. It handles session lifecycle (create, start, end) with JWT-based authentication and role-based access control.
+## Overview
+
+The Telemedicine Service manages secure online consultation sessions between doctors and patients using **Zoom Cloud Meetings**. It handles session creation, lifecycle management (scheduled → active → ended), and integration with the appointment service.
+
+## Features
+
+✅ **Real Zoom Integration** - OAuth 2.0 Server-to-Server authentication
+✅ **Secure Meeting Links** - Auto-generated with password protection
+✅ **Doctor Notes & Prescriptions** - Save consultation details
+✅ **Patient Feedback** - 1-5 star ratings post-consultation
+✅ **Recording Support** - Auto-fetch Zoom cloud recordings
+✅ **Role-Based Access** - Doctor, Patient, Admin controls
+✅ **Cross-Service Integration** - Validates appointment/doctor/patient data
+✅ **Full Session Lifecycle** - Track participation timing and status
 
 ## Quick Start
 
 ```bash
 npm install
-cp .env.example .env          # Configure your environment
+npm run dev          # Start with auto-reload
 npm run dev                   # Start in development mode
 ```
 

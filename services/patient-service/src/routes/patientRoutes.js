@@ -35,11 +35,14 @@ router.route('/')
 const patientValidation = [
   body('firstName').notEmpty().withMessage('First name is required'),
   body('lastName').notEmpty().withMessage('Last name is required'),
-  body('dateOfBirth').isISO8601().withMessage('Please provide a valid date of birth'),
-  body('gender').isIn(['male', 'female']).withMessage('Invalid gender'),
-  body('phone').matches(/^(\+94|0)?[7-9]\d{8}$/).withMessage('Please provide a valid Sri Lankan phone number'),
+  body('dateOfBirth').isISO8601().withMessage('Please provide a valid date of birth (YYYY-MM-DD)'),
+  body('gender')
+    .notEmpty().withMessage('Gender is required')
+    .customSanitizer(value => String(value || '').toLowerCase())
+    .isIn(['male', 'female']).withMessage('Gender must be male or female'),
+  body('phone').matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).withMessage('Please provide a valid phone number'),
   body('address').notEmpty().withMessage('Address is required'),
-  body('emergencyContact').matches(/^(\+94|0)?[7-9]\d{8}$/).withMessage('Please provide a valid emergency contact number'),
+  body('emergencyContact').matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).withMessage('Please provide a valid emergency contact number'),
   validate
 ];
 
