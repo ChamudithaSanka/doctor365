@@ -11,7 +11,9 @@ services:
       - mongo_data:/data/db
 
   auth-service:
-    build: ./services/auth-service
+    build:
+      context: .
+      dockerfile: ./services/auth-service/Dockerfile
     container_name: doctor365-auth-service
     restart: unless-stopped
     env_file:
