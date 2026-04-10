@@ -8,7 +8,6 @@ dotenv.config();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
@@ -44,9 +43,8 @@ const proxyConfig = {
 app.use(
   "/api/auth",
   createProxyMiddleware({
-    target: services.auth,
+    target: `${services.auth}/auth`,
     changeOrigin: true,
-    pathRewrite: { "^/api/auth": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );
@@ -54,9 +52,8 @@ app.use(
 app.use(
   "/api/patients",
   createProxyMiddleware({
-    target: services.patient,
+    target: `${services.patient}/api/patients`,
     changeOrigin: true,
-    pathRewrite: { "^/api/patients": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );
@@ -64,9 +61,8 @@ app.use(
 app.use(
   "/api/doctors",
   createProxyMiddleware({
-    target: services.doctor,
+    target: `${services.doctor}/api/doctors`,
     changeOrigin: true,
-    pathRewrite: { "^/api/doctors": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );
@@ -74,9 +70,8 @@ app.use(
 app.use(
   "/api/appointments",
   createProxyMiddleware({
-    target: services.appointment,
+    target: `${services.appointment}/api/appointments`,
     changeOrigin: true,
-    pathRewrite: { "^/api/appointments": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );
@@ -84,9 +79,8 @@ app.use(
 app.use(
   "/api/telemedicine",
   createProxyMiddleware({
-    target: services.telemedicine,
+    target: `${services.telemedicine}/telemedicine`,
     changeOrigin: true,
-    pathRewrite: { "^/api/telemedicine": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );
@@ -94,9 +88,8 @@ app.use(
 app.use(
   "/api/payments",
   createProxyMiddleware({
-    target: services.payment,
+    target: `${services.payment}/payments`,
     changeOrigin: true,
-    pathRewrite: { "^/api/payments": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );
@@ -104,9 +97,8 @@ app.use(
 app.use(
   "/api/notifications",
   createProxyMiddleware({
-    target: services.notification,
+    target: `${services.notification}/notifications`,
     changeOrigin: true,
-    pathRewrite: { "^/api/notifications": "" },
     onProxyReq: proxyConfig.onProxyReq,
   })
 );

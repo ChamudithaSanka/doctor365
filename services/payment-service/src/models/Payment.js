@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema(
   {
+    orderId: {
+      type: String,
+      required: [true, 'Order ID is required'],
+      unique: true,
+      index: true,
+    },
     appointmentId: {
       type: String,
       required: [true, 'Appointment ID is required'],
@@ -27,8 +33,8 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Payment method is required'],
       enum: {
-        values: ['credit_card', 'debit_card', 'bank_transfer', 'wallet'],
-        message: 'Payment method must be one of: credit_card, debit_card, bank_transfer, wallet',
+        values: ['credit_card', 'debit_card', 'bank_transfer', 'wallet', 'payhere'],
+        message: 'Payment method must be one of: credit_card, debit_card, bank_transfer, wallet, payhere',
       },
     },
     transactionId: {
@@ -51,6 +57,14 @@ const paymentSchema = new mongoose.Schema(
     metadata: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
+    },
+    customerEmail: {
+      type: String,
+      default: null,
+    },
+    customerPhone: {
+      type: String,
+      default: null,
     },
   },
   {

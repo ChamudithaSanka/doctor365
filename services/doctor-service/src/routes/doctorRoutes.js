@@ -15,6 +15,7 @@ router.get('/me', restrictTo('doctor'), doctorController.getMe);
 router.put('/me', restrictTo('doctor'), doctorController.updateMe);
 
 // Protected routes (Admin only)
+router.post('/admin', verifyToken, restrictTo('admin'), doctorController.createDoctor);
 router.patch('/:id/verify', restrictTo('admin'), doctorController.verifyDoctor);
 
 module.exports = router;

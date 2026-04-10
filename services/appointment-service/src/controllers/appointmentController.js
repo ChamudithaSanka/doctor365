@@ -1,5 +1,49 @@
 const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
+const { getPatientPhone, getUserContact } = require('../utils/contactLookup');
+const { sendInternalNotification } = require('../utils/notificationClient');
+
+const doctorServiceBaseUrl = process.env.DOCTOR_SERVICE_URL || 'http://localhost:5003';
+
+const parseTimeToMinutes = (timeValue) => {
+  const [hours, minutes] = String(timeValue || '').split(':').map((value) => Number(value));
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const fetchDoctorProfile = async (doctorId) => {
+  try {
+    const response = await fetch(`${doctorServiceBaseUrl}/api/doctors/${doctorId}`);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data?.data || null;
+  } catch {
+    return null;
+  }
+};
+
+const getAppointmentDateTime = (appointmentDate, appointmentTime) => {
+  if (!appointmentDate || !appointmentTime) {
+    return null;
+  }
+
+  const date = new Date(appointmentDate);
+  const [hours, minutes] = String(appointmentTime).split(':').map((value) => Number(value));
+
+  if (Number.isNaN(date.getTime()) || Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+};
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
@@ -19,6 +63,65 @@ exports.createAppointment = async (req, res, next) => {
       });
     }
 
+    const doctor = await fetchDoctorProfile(doctorId);
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Doctor not found',
+        },
+      });
+    }
+
+    const requestedMinutes = parseTimeToMinutes(appointmentTime);
+    const startMinutes = parseTimeToMinutes(doctor.availabilityStartTime || '08:00');
+    const endMinutes = parseTimeToMinutes(doctor.availabilityEndTime || '17:00');
+    const slotMinutes = Number(doctor.slotMinutes || 30);
+
+    if (
+      requestedMinutes === null ||
+      startMinutes === null ||
+      endMinutes === null ||
+      requestedMinutes < startMinutes ||
+      requestedMinutes >= endMinutes
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TIME',
+          message: `Doctor is available between ${doctor.availabilityStartTime || '08:00'} and ${doctor.availabilityEndTime || '17:00'}`,
+        },
+      });
+    }
+
+    if (((requestedMinutes - startMinutes) % slotMinutes) !== 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SLOT',
+          message: `Please choose a ${slotMinutes}-minute slot starting from ${doctor.availabilityStartTime || '08:00'}`,
+        },
+      });
+    }
+
+    const existingAppointment = await Appointment.findOne({
+      doctorId,
+      appointmentDate: new Date(appointmentDate),
+      appointmentTime,
+      status: { $ne: 'cancelled' },
+    });
+
+    if (existingAppointment) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'SLOT_TAKEN',
+          message: 'That time slot is already booked. Please choose the next available slot.',
+        },
+      });
+    }
+
     // Create appointment
     const appointment = new Appointment({
       patientId: req.user.userId,
@@ -30,7 +133,55 @@ exports.createAppointment = async (req, res, next) => {
       status: 'pending',
     });
 
+    const [patientPhone, doctorContact] = await Promise.all([
+      getPatientPhone(req.headers.authorization),
+      getUserContact(doctorId),
+    ]);
+
+    appointment.patientEmail = req.user.email || null;
+    appointment.patientPhone = patientPhone;
+    appointment.doctorEmail = doctorContact?.email || null;
+
     await appointment.save();
+
+    await sendInternalNotification({
+      userId: req.user.userId,
+      type: 'appointment.booked',
+      title: 'Appointment booked',
+      message: `Your appointment for ${appointmentDate} at ${appointmentTime} has been booked.`,
+      recipientEmail: appointment.patientEmail || undefined,
+      recipientPhone: appointment.patientPhone || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.patientEmail),
+        sms: Boolean(appointment.patientPhone),
+      },
+      metadata: {
+        appointmentId: appointment._id,
+        doctorId,
+        appointmentDate,
+        appointmentTime,
+      },
+    });
+
+    await sendInternalNotification({
+      userId: doctorId,
+      type: 'appointment.booked',
+      title: 'New appointment booked',
+      message: `A new appointment has been booked for ${appointmentDate} at ${appointmentTime}.`,
+      recipientEmail: appointment.doctorEmail || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.doctorEmail),
+        sms: false,
+      },
+      metadata: {
+        appointmentId: appointment._id,
+        patientId: req.user.userId,
+        appointmentDate,
+        appointmentTime,
+      },
+    });
 
     res.status(201).json({
       success: true,
@@ -166,8 +317,48 @@ exports.updateAppointmentStatus = async (req, res, next) => {
       });
     }
 
+    const previousStatus = appointment.status;
     appointment.status = status;
     await appointment.save();
+
+    if (status === 'cancelled' && previousStatus !== 'cancelled') {
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.cancelled',
+        title: 'Appointment cancelled',
+        message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+          status,
+        },
+      });
+
+      await sendInternalNotification({
+        userId: appointment.doctorId,
+        type: 'appointment.cancelled',
+        title: 'Appointment cancelled',
+        message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+        recipientEmail: appointment.doctorEmail || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.doctorEmail),
+          sms: false,
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId,
+          status,
+        },
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -213,6 +404,9 @@ exports.updateAppointment = async (req, res, next) => {
       });
     }
 
+    const previousAppointmentDate = appointment.appointmentDate;
+    const previousAppointmentTime = appointment.appointmentTime;
+
     if (appointmentDate) {
       appointment.appointmentDate = new Date(appointmentDate);
     }
@@ -226,7 +420,47 @@ exports.updateAppointment = async (req, res, next) => {
       appointment.notes = notes;
     }
 
+    const dateChanged = Boolean(appointmentDate) && new Date(appointmentDate).getTime() !== previousAppointmentDate.getTime();
+    const timeChanged = Boolean(appointmentTime) && appointmentTime !== previousAppointmentTime;
+
     await appointment.save();
+
+    if (dateChanged || timeChanged) {
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.rescheduled',
+        title: 'Appointment rescheduled',
+        message: `Your appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+        },
+      });
+
+      await sendInternalNotification({
+        userId: appointment.doctorId,
+        type: 'appointment.rescheduled',
+        title: 'Appointment rescheduled',
+        message: `An appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
+        recipientEmail: appointment.doctorEmail || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.doctorEmail),
+          sms: false,
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId,
+        },
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -271,6 +505,41 @@ exports.deleteAppointment = async (req, res, next) => {
     }
 
     await Appointment.findByIdAndDelete(req.params.id);
+
+    await sendInternalNotification({
+      userId: appointment.patientId,
+      type: 'appointment.cancelled',
+      title: 'Appointment cancelled',
+      message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+      recipientEmail: appointment.patientEmail || undefined,
+      recipientPhone: appointment.patientPhone || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.patientEmail),
+        sms: Boolean(appointment.patientPhone),
+      },
+      metadata: {
+        appointmentId: appointment._id,
+        doctorId: appointment.doctorId,
+      },
+    });
+
+    await sendInternalNotification({
+      userId: appointment.doctorId,
+      type: 'appointment.cancelled',
+      title: 'Appointment cancelled',
+      message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
+      recipientEmail: appointment.doctorEmail || undefined,
+      channels: {
+        inApp: true,
+        email: Boolean(appointment.doctorEmail),
+        sms: false,
+      },
+      metadata: {
+        appointmentId: appointment._id,
+        patientId: appointment.patientId,
+      },
+    });
 
     res.status(200).json({
       success: true,
