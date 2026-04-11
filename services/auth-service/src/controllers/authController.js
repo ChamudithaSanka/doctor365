@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { generateTokens, verifyRefreshToken } = require('../../shared/authUtils');
+const { generateTokens, verifyRefreshToken } = require('../../../../shared/authUtils');
 
 const patientServiceBaseUrl = process.env.PATIENT_SERVICE_URL || 'http://localhost:5002';
 
