@@ -14,55 +14,36 @@ const verifyToken = (req, res, next) => {
       });
     }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
-      next();
-    } catch (error) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'INVALID_TOKEN',
-          message: 'Invalid or expired token',
-        },
-      });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
   } catch (error) {
     return res.status(401).json({
       success: false,
       error: {
-        code: 'TOKEN_ERROR',
-        message: 'Error verifying token',
+        code: 'INVALID_TOKEN',
+        message: 'Invalid or expired token',
       },
     });
   }
 };
 
-// Role-based authorization middleware
-const authorizeRole = (...allowedRoles) => {
+const restrictTo = (...roles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'NOT_AUTHENTICATED',
-          message: 'User is not authenticated',
-        },
-      });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: `This action requires one of these roles: ${allowedRoles.join(', ')}`,
+          message: 'You do not have permission to perform this action',
         },
       });
     }
-
     next();
   };
 };
 
-module.exports = { verifyToken, authorizeRole };
+module.exports = {
+  verifyToken,
+  restrictTo,
+};

@@ -59,6 +59,7 @@ exports.register = async (req, res) => {
       password,
       firstName,
       lastName,
+      role,
       dateOfBirth,
       gender,
       phone,
@@ -67,47 +68,18 @@ exports.register = async (req, res) => {
       medicalHistorySummary,
     } = req.body;
 
-    const targetRole = 'patient';
-    const normalizedPatientPayload = normalizePatientPayload({
-      firstName,
-      lastName,
-      dateOfBirth,
-      gender,
-      phone,
-      address,
-      emergencyContact,
-      medicalHistorySummary,
-    });
+    // Validate role parameter
+    const targetRole = (role && (role === 'doctor' || role === 'patient')) ? role : 'patient';
 
-    // Validate input
+    // Validate basic input only
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Please provide all required fields',
+          message: 'Please provide all required fields: email, password, firstName, lastName',
         },
       });
-    }
-
-    if (targetRole === 'patient') {
-      const missingPatientFields = validatePatientRegistration({
-        dateOfBirth: normalizedPatientPayload.dateOfBirth,
-        gender: normalizedPatientPayload.gender,
-        phone: normalizedPatientPayload.phone,
-        address: normalizedPatientPayload.address,
-        emergencyContact: normalizedPatientPayload.emergencyContact,
-      });
-
-      if (missingPatientFields.length > 0) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: `Missing required patient fields: ${missingPatientFields.join(', ')}`,
-          },
-        });
-      }
     }
 
     // Check if user already exists
@@ -126,8 +98,8 @@ exports.register = async (req, res) => {
     const user = new User({
       email,
       password,
-      firstName: normalizedPatientPayload.firstName || firstName,
-      lastName: normalizedPatientPayload.lastName || lastName,
+      firstName,
+      lastName,
       role: targetRole,
     });
 
@@ -135,25 +107,6 @@ exports.register = async (req, res) => {
 
     // Generate tokens
     const { accessToken, refreshToken } = generateTokens(user._id, user.email, user.role);
-
-    if (targetRole === 'patient') {
-      try {
-        await createPatientProfile(accessToken, normalizedPatientPayload);
-      } catch (profileError) {
-        await User.findByIdAndDelete(user._id);
-
-        const statusCode = profileError.status >= 400 && profileError.status < 500 ? 400 : 502;
-
-        return res.status(statusCode).json({
-          success: false,
-          error: {
-            code: 'PATIENT_PROFILE_SETUP_FAILED',
-            message: `User was not created because patient profile setup failed: ${profileError.message}`,
-            details: profileError.details || [],
-          },
-        });
-      }
-    }
 
     // Save refresh token to database
     user.refreshToken = refreshToken;
