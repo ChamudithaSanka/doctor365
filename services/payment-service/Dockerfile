@@ -2,11 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY services/payment-service/package*.json ./
 RUN npm install
 
-COPY . .
+COPY services/payment-service/src ./src
+COPY shared /shared
 
-EXPOSE 5000
+EXPOSE 5006
 
 CMD ["node", "src/server.js"]

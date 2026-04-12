@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   mongo:
     image: mongo:7
@@ -24,7 +22,9 @@ services:
       - mongo
 
   patient-service:
-    build: ./services/patient-service
+    build:
+      context: .
+      dockerfile: ./services/patient-service/Dockerfile
     container_name: doctor365-patient-service
     restart: unless-stopped
     env_file:
@@ -35,7 +35,9 @@ services:
       - mongo
 
   doctor-service:
-    build: ./services/doctor-service
+    build:
+      context: .
+      dockerfile: ./services/doctor-service/Dockerfile
     container_name: doctor365-doctor-service
     restart: unless-stopped
     env_file:
@@ -46,7 +48,9 @@ services:
       - mongo
 
   appointment-service:
-    build: ./services/appointment-service
+    build:
+      context: .
+      dockerfile: ./services/appointment-service/Dockerfile
     container_name: doctor365-appointment-service
     restart: unless-stopped
     env_file:
@@ -57,7 +61,9 @@ services:
       - mongo
 
   telemedicine-service:
-    build: ./services/telemedicine-service
+    build:
+      context: .
+      dockerfile: ./services/telemedicine-service/Dockerfile
     container_name: doctor365-telemedicine-service
     restart: unless-stopped
     env_file:
@@ -68,7 +74,9 @@ services:
       - mongo
 
   payment-service:
-    build: ./services/payment-service
+    build:
+      context: .
+      dockerfile: ./services/payment-service/Dockerfile
     container_name: doctor365-payment-service
     restart: unless-stopped
     env_file:
@@ -79,7 +87,9 @@ services:
       - mongo
 
   notification-service:
-    build: ./services/notification-service
+    build:
+      context: .
+      dockerfile: ./services/notification-service/Dockerfile
     container_name: doctor365-notification-service
     restart: unless-stopped
     env_file:
