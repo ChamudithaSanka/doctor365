@@ -75,6 +75,7 @@ module.exports = {
   verifyAccessToken,
   verifyRefreshToken,
   verifyToken,
+  restrictTo,
 };
 
 /*
