@@ -1,14 +1,26 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 
-const authBaseUrl = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:5000/auth'
+const authBaseUrl = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:5000/api/auth'
 
 export default function Login() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [sessionExpired, setSessionExpired] = useState(false)
+
+  useEffect(() => {
+    // Check if redirected due to expired token
+    if (searchParams.get('expired') === 'true') {
+      setSessionExpired(true)
+      // Clear old token
+      localStorage.removeItem('doctor365_accessToken')
+      localStorage.removeItem('doctor365_refreshToken')
+    }
+  }, [searchParams])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -22,6 +34,7 @@ export default function Login() {
     event.preventDefault()
     setLoading(true)
     setError('')
+    setSessionExpired(false)
 
     try {
       const response = await axios.post(`${authBaseUrl}/login`, formData)
@@ -81,6 +94,13 @@ export default function Login() {
                 Use your registered email and password to continue.
               </p>
             </div>
+
+            {sessionExpired && (
+              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-100">
+                <p className="font-semibold">Session Expired</p>
+                <p className="mt-1">Your session has expired. Please log in again to continue.</p>
+              </div>
+            )}
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>

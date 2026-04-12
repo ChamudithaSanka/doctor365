@@ -6,8 +6,13 @@ import AppShell from './layouts/AppShell'
 import PatientDashboard from './pages/patient/PatientDashboard'
 import Doctors from './pages/patient/Doctors'
 import DoctorDetails from './pages/patient/DoctorDetails'
+import BookAppointment from './pages/patient/BookAppointment'
+import AppointmentList from './pages/patient/AppointmentList'
+import AppointmentDetail from './pages/patient/AppointmentDetail'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
+import DoctorAppointments from './pages/doctor/DoctorAppointments'
 import AdminDoctors from './pages/admin/AdminDoctors'
+import AdminAppointments from './pages/admin/AdminAppointments'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
 import NotFound from './pages/shared/NotFound'
@@ -24,14 +29,9 @@ function App() {
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/doctors/:id" element={<DoctorDetails />} />
-          <Route
-            path="/appointments/book"
-            element={<ComingSoon title="Book Appointment" description="Booking flow will be available here." />}
-          />
-          <Route
-            path="/appointments"
-            element={<ComingSoon title="Appointments" description="View your upcoming and past appointments." />}
-          />
+          <Route path="/appointments/book" element={<BookAppointment />} />
+          <Route path="/appointments/:id" element={<AppointmentDetail />} />
+          <Route path="/appointments" element={<AppointmentList />} />
           <Route
             path="/payments"
             element={<ComingSoon title="Payments" description="Track payment status and history here." />}
@@ -44,16 +44,14 @@ function App() {
             path="/profile"
             element={<ComingSoon title="Profile" description="Update your personal and account information." />}
           />
-          <Route
-            path="/doctor/appointments"
-            element={<ComingSoon title="Doctor Appointments" description="Review and respond to appointment requests." />}
-          />
+          <Route path="/doctor/appointments" element={<DoctorAppointments />} />
           <Route
             path="/consultation"
             element={<ComingSoon title="Consultations" description="Start or manage telemedicine sessions here." />}
           />
           <Route path="/admin/dashboard" element={<Navigate to="/admin/doctors" replace />} />
           <Route path="/admin/doctors" element={<AdminDoctors />} />
+          <Route path="/admin/appointments" element={<AdminAppointments />} />
         </Route>
         <Route path="/403" element={<AccessDenied />} />
         <Route path="*" element={<NotFound />} />
