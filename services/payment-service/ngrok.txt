@@ -1,0 +1,2 @@
+npx ngrok config add-authtoken 3BvhIwNWXA1GoC6EijTW93bMlkR_7d2roVEvfAxnDJXU9ELgX
+npx ngrok http 3000
