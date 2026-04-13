@@ -6,7 +6,7 @@ COPY services/auth-service/package*.json ./
 RUN npm install
 
 COPY services/auth-service/src ./src
-COPY shared /shared
+COPY shared /app/shared
 
 EXPOSE 5001
 
