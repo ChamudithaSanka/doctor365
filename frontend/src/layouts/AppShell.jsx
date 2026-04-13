@@ -18,7 +18,7 @@ const navigationByRole = {
     { label: 'Profile', to: '/profile' },
   ],
   admin: [
-    { label: 'Doctor setup', to: '/admin/doctors' },
+    { label: 'Doctor verification', to: '/admin/doctor-verification' },
     { label: 'Appointments', to: '/admin/appointments' },
   ],
 }

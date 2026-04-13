@@ -11,7 +11,7 @@ import AppointmentList from './pages/patient/AppointmentList'
 import AppointmentDetail from './pages/patient/AppointmentDetail'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import DoctorAppointments from './pages/doctor/DoctorAppointments'
-import AdminDoctors from './pages/admin/AdminDoctors'
+import AdminDoctorVerification from './pages/admin/AdminDoctorVerification'
 import AdminAppointments from './pages/admin/AdminAppointments'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
@@ -49,8 +49,8 @@ function App() {
             path="/consultation"
             element={<ComingSoon title="Consultations" description="Start or manage telemedicine sessions here." />}
           />
-          <Route path="/admin/dashboard" element={<Navigate to="/admin/doctors" replace />} />
-          <Route path="/admin/doctors" element={<AdminDoctors />} />
+          <Route path="/admin/dashboard" element={<Navigate to="/admin/doctor-verification" replace />} />
+          <Route path="/admin/doctor-verification" element={<AdminDoctorVerification />} />
           <Route path="/admin/appointments" element={<AdminAppointments />} />
         </Route>
         <Route path="/403" element={<AccessDenied />} />

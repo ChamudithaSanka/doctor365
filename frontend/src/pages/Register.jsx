@@ -5,6 +5,7 @@ import axios from 'axios'
 const authBaseUrl = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:5000/api/auth'
 
 const initialFormState = {
+  role: 'patient',
   firstName: '',
   lastName: '',
   email: '',
@@ -15,6 +16,14 @@ const initialFormState = {
   address: '',
   emergencyContact: '',
   medicalHistorySummary: '',
+  specialization: '',
+  licenseNumber: '',
+  yearsOfExperience: '',
+  consultationFee: '',
+  hospitalOrClinic: 'Online',
+  availabilityStartTime: '08:00',
+  availabilityEndTime: '17:00',
+  slotMinutes: '30',
 }
 
 export default function Register() {
@@ -39,7 +48,6 @@ export default function Register() {
     try {
       const response = await axios.post(`${authBaseUrl}/register`, {
         ...formData,
-        role: 'patient',
       })
       const { user, accessToken, refreshToken } = response.data.data
 
@@ -76,14 +84,14 @@ export default function Register() {
               Create your account and start managing care online.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-8 text-slate-600">
-              Register as a patient, then use the platform to book appointments, receive updates, and join consultations.
+              Register as a patient or doctor, then continue to your role workspace.
             </p>
           </div>
 
           <div className="grid max-w-xl gap-4 sm:grid-cols-3">
             {[
               { value: 'Quick', label: 'Easy signup' },
-              { value: 'Patient-first', label: 'Public signup' },
+              { value: 'Role-based', label: 'Patient and doctor' },
               { value: 'Secure', label: 'JWT auth' },
             ].map((item) => (
               <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -100,11 +108,27 @@ export default function Register() {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-green-700">Get started</p>
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">Create your Doctor365 account</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Fill in your details to register and continue into the platform.
+                Choose your role and fill in the required details.
               </p>
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-slate-700">
+                  Register as
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="patient">Patient</option>
+                  <option value="doctor">Doctor</option>
+                </select>
+              </div>
+
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
@@ -175,109 +199,243 @@ export default function Register() {
                 />
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-slate-700">
-                    Date of birth
-                  </label>
-                  <input
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                    required
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
-                </div>
+              {formData.role === 'patient' ? (
+                <>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="dateOfBirth" className="block text-sm font-medium text-slate-700">
+                        Date of birth
+                      </label>
+                      <input
+                        id="dateOfBirth"
+                        name="dateOfBirth"
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
-                    Gender
-                  </label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    required
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                </div>
-              </div>
+                    <div>
+                      <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
+                        Gender
+                      </label>
+                      <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      >
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                    </div>
+                  </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
-                    Phone
-                  </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="07XXXXXXXX"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
-                </div>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+                        Phone
+                      </label>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="07XXXXXXXX"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="emergencyContact" className="block text-sm font-medium text-slate-700">
-                    Emergency contact
-                  </label>
-                  <input
-                    id="emergencyContact"
-                    name="emergencyContact"
-                    type="tel"
-                    placeholder="07XXXXXXXX"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={formData.emergencyContact}
-                    onChange={handleChange}
-                    required
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
-                </div>
-              </div>
+                    <div>
+                      <label htmlFor="emergencyContact" className="block text-sm font-medium text-slate-700">
+                        Emergency contact
+                      </label>
+                      <input
+                        id="emergencyContact"
+                        name="emergencyContact"
+                        type="tel"
+                        placeholder="07XXXXXXXX"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={formData.emergencyContact}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-slate-700">
-                  Address
-                </label>
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  placeholder="Street, city"
-                  value={formData.address}
-                  onChange={handleChange}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                />
-              </div>
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-slate-700">
+                      Address
+                    </label>
+                    <input
+                      id="address"
+                      name="address"
+                      type="text"
+                      placeholder="Street, city"
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="medicalHistorySummary" className="block text-sm font-medium text-slate-700">
-                  Medical history summary (optional)
-                </label>
-                <textarea
-                  id="medicalHistorySummary"
-                  name="medicalHistorySummary"
-                  rows={3}
-                  placeholder="Any important conditions or notes"
-                  value={formData.medicalHistorySummary}
-                  onChange={handleChange}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                />
-              </div>
+                  <div>
+                    <label htmlFor="medicalHistorySummary" className="block text-sm font-medium text-slate-700">
+                      Medical history summary (optional)
+                    </label>
+                    <textarea
+                      id="medicalHistorySummary"
+                      name="medicalHistorySummary"
+                      rows={3}
+                      placeholder="Any important conditions or notes"
+                      value={formData.medicalHistorySummary}
+                      onChange={handleChange}
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="specialization" className="block text-sm font-medium text-slate-700">
+                        Specialization
+                      </label>
+                      <input
+                        id="specialization"
+                        name="specialization"
+                        type="text"
+                        value={formData.specialization}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="licenseNumber" className="block text-sm font-medium text-slate-700">
+                        License number
+                      </label>
+                      <input
+                        id="licenseNumber"
+                        name="licenseNumber"
+                        type="text"
+                        value={formData.licenseNumber}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-3">
+                    <div>
+                      <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-slate-700">
+                        Experience (years)
+                      </label>
+                      <input
+                        id="yearsOfExperience"
+                        name="yearsOfExperience"
+                        type="number"
+                        min="0"
+                        value={formData.yearsOfExperience}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="consultationFee" className="block text-sm font-medium text-slate-700">
+                        Consultation fee
+                      </label>
+                      <input
+                        id="consultationFee"
+                        name="consultationFee"
+                        type="number"
+                        min="0"
+                        value={formData.consultationFee}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="slotMinutes" className="block text-sm font-medium text-slate-700">
+                        Slot minutes
+                      </label>
+                      <input
+                        id="slotMinutes"
+                        name="slotMinutes"
+                        type="number"
+                        min="5"
+                        value={formData.slotMinutes}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="hospitalOrClinic" className="block text-sm font-medium text-slate-700">
+                      Hospital / Clinic
+                    </label>
+                    <input
+                      id="hospitalOrClinic"
+                      name="hospitalOrClinic"
+                      type="text"
+                      value={formData.hospitalOrClinic}
+                      onChange={handleChange}
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="availabilityStartTime" className="block text-sm font-medium text-slate-700">
+                        Availability start
+                      </label>
+                      <input
+                        id="availabilityStartTime"
+                        name="availabilityStartTime"
+                        type="time"
+                        value={formData.availabilityStartTime}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="availabilityEndTime" className="block text-sm font-medium text-slate-700">
+                        Availability end
+                      </label>
+                      <input
+                        id="availabilityEndTime"
+                        name="availabilityEndTime"
+                        type="time"
+                        value={formData.availabilityEndTime}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit"
