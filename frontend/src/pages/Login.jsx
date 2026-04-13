@@ -44,7 +44,14 @@ export default function Login() {
       localStorage.setItem('doctor365_refreshToken', refreshToken)
       localStorage.setItem('doctor365_user', JSON.stringify(user))
 
-      navigate('/')
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard')
+      } else if (user.role === 'doctor') {
+        navigate('/doctor/dashboard')
+      } else {
+        navigate('/patient/dashboard')
+      }
     } catch (err) {
       setError(
         err?.response?.data?.error?.message ||

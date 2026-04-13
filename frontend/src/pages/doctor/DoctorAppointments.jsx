@@ -22,6 +22,25 @@ const statusStyles = {
   completed: 'bg-blue-50 text-blue-700 ring-blue-200',
 }
 
+const statusOptions = [
+  { value: 'pending', label: 'Pending review' },
+  { value: 'confirmed', label: 'Confirmed' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'completed', label: 'Completed' },
+]
+
+const getStatusOptionsForAppointment = (status) => {
+  if (status === 'pending') {
+    return statusOptions.filter((option) => ['confirmed', 'cancelled'].includes(option.value))
+  }
+
+  if (status === 'confirmed') {
+    return statusOptions.filter((option) => ['completed', 'cancelled'].includes(option.value))
+  }
+
+  return []
+}
+
 export default function DoctorAppointments() {
   const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
@@ -121,7 +140,7 @@ export default function DoctorAppointments() {
         )
       )
 
-      setSuccessMessage(`Appointment marked as ${newStatus}`)
+      setSuccessMessage(`Appointment updated to ${newStatus}`)
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (requestError) {
       // Handle token errors
@@ -147,10 +166,10 @@ export default function DoctorAppointments() {
   return (
     <div className="space-y-6">
       <section className="rounded-[2rem] bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Patient bookings</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Manage your appointments</h1>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Doctor appointments</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Accept, reject, and update appointments</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
-          Review patient bookings, confirm appointments, and manage your schedule.
+          Review patient bookings, accept or reject requests, and update appointment status as care progresses.
         </p>
       </section>
 
@@ -274,14 +293,14 @@ export default function DoctorAppointments() {
                         disabled={updating === appointment._id}
                         className="rounded-2xl bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {updating === appointment._id ? 'Confirming...' : 'Confirm'}
+                        {updating === appointment._id ? 'Accepting...' : 'Accept'}
                       </button>
                       <button
                         onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
                         disabled={updating === appointment._id}
                         className="rounded-2xl border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {updating === appointment._id ? 'Cancelling...' : 'Decline'}
+                        {updating === appointment._id ? 'Rejecting...' : 'Reject'}
                       </button>
                     </>
                   )}
@@ -293,16 +312,37 @@ export default function DoctorAppointments() {
                         disabled={updating === appointment._id}
                         className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {updating === appointment._id ? 'Marking...' : 'Mark Complete'}
+                        {updating === appointment._id ? 'Updating...' : 'Mark Complete'}
                       </button>
                       <button
                         onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
                         disabled={updating === appointment._id}
                         className="rounded-2xl border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {updating === appointment._id ? 'Cancelling...' : 'Cancel'}
+                        {updating === appointment._id ? 'Updating...' : 'Reject / Cancel'}
                       </button>
                     </>
+                  )}
+
+                  {appointment.status !== 'completed' && appointment.status !== 'cancelled' && (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                        Update status
+                      </label>
+                      <select
+                        value={appointment.status}
+                        onChange={(event) => handleStatusUpdate(appointment._id, event.target.value)}
+                        disabled={updating === appointment._id}
+                        className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-purple-500 focus:ring-4 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        <option value={appointment.status}>{statusStyles[appointment.status] ? appointment.status : 'Current status'}</option>
+                        {getStatusOptionsForAppointment(appointment.status).map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
 
                   {(appointment.status === 'completed' || appointment.status === 'cancelled') && (
