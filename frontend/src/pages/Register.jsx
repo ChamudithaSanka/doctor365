@@ -20,10 +20,38 @@ const initialFormState = {
   licenseNumber: '',
   yearsOfExperience: '',
   consultationFee: '',
-  hospitalOrClinic: 'Online',
-  availabilityStartTime: '08:00',
-  availabilityEndTime: '17:00',
-  slotMinutes: '30',
+  hospitalOrClinic: '',
+}
+
+const buildRegistrationPayload = (payload) => {
+  const commonFields = {
+    role: payload.role,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    email: payload.email,
+    password: payload.password,
+  }
+
+  if (payload.role === 'patient') {
+    return {
+      ...commonFields,
+      dateOfBirth: payload.dateOfBirth,
+      gender: payload.gender,
+      phone: payload.phone,
+      address: payload.address,
+      emergencyContact: payload.emergencyContact,
+      medicalHistorySummary: payload.medicalHistorySummary,
+    }
+  }
+
+  return {
+    ...commonFields,
+    specialization: payload.specialization,
+    licenseNumber: payload.licenseNumber,
+    yearsOfExperience: payload.yearsOfExperience,
+    consultationFee: payload.consultationFee,
+    hospitalOrClinic: payload.hospitalOrClinic,
+  }
 }
 
 export default function Register() {
@@ -46,9 +74,7 @@ export default function Register() {
     setError('')
 
     try {
-      const response = await axios.post(`${authBaseUrl}/register`, {
-        ...formData,
-      })
+      const response = await axios.post(`${authBaseUrl}/register`, buildRegistrationPayload(formData))
       const { user, accessToken, refreshToken } = response.data.data
 
       localStorage.setItem('doctor365_accessToken', accessToken)
@@ -371,22 +397,6 @@ export default function Register() {
                         className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                       />
                     </div>
-
-                    <div>
-                      <label htmlFor="slotMinutes" className="block text-sm font-medium text-slate-700">
-                        Slot minutes
-                      </label>
-                      <input
-                        id="slotMinutes"
-                        name="slotMinutes"
-                        type="number"
-                        min="5"
-                        value={formData.slotMinutes}
-                        onChange={handleChange}
-                        required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
                   </div>
 
                   <div>
@@ -403,36 +413,8 @@ export default function Register() {
                     />
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="availabilityStartTime" className="block text-sm font-medium text-slate-700">
-                        Availability start
-                      </label>
-                      <input
-                        id="availabilityStartTime"
-                        name="availabilityStartTime"
-                        type="time"
-                        value={formData.availabilityStartTime}
-                        onChange={handleChange}
-                        required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="availabilityEndTime" className="block text-sm font-medium text-slate-700">
-                        Availability end
-                      </label>
-                      <input
-                        id="availabilityEndTime"
-                        name="availabilityEndTime"
-                        type="time"
-                        value={formData.availabilityEndTime}
-                        onChange={handleChange}
-                        required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
+                  <div className="rounded-2xl bg-blue-50 p-4 text-sm text-blue-800 ring-1 ring-blue-100">
+                    Availability is configured after admin verification with default schedule: MON-FRI, 08:00-18:00, 30-minute slots.
                   </div>
                 </>
               )}

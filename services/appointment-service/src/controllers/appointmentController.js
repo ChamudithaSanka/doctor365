@@ -45,6 +45,16 @@ const getAppointmentDateTime = (appointmentDate, appointmentTime) => {
   return date;
 };
 
+const getWeekdayCode = (dateValue) => {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const weekdayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  return weekdayMap[date.getDay()];
+};
+
 // @desc    Create a new appointment
 // @route   POST /api/appointments
 // @access  Private (patient)
@@ -76,8 +86,23 @@ exports.createAppointment = async (req, res, next) => {
 
     const requestedMinutes = parseTimeToMinutes(appointmentTime);
     const startMinutes = parseTimeToMinutes(doctor.availabilityStartTime || '08:00');
-    const endMinutes = parseTimeToMinutes(doctor.availabilityEndTime || '17:00');
+    const endMinutes = parseTimeToMinutes(doctor.availabilityEndTime || '18:00');
     const slotMinutes = Number(doctor.slotMinutes || 30);
+    const defaultWorkingDays = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+    const workingDays = Array.isArray(doctor.workingDays) && doctor.workingDays.length > 0
+      ? doctor.workingDays
+      : defaultWorkingDays;
+    const requestedDayCode = getWeekdayCode(appointmentDate);
+
+    if (!requestedDayCode || !workingDays.includes(requestedDayCode)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_DAY',
+          message: `Doctor is available on: ${workingDays.join(', ')}`,
+        },
+      });
+    }
 
     if (
       requestedMinutes === null ||
@@ -90,7 +115,7 @@ exports.createAppointment = async (req, res, next) => {
         success: false,
         error: {
           code: 'INVALID_TIME',
-          message: `Doctor is available between ${doctor.availabilityStartTime || '08:00'} and ${doctor.availabilityEndTime || '17:00'}`,
+          message: `Doctor is available between ${doctor.availabilityStartTime || '08:00'} and ${doctor.availabilityEndTime || '18:00'}`,
         },
       });
     }

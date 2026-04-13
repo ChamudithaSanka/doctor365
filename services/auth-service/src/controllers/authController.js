@@ -52,8 +52,11 @@ const normalizeDoctorPayload = (payload) => ({
   yearsOfExperience: Number(payload.yearsOfExperience),
   consultationFee: Number(payload.consultationFee),
   hospitalOrClinic: String(payload.hospitalOrClinic || '').trim() || 'Online',
+  workingDays: Array.isArray(payload.workingDays) && payload.workingDays.length > 0
+    ? payload.workingDays
+    : ['MON', 'TUE', 'WED', 'THU', 'FRI'],
   availabilityStartTime: String(payload.availabilityStartTime || '').trim() || '08:00',
-  availabilityEndTime: String(payload.availabilityEndTime || '').trim() || '17:00',
+  availabilityEndTime: String(payload.availabilityEndTime || '').trim() || '18:00',
   slotMinutes: Number(payload.slotMinutes) || 30,
 });
 
@@ -118,6 +121,7 @@ exports.register = async (req, res) => {
       yearsOfExperience,
       consultationFee,
       hospitalOrClinic,
+      workingDays,
       availabilityStartTime,
       availabilityEndTime,
       slotMinutes,
@@ -218,6 +222,7 @@ exports.register = async (req, res) => {
           yearsOfExperience,
           consultationFee,
           hospitalOrClinic,
+          workingDays,
           availabilityStartTime,
           availabilityEndTime,
           slotMinutes,
