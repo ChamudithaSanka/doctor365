@@ -32,18 +32,17 @@ const getDoctors = async (req, res, next) => {
     next(error);
   }
 };
-
 // @desc    Get doctor by ID (Public)
 // @route   GET /api/doctors/:id
 // @access  Public
 const getDoctorById = async (req, res, next) => {
   try {
-    const doctor = await Doctor.findOne({ 
-      $or: [
-        { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
-        { userId: req.params.id }
-      ].filter(Boolean)
-    });
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isObjectId
+      ? { $or: [{ _id: req.params.id }, { userId: req.params.id }] }
+      : { userId: req.params.id };
+
+    const doctor = await Doctor.findOne(query);
 
     if (!doctor) {
       return res.status(404).json({
@@ -121,7 +120,7 @@ const updateMe = async (req, res, next) => {
 const verifyDoctor = async (req, res, next) => {
   try {
     const { isVerified } = req.body;
-    
+
     if (typeof isVerified !== 'boolean') {
       return res.status(400).json({
         success: false,
@@ -129,13 +128,13 @@ const verifyDoctor = async (req, res, next) => {
       });
     }
 
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isObjectId
+      ? { $or: [{ _id: req.params.id }, { userId: req.params.id }] }
+      : { userId: req.params.id };
+
     const doctor = await Doctor.findOneAndUpdate(
-      { 
-        $or: [
-          { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
-          { userId: req.params.id }
-        ].filter(Boolean)
-      },
+      query,
       { isVerified },
       { new: true }
     );

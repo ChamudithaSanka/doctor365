@@ -18,6 +18,15 @@ import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
 import NotFound from './pages/shared/NotFound'
 
+// Doctor pages
+import DoctorReports from './pages/doctor/DoctorReports'
+import DoctorProfile from './pages/doctor/DoctorProfile'
+
+// Patient pages
+import Profile from './pages/patient/Profile'
+import MedicalHistory from './pages/patient/MedicalHistory'
+import Reports from './pages/patient/Reports'
+
 function App() {
   return (
     <BrowserRouter>
@@ -34,6 +43,9 @@ function App() {
           <Route path="/appointments/book" element={<BookAppointment />} />
           <Route path="/appointments/:id" element={<AppointmentDetail />} />
           <Route path="/appointments" element={<AppointmentList />} />
+          <Route path="/patient/profile" element={<Profile />} />
+          <Route path="/patient/reports" element={<Reports />} />
+          <Route path="/patient/medical-history" element={<MedicalHistory />} />
           <Route
             path="/payments"
             element={<ComingSoon title="Payments" description="Track payment status and history here." />}
@@ -47,6 +59,8 @@ function App() {
             element={<ComingSoon title="Profile" description="Update your personal and account information." />}
           />
           <Route path="/doctor/appointments" element={<DoctorAppointments />} />
+          <Route path="/doctor/reports" element={<DoctorReports />} />
+          <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route
             path="/consultation"
             element={<ComingSoon title="Consultations" description="Start or manage telemedicine sessions here." />}
