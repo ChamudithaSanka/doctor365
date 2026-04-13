@@ -18,8 +18,8 @@ services:
       - ./services/auth-service/.env
     ports:
       - "5001:5001"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   patient-service:
     build:
@@ -31,8 +31,8 @@ services:
       - ./services/patient-service/.env
     ports:
       - "5002:5002"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   doctor-service:
     build:
@@ -44,8 +44,8 @@ services:
       - ./services/doctor-service/.env
     ports:
       - "5003:5003"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   appointment-service:
     build:
@@ -57,8 +57,8 @@ services:
       - ./services/appointment-service/.env
     ports:
       - "5004:5004"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   telemedicine-service:
     build:
@@ -70,8 +70,8 @@ services:
       - ./services/telemedicine-service/.env
     ports:
       - "5005:5005"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   payment-service:
     build:
@@ -83,8 +83,8 @@ services:
       - ./services/payment-service/.env
     ports:
       - "5006:5006"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   notification-service:
     build:
@@ -96,8 +96,8 @@ services:
       - ./services/notification-service/.env
     ports:
       - "5007:5007"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   gateway:
     build: ./gateway
@@ -124,5 +124,5 @@ services:
       - payment-service
       - notification-service
 
-volumes:
-  # mongo_data:
+# volumes:
+#   # mongo_data:
