@@ -54,7 +54,6 @@ const generateTimeSlots = (startTime, endTime, slotMinutes) => {
 export default function BookAppointment() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -65,65 +64,50 @@ export default function BookAppointment() {
   const [reason, setReason] = useState('')
   const [notes, setNotes] = useState('')
 
-  const [search, setSearch] = useState('')
-  const [specialty, setSpecialty] = useState('all')
-  const [maxFee, setMaxFee] = useState('')
-  const [selectedDayFilter, setSelectedDayFilter] = useState(searchParams.get('date') || '')
+  // Get doctorId from URL params
+  const doctorId = searchParams.get('doctorId')
 
   useEffect(() => {
     const controller = new AbortController()
-    const loadDoctors = async () => {
+    
+    const loadDoctor = async () => {
+      if (!doctorId) {
+        setError('No doctor selected. Please select a doctor from the doctors list.')
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
       setError('')
       try {
-        const response = await axios.get(`${gatewayBaseUrl}/api/doctors`, { signal: controller.signal })
-        const doctorList = Array.isArray(response.data?.data) ? response.data.data : []
-        setDoctors(doctorList)
+        const response = await axios.get(`${gatewayBaseUrl}/api/doctors/${doctorId}`, { 
+          signal: controller.signal 
+        })
+        const doctor = response.data?.data
+        if (doctor) {
+          setSelectedDoctor(doctor)
+        } else {
+          setError('Unable to load doctor details.')
+        }
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {
-          setError(requestError?.response?.data?.error?.message || 'Unable to load doctors.')
+          setError(requestError?.response?.data?.error?.message || 'Unable to load doctor details.')
         }
       } finally {
         setLoading(false)
       }
     }
-    loadDoctors()
+    
+    loadDoctor()
     return () => controller.abort()
-  }, [])
+  }, [doctorId])
 
   useEffect(() => {
     const dateFromUrl = searchParams.get('date') || ''
     if (dateFromUrl) {
       setAppointmentDate(dateFromUrl)
-      setSelectedDayFilter(dateFromUrl)
     }
   }, [searchParams])
-
-  const specialties = useMemo(
-    () =>
-      Array.from(new Set(doctors.map((d) => d.specialization).filter(Boolean))).sort((a, b) =>
-        a.localeCompare(b)
-      ),
-    [doctors]
-  )
-
-  const filteredDoctors = useMemo(() => {
-    const normalizeText = (v) => String(v || '').toLowerCase().trim()
-    const selectedDay = getWeekdayCode(selectedDayFilter)
-
-    return doctors.filter((doctor) => {
-      const hasSearchMatch =
-        !search ||
-        normalizeText(`${doctor.firstName} ${doctor.lastName}`).includes(normalizeText(search)) ||
-        normalizeText(doctor.specialization).includes(normalizeText(search))
-      const hasSpecialtyMatch = specialty === 'all' || doctor.specialization === specialty
-      const hasFeeMatch = !maxFee || Number(doctor.consultationFee || 0) <= Number(maxFee)
-      const hasDayMatch =
-        !selectedDay || (Array.isArray(doctor.workingDays) && doctor.workingDays.includes(selectedDay))
-
-      return doctor.isVerified && hasSearchMatch && hasSpecialtyMatch && hasFeeMatch && hasDayMatch
-    })
-  }, [doctors, maxFee, search, selectedDayFilter, specialty])
 
   const availableSlots = useMemo(() => {
     if (!selectedDoctor || !appointmentDate) return []
@@ -135,20 +119,8 @@ export default function BookAppointment() {
   }, [selectedDoctor, appointmentDate])
 
   const minDate = new Date().toISOString().split('T')[0]
-  const selectedDoctorBookable = useMemo(() => {
-    if (!selectedDoctor || !appointmentDate) {
-      return true
-    }
 
-    const selectedDay = getWeekdayCode(appointmentDate)
-    if (!selectedDay) {
-      return false
-    }
-
-    return Array.isArray(selectedDoctor.workingDays) && selectedDoctor.workingDays.includes(selectedDay)
-  }, [appointmentDate, selectedDoctor])
-
-  const handleSubmit = async (e) => {
+  const handleProceedToPayment = async (e) => {
     e.preventDefault()
     if (!selectedDoctor || !appointmentDate || !appointmentTime || !reason) {
       setError('Please fill in all required fields')
@@ -165,41 +137,28 @@ export default function BookAppointment() {
         return
       }
 
-      console.log('Booking appointment with doctor:', selectedDoctor)
-      console.log('Doctor ID:', selectedDoctor.userId)
-
-      const appointmentPayload = {
+      // Prepare appointment details
+      const appointmentDetails = {
         doctorId: selectedDoctor.userId,
+        doctorName: `Dr. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
+        doctorSpecialization: selectedDoctor.specialization,
+        consultationFee: selectedDoctor.consultationFee,
         appointmentDate,
         appointmentTime,
         reason,
         notes: notes || '',
       }
 
-      console.log('Appointment payload:', appointmentPayload)
+      // Store appointment details in sessionStorage for payment page
+      sessionStorage.setItem('appointmentDetails', JSON.stringify(appointmentDetails))
 
-      const response = await axios.post(
-        `${gatewayBaseUrl}/api/appointments`,
-        appointmentPayload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
+      console.log('Appointment details prepared:', appointmentDetails)
 
-      if (response.status === 201) {
-        navigate(`/appointments/${response.data.data._id}`)
-      }
-    } catch (requestError) {
-      // Handle token errors
-      if (handleTokenError(requestError)) {
-        return
-      }
-      
-      console.error('Booking error:', requestError.response?.data)
-      const errorMsg = requestError?.response?.data?.error?.message || 'Failed to book appointment'
-      const details = requestError?.response?.data?.error?.details
-      const fullError = details ? `${errorMsg} - ${JSON.stringify(details)}` : errorMsg
-      setError(fullError)
+      // Navigate to payment page
+      navigate('/appointment-payment', { state: { appointmentDetails } })
+    } catch (error) {
+      console.error('Error preparing appointment:', error)
+      setError('Failed to prepare appointment. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -211,7 +170,7 @@ export default function BookAppointment() {
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Book consultation</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Schedule your appointment</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
-          Select a verified doctor, choose your preferred date and time, then confirm your booking.
+          Select your preferred date and time, then confirm your booking.
         </p>
       </section>
 
@@ -221,121 +180,110 @@ export default function BookAppointment() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        {/* Doctor Selection */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Select a doctor</h2>
-          <p className="mt-1 text-sm text-slate-500">Only verified doctors are shown here.</p>
-
-          <div className="mt-4 space-y-3">
-            <div>
-              <label htmlFor="search" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                Search
-              </label>
-              <input
-                id="search"
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Doctor name, specialty..."
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="specialty" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                Specialty
-              </label>
-              <select
-                id="specialty"
-                value={specialty}
-                onChange={(e) => setSpecialty(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              >
-                <option value="all">All specialties</option>
-                {specialties.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="fee" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                Max fee (LKR)
-              </label>
-              <input
-                id="fee"
-                type="number"
-                value={maxFee}
-                onChange={(e) => setMaxFee(e.target.value)}
-                placeholder="Leave empty for no limit"
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-slate-600">Loading doctor details...</p>
           </div>
+        </div>
+      ) : selectedDoctor ? (
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+          {/* Doctor Details Preview */}
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm overflow-y-auto max-h-screen">
+            <button
+              onClick={() => navigate('/doctors')}
+              className="mb-4 text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1"
+            >
+              ← Back to doctors
+            </button>
 
-          <div className="mt-6 space-y-3 max-h-96 overflow-y-auto">
-            {loading ? (
-              <div className="text-center py-8 text-slate-500">Loading doctors...</div>
-            ) : filteredDoctors.length > 0 ? (
-              filteredDoctors.map((doctor) => (
-                <button
-                  key={doctor._id}
-                  onClick={() => {
-                    setSelectedDoctor(doctor)
-                    setAppointmentTime('')
-                  }}
-                  className={`w-full rounded-2xl border-2 p-4 text-left transition ${
-                    selectedDoctor?._id === doctor._id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-slate-900">
-                        Dr. {doctor.firstName} {doctor.lastName}
-                      </p>
-                      <p className="text-xs text-slate-500">{doctor.specialization}</p>
-                      <p className="text-xs text-slate-500">
-                        {Array.isArray(doctor.workingDays) && doctor.workingDays.length > 0
-                          ? doctor.workingDays.join(', ')
-                          : 'No working days listed'}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold text-slate-600">{formatCurrency(doctor.consultationFee)}</span>
+            <div className="space-y-5">
+              {/* Doctor Header */}
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900">
+                  Dr. {selectedDoctor.firstName} {selectedDoctor.lastName}
+                </h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {selectedDoctor.specialization && (
+                    <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full">
+                      {selectedDoctor.specialization}
+                    </span>
+                  )}
+                  {selectedDoctor.isVerified && (
+                    <span className="inline-block px-3 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">
+                      Verified doctor
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Key Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 rounded-2xl p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Consultation Fee</p>
+                  <p className="text-lg font-bold text-slate-900 mt-2">{formatCurrency(selectedDoctor.consultationFee)}</p>
+                </div>
+
+                {selectedDoctor.experience && (
+                  <div className="bg-slate-50 rounded-2xl p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Experience</p>
+                    <p className="text-lg font-bold text-slate-900 mt-2">
+                      {selectedDoctor.experience} {selectedDoctor.experience === 1 ? 'year' : 'years'}
+                    </p>
                   </div>
-                </button>
-              ))
-            ) : (
-              <div className="text-center py-8 text-slate-500">No doctors match your filters</div>
-            )}
-          </div>
-        </section>
+                )}
+              </div>
+
+              {/* Hospital/Clinic */}
+              {selectedDoctor.hospital && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Hospital / Clinic</p>
+                  <p className="text-sm font-semibold text-slate-900 mt-2">{selectedDoctor.hospital}</p>
+                </div>
+              )}
+
+              {/* Qualifications */}
+              {selectedDoctor.qualifications && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Qualifications</p>
+                  <p className="text-sm text-slate-700 mt-2">{selectedDoctor.qualifications}</p>
+                </div>
+              )}
+
+              {/* Bio */}
+              {selectedDoctor.bio && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Bio</p>
+                  <p className="text-sm text-slate-700 mt-2">{selectedDoctor.bio}</p>
+                </div>
+              )}
+
+              {/* Weekly Schedule */}
+              <div>
+                <p className="text-sm font-semibold text-slate-900 mb-4">Weekly schedule</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => {
+                    const isWorking = Array.isArray(selectedDoctor.workingDays) && selectedDoctor.workingDays.includes(day)
+                    return (
+                      <div key={day} className="bg-slate-50 rounded-2xl p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{day}</p>
+                        <p className="text-xs font-semibold text-slate-900 mt-2">
+                          {isWorking
+                            ? `${selectedDoctor.availabilityStartTime || '08:00'} – ${selectedDoctor.availabilityEndTime || '18:00'} (${selectedDoctor.slotMinutes || 30} min slots)`
+                            : 'Unavailable'}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
 
         {/* Booking Form */}
-        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        <form onSubmit={handleProceedToPayment} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">Appointment details</h2>
-
-          {selectedDoctor && (
-            <div className="rounded-2xl bg-blue-50 p-4 border border-blue-200">
-              <p className="text-sm font-medium text-slate-900">
-                Dr. {selectedDoctor.firstName} {selectedDoctor.lastName}
-              </p>
-              <p className="text-xs text-slate-600 mt-1">{selectedDoctor.specialization}</p>
-              <p className="text-xs text-slate-600">
-                Available: {selectedDoctor.availabilityStartTime || '08:00'} -{' '}
-                {selectedDoctor.availabilityEndTime || '18:00'}
-              </p>
-              {appointmentDate ? (
-                <p className={`text-xs mt-1 font-semibold ${selectedDoctorBookable ? 'text-emerald-700' : 'text-amber-700'}`}>
-                  {selectedDoctorBookable ? 'Bookable on selected date' : 'Not working on selected date'}
-                </p>
-              ) : null}
-            </div>
-          )}
 
           <div>
             <label htmlFor="date" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -348,12 +296,10 @@ export default function BookAppointment() {
               onChange={(e) => {
                 setAppointmentDate(e.target.value)
                 setAppointmentTime('')
-                setSelectedDayFilter(e.target.value)
               }}
               min={minDate}
-              disabled={!selectedDoctor}
               required
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-400"
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             />
           </div>
 
@@ -409,13 +355,18 @@ export default function BookAppointment() {
 
           <button
             type="submit"
-            disabled={!selectedDoctor || !selectedDoctorBookable || !appointmentDate || !appointmentTime || !reason || submitting}
+            disabled={!appointmentDate || !appointmentTime || !reason || submitting}
             className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
           >
-            {submitting ? 'Booking...' : 'Book appointment'}
+            {submitting ? 'Preparing...' : 'Proceed to payment'}
           </button>
         </form>
-      </div>
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-slate-600">Unable to load doctor details. Please select a doctor from the doctors list.</p>
+        </div>
+      )}
     </div>
   )
 }
