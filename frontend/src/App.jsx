@@ -3,14 +3,25 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AppShell from './layouts/AppShell'
-import PatientDashboard from './pages/patient/PatientDashboard'
-import Doctors from './pages/patient/Doctors'
-import DoctorDetails from './pages/patient/DoctorDetails'
-import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import AdminDoctors from './pages/admin/AdminDoctors'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
 import NotFound from './pages/shared/NotFound'
+
+//DOCTOR PAGES
+import DoctorReports from './pages/doctor/DoctorReports'
+import DoctorProfile from './pages/doctor/DoctorProfile'
+import DoctorDashboard from './pages/doctor/DoctorDashboard'
+
+//PATIENT PAGES
+import Profile  from './pages/patient/Profile'
+import MedicalHistory from './pages/patient/MedicalHistory'
+import Reports from './pages/patient/Reports'
+import PatientDashboard from './pages/patient/PatientDashboard'
+import Doctors from './pages/patient/Doctors'
+import DoctorDetails from './pages/patient/DoctorDetails'
+
+
 
 function App() {
   return (
@@ -57,6 +68,18 @@ function App() {
         </Route>
         <Route path="/403" element={<AccessDenied />} />
         <Route path="*" element={<NotFound />} />
+
+
+        {/* Doctor-specific routes */}
+        <Route path="/doctor/reports" element={<DoctorReports />} />
+        <Route path="/doctor/profile" element={<DoctorProfile />} />
+
+        {/* Patient-specific routes */}
+        <Route path="/patient/profile" element={<Profile />} />
+        <Route path="/patient/reports" element={<Reports />} />
+        <Route path="/patient/medical-history" element={<MedicalHistory />} />
+
+        
       </Routes>
     </BrowserRouter>
   )
