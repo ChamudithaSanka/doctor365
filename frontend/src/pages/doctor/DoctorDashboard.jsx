@@ -17,7 +17,10 @@ export default function DoctorDashboard() {
 
       <section className="grid gap-4 md:grid-cols-3">
         {stats.map((item) => (
-          <div key={item.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div
+            key={item.label}
+            className="rounded-3xl border border-transparent bg-white p-6 shadow-sm hover:shadow-2xl hover:border-slate-200 transform hover:-translate-y-1 transition-all duration-300 ease-in-out cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          >
             <p className="text-sm font-medium text-slate-500">{item.label}</p>
             <p className="mt-2 text-3xl font-bold text-slate-900">{item.value}</p>
           </div>
@@ -28,7 +31,10 @@ export default function DoctorDashboard() {
         <h2 className="text-xl font-semibold text-slate-900">Today's appointments</h2>
         <div className="mt-5 space-y-4">
           {['9:00 AM - Patient A', '11:30 AM - Patient B', '2:00 PM - Patient C'].map((item) => (
-            <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700">
+            <div
+              key={item}
+              className="rounded-2xl border border-transparent bg-slate-50 p-4 text-sm font-medium text-slate-700 hover:bg-white hover:shadow-md transform hover:-translate-y-1 transition-all duration-200 ease-in-out cursor-pointer"
+            >
               {item}
             </div>
           ))}
