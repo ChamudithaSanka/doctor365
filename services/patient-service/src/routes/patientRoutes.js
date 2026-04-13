@@ -42,6 +42,7 @@ const patientValidation = [
     .isIn(['male', 'female']).withMessage('Gender must be male or female'),
   body('phone').matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).withMessage('Please provide a valid phone number'),
   body('address').notEmpty().withMessage('Address is required'),
+    body('city').notEmpty().withMessage('City is required'),
   body('emergencyContact').matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).withMessage('Please provide a valid emergency contact number'),
   validate
 ];

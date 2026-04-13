@@ -26,6 +26,8 @@ const initialFormState = {
   gender: '',
   phone: '',
   address: '',
+  city: '',
+  country: 'Sri Lanka',
   emergencyContact: '',
   medicalHistorySummary: '',
   specialization: '',
@@ -51,6 +53,8 @@ const buildRegistrationPayload = (payload) => {
       gender: payload.gender,
       phone: payload.phone,
       address: payload.address,
+      city: payload.city,
+      country: payload.country,
       emergencyContact: payload.emergencyContact,
       medicalHistorySummary: payload.medicalHistorySummary,
     }
@@ -320,12 +324,45 @@ export default function Register() {
                       id="address"
                       name="address"
                       type="text"
-                      placeholder="Street, city"
+                      placeholder="Street, house number"
                       value={formData.address}
                       onChange={handleChange}
                       required
                       className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     />
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="city" className="block text-sm font-medium text-slate-700">
+                        City
+                      </label>
+                      <input
+                        id="city"
+                        name="city"
+                        type="text"
+                        placeholder="e.g., Colombo, Kandy"
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="country" className="block text-sm font-medium text-slate-700">
+                        Country
+                      </label>
+                      <input
+                        id="country"
+                        name="country"
+                        type="text"
+                        placeholder="Sri Lanka"
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
                   </div>
 
                   <div>

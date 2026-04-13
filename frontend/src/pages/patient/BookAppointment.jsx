@@ -137,28 +137,97 @@ export default function BookAppointment() {
         return
       }
 
-      // Prepare appointment details
-      const appointmentDetails = {
-        doctorId: selectedDoctor.userId,
-        doctorName: `Dr. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
-        doctorSpecialization: selectedDoctor.specialization,
-        consultationFee: selectedDoctor.consultationFee,
-        appointmentDate,
-        appointmentTime,
-        reason,
-        notes: notes || '',
+      // Fetch current patient details
+      const patientResponse = await axios.get(`${gatewayBaseUrl}/api/patients/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const patient = patientResponse.data?.data
+
+      if (!patient) {
+        setError('Unable to fetch patient details. Please try again.')
+        return
       }
 
-      // Store appointment details in sessionStorage for payment page
-      sessionStorage.setItem('appointmentDetails', JSON.stringify(appointmentDetails))
+      // Validate required patient fields for checkout
+      const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city']
+      const missingFields = requiredFields.filter(field => !patient[field])
 
-      console.log('Appointment details prepared:', appointmentDetails)
+      if (missingFields.length > 0) {
+        setError(
+          `Please complete your profile first. Missing: ${missingFields.join(', ')}. ` +
+          'Visit your profile settings to update this information.'
+        )
+        return
+      }
 
-      // Navigate to payment page
-      navigate('/appointment-payment', { state: { appointmentDetails } })
+      // Prepare checkout request payload
+      const checkoutPayload = {
+        appointmentId: `APT-${Date.now()}`, // Temporary ID, will be created in appointment service
+        amount: selectedDoctor.consultationFee,
+        currency: 'LKR',
+        items: `Consultation with Dr. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
+        firstName: patient.firstName,
+        lastName: patient.lastName,
+        email: patient.email,
+        phone: patient.phone,
+        address: patient.address,
+        city: patient.city,
+        country: patient.country || 'Sri Lanka',
+        metadata: {
+          doctorId: selectedDoctor.userId,
+          doctorName: `Dr. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
+          appointmentDate,
+          appointmentTime,
+          reason,
+          notes: notes || '',
+          specialization: selectedDoctor.specialization,
+        },
+      }
+
+      // Call payment service to initiate PayHere checkout
+      const paymentResponse = await axios.post(
+        `${gatewayBaseUrl}/api/payments/checkout/payhere`,
+        checkoutPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const paymentData = paymentResponse.data?.data
+
+      if (!paymentData?.actionUrl || !paymentData?.fields) {
+        setError('Failed to initiate payment. Please try again.')
+        return
+      }
+
+      // Create hidden form and submit to PayHere
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = paymentData.actionUrl
+      form.style.display = 'none'
+
+      // Add all form fields
+      Object.entries(paymentData.fields).forEach(([key, value]) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = key
+        input.value = value
+        form.appendChild(input)
+      })
+
+      document.body.appendChild(form)
+      form.submit()
+      document.body.removeChild(form)
     } catch (error) {
-      console.error('Error preparing appointment:', error)
-      setError('Failed to prepare appointment. Please try again.')
+      console.error('Error initiating PayHere checkout:', error)
+      handleTokenError(error)
+      setError(
+        error?.response?.data?.error?.message || 'Failed to proceed to payment. Please try again.'
+      )
     } finally {
       setSubmitting(false)
     }

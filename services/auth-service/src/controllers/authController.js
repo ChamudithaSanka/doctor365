@@ -12,6 +12,7 @@ const validatePatientRegistration = (payload) => {
     'gender',
     'phone',
     'address',
+    'city',
     'emergencyContact',
   ];
 
@@ -21,13 +22,16 @@ const validatePatientRegistration = (payload) => {
 
 const normalizePhone = (value) => String(value || '').replace(/[\s-]/g, '');
 
-const normalizePatientPayload = (payload) => ({
+const normalizePatientPayload = (payload, email) => ({
   firstName: String(payload.firstName || '').trim(),
   lastName: String(payload.lastName || '').trim(),
+  email: email,
   dateOfBirth: String(payload.dateOfBirth || '').trim(),
   gender: String(payload.gender || '').trim().toLowerCase(),
   phone: normalizePhone(payload.phone),
   address: String(payload.address || '').trim(),
+  city: String(payload.city || '').trim(),
+  country: String(payload.country || 'Sri Lanka').trim(),
   emergencyContact: normalizePhone(payload.emergencyContact),
   medicalHistorySummary: String(payload.medicalHistorySummary || '').trim(),
 });
@@ -114,6 +118,8 @@ exports.register = async (req, res) => {
       gender,
       phone,
       address,
+       city,
+       country,
       emergencyContact,
       medicalHistorySummary,
       specialization,
@@ -208,9 +214,11 @@ exports.register = async (req, res) => {
           gender,
           phone,
           address,
+          city,
+           country,
           emergencyContact,
           medicalHistorySummary,
-        }));
+        }, email));
       }
 
       if (targetRole === 'doctor') {

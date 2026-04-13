@@ -37,10 +37,13 @@ const updateMe = async (req, res, next) => {
     const {
       firstName,
       lastName,
+      email,
       dateOfBirth,
       gender,
       phone,
       address,
+      city,
+      country,
       emergencyContact,
       medicalHistorySummary,
     } = req.body;
@@ -49,10 +52,13 @@ const updateMe = async (req, res, next) => {
       userId: req.user.userId,
       firstName,
       lastName,
+      email: email || req.user.email,
       dateOfBirth,
       gender,
       phone,
       address,
+      city,
+      country,
       emergencyContact,
       medicalHistorySummary,
     };
