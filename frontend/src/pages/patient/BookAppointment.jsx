@@ -1,9 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { getToken, handleTokenError } from '../../utils/tokenManager'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
+
+const weekdayLabels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+
+const getWeekdayCode = (dateValue) => {
+  if (!dateValue) {
+    return ''
+  }
+
+  const date = new Date(dateValue)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  return weekdayLabels[date.getDay()]
+}
 
 const formatCurrency = (amount) => {
   const value = Number(amount)
@@ -38,6 +53,7 @@ const generateTimeSlots = (startTime, endTime, slotMinutes) => {
 
 export default function BookAppointment() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -52,6 +68,7 @@ export default function BookAppointment() {
   const [search, setSearch] = useState('')
   const [specialty, setSpecialty] = useState('all')
   const [maxFee, setMaxFee] = useState('')
+  const [selectedDayFilter, setSelectedDayFilter] = useState(searchParams.get('date') || '')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -74,6 +91,14 @@ export default function BookAppointment() {
     return () => controller.abort()
   }, [])
 
+  useEffect(() => {
+    const dateFromUrl = searchParams.get('date') || ''
+    if (dateFromUrl) {
+      setAppointmentDate(dateFromUrl)
+      setSelectedDayFilter(dateFromUrl)
+    }
+  }, [searchParams])
+
   const specialties = useMemo(
     () =>
       Array.from(new Set(doctors.map((d) => d.specialization).filter(Boolean))).sort((a, b) =>
@@ -84,6 +109,8 @@ export default function BookAppointment() {
 
   const filteredDoctors = useMemo(() => {
     const normalizeText = (v) => String(v || '').toLowerCase().trim()
+    const selectedDay = getWeekdayCode(selectedDayFilter)
+
     return doctors.filter((doctor) => {
       const hasSearchMatch =
         !search ||
@@ -91,9 +118,12 @@ export default function BookAppointment() {
         normalizeText(doctor.specialization).includes(normalizeText(search))
       const hasSpecialtyMatch = specialty === 'all' || doctor.specialization === specialty
       const hasFeeMatch = !maxFee || Number(doctor.consultationFee || 0) <= Number(maxFee)
-      return hasSearchMatch && hasSpecialtyMatch && hasFeeMatch
+      const hasDayMatch =
+        !selectedDay || (Array.isArray(doctor.workingDays) && doctor.workingDays.includes(selectedDay))
+
+      return doctor.isVerified && hasSearchMatch && hasSpecialtyMatch && hasFeeMatch && hasDayMatch
     })
-  }, [doctors, search, specialty, maxFee])
+  }, [doctors, maxFee, search, selectedDayFilter, specialty])
 
   const availableSlots = useMemo(() => {
     if (!selectedDoctor || !appointmentDate) return []
@@ -105,6 +135,18 @@ export default function BookAppointment() {
   }, [selectedDoctor, appointmentDate])
 
   const minDate = new Date().toISOString().split('T')[0]
+  const selectedDoctorBookable = useMemo(() => {
+    if (!selectedDoctor || !appointmentDate) {
+      return true
+    }
+
+    const selectedDay = getWeekdayCode(appointmentDate)
+    if (!selectedDay) {
+      return false
+    }
+
+    return Array.isArray(selectedDoctor.workingDays) && selectedDoctor.workingDays.includes(selectedDay)
+  }, [appointmentDate, selectedDoctor])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -169,7 +211,7 @@ export default function BookAppointment() {
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Book consultation</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Schedule your appointment</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
-          Select a doctor, choose your preferred date and time, then confirm your booking.
+          Select a verified doctor, choose your preferred date and time, then confirm your booking.
         </p>
       </section>
 
@@ -183,6 +225,7 @@ export default function BookAppointment() {
         {/* Doctor Selection */}
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Select a doctor</h2>
+          <p className="mt-1 text-sm text-slate-500">Only verified doctors are shown here.</p>
 
           <div className="mt-4 space-y-3">
             <div>
@@ -256,6 +299,11 @@ export default function BookAppointment() {
                         Dr. {doctor.firstName} {doctor.lastName}
                       </p>
                       <p className="text-xs text-slate-500">{doctor.specialization}</p>
+                      <p className="text-xs text-slate-500">
+                        {Array.isArray(doctor.workingDays) && doctor.workingDays.length > 0
+                          ? doctor.workingDays.join(', ')
+                          : 'No working days listed'}
+                      </p>
                     </div>
                     <span className="text-xs font-semibold text-slate-600">{formatCurrency(doctor.consultationFee)}</span>
                   </div>
@@ -279,8 +327,13 @@ export default function BookAppointment() {
               <p className="text-xs text-slate-600 mt-1">{selectedDoctor.specialization}</p>
               <p className="text-xs text-slate-600">
                 Available: {selectedDoctor.availabilityStartTime || '08:00'} -{' '}
-                {selectedDoctor.availabilityEndTime || '17:00'}
+                {selectedDoctor.availabilityEndTime || '18:00'}
               </p>
+              {appointmentDate ? (
+                <p className={`text-xs mt-1 font-semibold ${selectedDoctorBookable ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {selectedDoctorBookable ? 'Bookable on selected date' : 'Not working on selected date'}
+                </p>
+              ) : null}
             </div>
           )}
 
@@ -295,6 +348,7 @@ export default function BookAppointment() {
               onChange={(e) => {
                 setAppointmentDate(e.target.value)
                 setAppointmentTime('')
+                setSelectedDayFilter(e.target.value)
               }}
               min={minDate}
               disabled={!selectedDoctor}
@@ -355,7 +409,7 @@ export default function BookAppointment() {
 
           <button
             type="submit"
-            disabled={!selectedDoctor || !appointmentDate || !appointmentTime || !reason || submitting}
+            disabled={!selectedDoctor || !selectedDoctorBookable || !appointmentDate || !appointmentTime || !reason || submitting}
             className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
           >
             {submitting ? 'Booking...' : 'Book appointment'}

@@ -34,6 +34,15 @@ const doctorSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    workingDays: {
+      type: [
+        {
+          type: String,
+          enum: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+        },
+      ],
+      default: ['MON', 'TUE', 'WED', 'THU', 'FRI'],
+    },
     availabilityStartTime: {
       type: String,
       required: true,
@@ -43,7 +52,7 @@ const doctorSchema = new mongoose.Schema(
     availabilityEndTime: {
       type: String,
       required: true,
-      default: '17:00',
+      default: '18:00',
       match: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
     },
     slotMinutes: {

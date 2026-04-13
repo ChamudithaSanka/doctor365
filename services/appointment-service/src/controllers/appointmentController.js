@@ -45,6 +45,16 @@ const getAppointmentDateTime = (appointmentDate, appointmentTime) => {
   return date;
 };
 
+const getWeekdayCode = (dateValue) => {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const weekdayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  return weekdayMap[date.getDay()];
+};
+
 // @desc    Create a new appointment
 // @route   POST /api/appointments
 // @access  Private (patient)
@@ -76,8 +86,23 @@ exports.createAppointment = async (req, res, next) => {
 
     const requestedMinutes = parseTimeToMinutes(appointmentTime);
     const startMinutes = parseTimeToMinutes(doctor.availabilityStartTime || '08:00');
-    const endMinutes = parseTimeToMinutes(doctor.availabilityEndTime || '17:00');
+    const endMinutes = parseTimeToMinutes(doctor.availabilityEndTime || '18:00');
     const slotMinutes = Number(doctor.slotMinutes || 30);
+    const defaultWorkingDays = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+    const workingDays = Array.isArray(doctor.workingDays) && doctor.workingDays.length > 0
+      ? doctor.workingDays
+      : defaultWorkingDays;
+    const requestedDayCode = getWeekdayCode(appointmentDate);
+
+    if (!requestedDayCode || !workingDays.includes(requestedDayCode)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_DAY',
+          message: `Doctor is available on: ${workingDays.join(', ')}`,
+        },
+      });
+    }
 
     if (
       requestedMinutes === null ||
@@ -90,7 +115,7 @@ exports.createAppointment = async (req, res, next) => {
         success: false,
         error: {
           code: 'INVALID_TIME',
-          message: `Doctor is available between ${doctor.availabilityStartTime || '08:00'} and ${doctor.availabilityEndTime || '17:00'}`,
+          message: `Doctor is available between ${doctor.availabilityStartTime || '08:00'} and ${doctor.availabilityEndTime || '18:00'}`,
         },
       });
     }
@@ -317,9 +342,53 @@ exports.updateAppointmentStatus = async (req, res, next) => {
       });
     }
 
+    if (req.user.role === 'doctor') {
+      const allowedTransitions = {
+        pending: ['confirmed', 'cancelled'],
+        confirmed: ['completed', 'cancelled'],
+        cancelled: [],
+        completed: [],
+      };
+
+      const allowedStatuses = allowedTransitions[appointment.status] || [];
+
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_TRANSITION',
+            message: `Doctors can only change ${appointment.status} appointments to: ${allowedStatuses.join(', ') || 'no further states'}`,
+          },
+        });
+      }
+    }
+
     const previousStatus = appointment.status;
     appointment.status = status;
     await appointment.save();
+
+    if (status !== previousStatus && status !== 'cancelled') {
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.status.updated',
+        title: 'Appointment status updated',
+        message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} is now ${status}.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+          previousStatus,
+          status,
+        },
+      });
+
+    }
 
     if (status === 'cancelled' && previousStatus !== 'cancelled') {
       await sendInternalNotification({
@@ -337,24 +406,6 @@ exports.updateAppointmentStatus = async (req, res, next) => {
         metadata: {
           appointmentId: appointment._id,
           doctorId: appointment.doctorId,
-          status,
-        },
-      });
-
-      await sendInternalNotification({
-        userId: appointment.doctorId,
-        type: 'appointment.cancelled',
-        title: 'Appointment cancelled',
-        message: `An appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been cancelled.`,
-        recipientEmail: appointment.doctorEmail || undefined,
-        channels: {
-          inApp: true,
-          email: Boolean(appointment.doctorEmail),
-          sms: false,
-        },
-        metadata: {
-          appointmentId: appointment._id,
-          patientId: appointment.patientId,
           status,
         },
       });

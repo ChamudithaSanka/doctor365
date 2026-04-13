@@ -4,6 +4,33 @@ import axios from 'axios'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
+const weekdayLabels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+
+const defaultWorkingDays = ['MON', 'TUE', 'WED', 'THU', 'FRI']
+
+const formatWorkingDays = (workingDays) => {
+  if (!Array.isArray(workingDays) || workingDays.length === 0) {
+    return defaultWorkingDays.join(', ')
+  }
+
+  return workingDays.join(', ')
+}
+
+const formatDaySchedule = (day, doctor) => {
+  const workingDays = Array.isArray(doctor?.workingDays) && doctor.workingDays.length > 0 ? doctor.workingDays : defaultWorkingDays
+  const isWorkingDay = workingDays.includes(day)
+
+  if (!isWorkingDay) {
+    return 'Unavailable'
+  }
+
+  const start = doctor?.availabilityStartTime || '08:00'
+  const end = doctor?.availabilityEndTime || '18:00'
+  const slot = doctor?.slotMinutes || 30
+
+  return `${start} – ${end} (${slot} min slots)`
+}
+
 const formatCurrency = (amount) => {
   const value = Number(amount)
   if (Number.isNaN(value)) {
@@ -17,39 +44,73 @@ const formatCurrency = (amount) => {
   }).format(value)
 }
 
-const computeNextSlot = (startTime, endTime, slotMinutes) => {
-  const parseTime = (timeValue) => {
-    const [hours, minutes] = String(timeValue || '').split(':').map((value) => Number(value))
-    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-      return null
-    }
+const computeNextAvailableSlot = (doctor, selectedDate) => {
+  const workingDays = Array.isArray(doctor?.workingDays) && doctor.workingDays.length > 0
+    ? doctor.workingDays
+    : defaultWorkingDays
 
-    return hours * 60 + minutes
+  const today = new Date()
+  const baseDate = selectedDate ? new Date(selectedDate) : today
+  if (Number.isNaN(baseDate.getTime())) {
+    return null
   }
 
-  const start = parseTime(startTime)
-  const end = parseTime(endTime)
-  const slot = Number(slotMinutes || 30)
+  const startMinutes = Number(doctor?.availabilityStartTime ? doctor.availabilityStartTime.split(':')[0] : 8) * 60 + Number(doctor?.availabilityStartTime ? doctor.availabilityStartTime.split(':')[1] : 0)
+  const endMinutes = Number(doctor?.availabilityEndTime ? doctor.availabilityEndTime.split(':')[0] : 18) * 60 + Number(doctor?.availabilityEndTime ? doctor.availabilityEndTime.split(':')[1] : 0)
+  const slotMinutes = Number(doctor?.slotMinutes || 30)
 
-  if (start === null || end === null || !Number.isFinite(slot) || slot <= 0 || start >= end) {
+  if (!Number.isFinite(startMinutes) || !Number.isFinite(endMinutes) || !Number.isFinite(slotMinutes) || slotMinutes <= 0) {
+    return null
+  }
+
+  const findNextDate = (date) => {
+    const candidate = new Date(date)
+    const dayCode = weekdayLabels[candidate.getDay()]
+    if (workingDays.includes(dayCode)) {
+      return candidate
+    }
+
+    for (let i = 1; i <= 7; i += 1) {
+      const next = new Date(candidate)
+      next.setDate(candidate.getDate() + i)
+      const nextDayCode = weekdayLabels[next.getDay()]
+      if (workingDays.includes(nextDayCode)) {
+        return next
+      }
+    }
+
+    return null
+  }
+
+  const nextWorkingDate = findNextDate(baseDate)
+  if (!nextWorkingDate) {
     return null
   }
 
   const now = new Date()
+  const sameDay = nextWorkingDate.toDateString() === now.toDateString()
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
-  let next = start
+  let nextMinutes = startMinutes
 
-  while (next <= currentMinutes) {
-    next += slot
+  if (sameDay && currentMinutes > startMinutes) {
+    nextMinutes = currentMinutes
   }
 
-  if (next >= end) {
+  while (nextMinutes <= currentMinutes && sameDay) {
+    nextMinutes += slotMinutes
+  }
+
+  if (nextMinutes >= endMinutes) {
     return null
   }
 
-  const hours = String(Math.floor(next / 60)).padStart(2, '0')
-  const minutes = String(next % 60).padStart(2, '0')
-  return `${hours}:${minutes}`
+  const hours = String(Math.floor(nextMinutes / 60)).padStart(2, '0')
+  const minutes = String(nextMinutes % 60).padStart(2, '0')
+
+  return {
+    date: nextWorkingDate.toISOString().split('T')[0],
+    time: `${hours}:${minutes}`,
+  }
 }
 
 export default function DoctorDetails() {
@@ -99,7 +160,12 @@ export default function DoctorDetails() {
     return `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim() || 'Doctor profile'
   }, [doctor])
 
-  const nextSlot = computeNextSlot(doctor?.availabilityStartTime, doctor?.availabilityEndTime, doctor?.slotMinutes)
+  const weeklySchedule = useMemo(
+    () => weekdayLabels.map((day) => ({ day, schedule: formatDaySchedule(day, doctor) })),
+    [doctor]
+  )
+
+  const nextSlot = computeNextAvailableSlot(doctor, null)
 
   if (loading) {
     return (
@@ -168,6 +234,18 @@ export default function DoctorDetails() {
               <p className="mt-1 text-lg font-semibold text-slate-900">{doctor.hospitalOrClinic || 'Online'}</p>
             </div>
           </div>
+
+          <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Weekly schedule</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {weeklySchedule.map((item) => (
+                <div key={item.day} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{item.day}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">{item.schedule}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <aside className="space-y-6">
@@ -175,12 +253,13 @@ export default function DoctorDetails() {
             <h2 className="text-xl font-semibold text-slate-900">Availability</h2>
             <p className="mt-2 text-sm text-slate-500">
               {doctor.availabilityStartTime && doctor.availabilityEndTime
-                ? `${doctor.availabilityStartTime} to ${doctor.availabilityEndTime}`
+                ? `${doctor.availabilityStartTime} – ${doctor.availabilityEndTime}`
                 : 'No availability set'}
             </p>
             <p className="mt-1 text-sm text-slate-500">Slot duration: {doctor.slotMinutes || 30} minutes</p>
+            <p className="mt-1 text-sm text-slate-500">Working days: {formatWorkingDays(doctor.workingDays)}</p>
             <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-              {nextSlot ? `Next available slot today: ${nextSlot}` : 'Next slot not available today'}
+              {nextSlot ? `Next available slot: ${nextSlot.date} at ${nextSlot.time}` : 'Next slot not available'}
             </p>
           </div>
 
