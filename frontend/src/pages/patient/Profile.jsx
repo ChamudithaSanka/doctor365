@@ -162,8 +162,8 @@ export default function Profile() {
         {/* Quick links */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {[
-            { label: 'Medical history', desc: 'View your full health records', href: '/medical-history', color: 'blue' },
-            { label: 'Reports', desc: 'Download or view lab reports', href: '/reports', color: 'green' },
+            { label: 'Medical history', desc: 'View your full health records', href: '/patient/medical-history', color: 'blue' },
+            { label: 'Reports', desc: 'Download or view lab reports', href: '/patient/reports', color: 'green' },
           ].map((item) => (
             <Link
               key={item.label}

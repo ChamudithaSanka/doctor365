@@ -12,7 +12,9 @@ const navigationByRole = {
     { label: 'Appointments', to: '/appointments' },
     { label: 'Payments', to: '/payments' },
     { label: 'Notifications', to: '/notifications' },
-    { label: 'Profile', to: '/profile' },
+    { label: 'Profile', to: '/patient/profile' },
+    { label: 'Reports', to: '/patient/reports' },
+    { label: 'Medical history', to: '/patient/medical-history' },
   ],
   doctor: [
     { label: 'Dashboard', to: '/doctor/dashboard' },
