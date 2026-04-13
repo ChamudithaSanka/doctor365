@@ -204,6 +204,18 @@ export default function BookAppointment() {
         return
       }
 
+      sessionStorage.setItem(
+        'pendingAppointmentAfterPayment',
+        JSON.stringify({
+          orderId: paymentData.fields.order_id,
+          doctorId: selectedDoctor.userId,
+          appointmentDate,
+          appointmentTime,
+          reason,
+          notes: notes || '',
+        })
+      )
+
       // Create hidden form and submit to PayHere
       const form = document.createElement('form')
       form.method = 'POST'

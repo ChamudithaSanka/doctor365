@@ -10,6 +10,12 @@ const appointmentSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Doctor ID is required'],
     },
+    paymentOrderId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
     appointmentDate: {
       type: Date,
       required: [true, 'Appointment date is required'],

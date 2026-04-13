@@ -1,9 +1,14 @@
+import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 export default function PaymentFailed() {
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('order_id')
   const statusCode = searchParams.get('status_code')
+
+  useEffect(() => {
+    sessionStorage.removeItem('pendingAppointmentAfterPayment')
+  }, [])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6 py-12 text-slate-900">

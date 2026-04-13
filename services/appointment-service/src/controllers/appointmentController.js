@@ -60,7 +60,7 @@ const getWeekdayCode = (dateValue) => {
 // @access  Private (patient)
 exports.createAppointment = async (req, res, next) => {
   try {
-    const { doctorId, appointmentDate, appointmentTime, reason, notes } = req.body;
+    const { doctorId, appointmentDate, appointmentTime, reason, notes, paymentOrderId } = req.body;
 
     // Validate required fields
     if (!doctorId || !appointmentDate || !appointmentTime || !reason) {
@@ -71,6 +71,21 @@ exports.createAppointment = async (req, res, next) => {
           message: 'Please provide doctorId, appointmentDate, appointmentTime, and reason',
         },
       });
+    }
+
+    if (paymentOrderId) {
+      const existingByPayment = await Appointment.findOne({
+        paymentOrderId,
+        patientId: req.user.userId,
+      });
+
+      if (existingByPayment) {
+        return res.status(200).json({
+          success: true,
+          data: existingByPayment,
+          message: 'Appointment already exists for this payment order',
+        });
+      }
     }
 
     const doctor = await fetchDoctorProfile(doctorId);
@@ -151,6 +166,7 @@ exports.createAppointment = async (req, res, next) => {
     const appointment = new Appointment({
       patientId: req.user.userId,
       doctorId,
+      paymentOrderId: paymentOrderId || undefined,
       appointmentDate: new Date(appointmentDate),
       appointmentTime,
       reason,
@@ -214,6 +230,25 @@ exports.createAppointment = async (req, res, next) => {
       message: 'Appointment created successfully',
     });
   } catch (error) {
+    if (error.code === 11000 && error.keyPattern?.paymentOrderId && req.body?.paymentOrderId) {
+      try {
+        const existingByPayment = await Appointment.findOne({
+          paymentOrderId: req.body.paymentOrderId,
+          patientId: req.user.userId,
+        });
+
+        if (existingByPayment) {
+          return res.status(200).json({
+            success: true,
+            data: existingByPayment,
+            message: 'Appointment already exists for this payment order',
+          });
+        }
+      } catch (lookupError) {
+        return next(lookupError);
+      }
+    }
+
     next(error);
   }
 };
