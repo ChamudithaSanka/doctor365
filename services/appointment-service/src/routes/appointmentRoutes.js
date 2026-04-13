@@ -20,7 +20,8 @@ router.get('/health', (req, res) => {
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);
-
+// Get all appointments (admin only)
+router.get('/', restrictTo('admin'), getMyAppointments);
 // Create appointment (patient only)
 router.post('/', restrictTo('patient'), createAppointment);
 

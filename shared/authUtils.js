@@ -4,7 +4,7 @@ const generateTokens = (userId, email, role) => {
   const accessToken = jwt.sign(
     { userId, email, role },
     process.env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '24h' }
   );
 
   const refreshToken = jwt.sign(
@@ -70,11 +70,27 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to perform this action',
+        },
+      });
+    }
+    next();
+  };
+};
+
 module.exports = {
   generateTokens,
   verifyAccessToken,
   verifyRefreshToken,
   verifyToken,
+  restrictTo,
 };
 
 /*

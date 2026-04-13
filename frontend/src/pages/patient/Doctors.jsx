@@ -20,6 +20,29 @@ const formatCurrency = (amount) => {
 
 const normalizeText = (value) => String(value || '').toLowerCase().trim()
 
+const weekdayLabels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+
+const formatWorkingDays = (workingDays) => {
+  if (!Array.isArray(workingDays) || workingDays.length === 0) {
+    return 'Schedule not listed'
+  }
+
+  return workingDays.join(', ')
+}
+
+const getWeekdayCode = (dateValue) => {
+  if (!dateValue) {
+    return ''
+  }
+
+  const date = new Date(dateValue)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  return weekdayLabels[date.getDay()]
+}
+
 export default function Doctors() {
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
@@ -28,7 +51,7 @@ export default function Doctors() {
   const [search, setSearch] = useState('')
   const [specialty, setSpecialty] = useState('all')
   const [maxFee, setMaxFee] = useState('')
-  const [availability, setAvailability] = useState('all')
+  const [selectedDate, setSelectedDate] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -68,8 +91,12 @@ export default function Doctors() {
     return values.sort((left, right) => left.localeCompare(right))
   }, [doctors])
 
+  const verifiedDoctors = useMemo(() => doctors.filter((doctor) => doctor.isVerified), [doctors])
+
   const filteredDoctors = useMemo(() => {
-    return doctors.filter((doctor) => {
+    const selectedDay = getWeekdayCode(selectedDate)
+
+    return verifiedDoctors.filter((doctor) => {
       const doctorName = normalizeText(`${doctor.firstName || ''} ${doctor.lastName || ''}`)
       const doctorSpecialty = normalizeText(doctor.specialization)
       const doctorClinic = normalizeText(doctor.hospitalOrClinic)
@@ -86,15 +113,15 @@ export default function Doctors() {
       const maxFeeValue = maxFee === '' ? null : Number(maxFee)
       const hasFeeMatch = maxFeeValue === null || (!Number.isNaN(feeValue) && feeValue <= maxFeeValue)
 
-      const hasAvailabilityData = Boolean(doctor.availabilityStartTime && doctor.availabilityEndTime)
-      const hasAvailabilityMatch =
-        availability === 'all' ||
-        (availability === 'available' && hasAvailabilityData) ||
-        (availability === 'no-slots' && !hasAvailabilityData)
+      const hasBookableDayMatch =
+        !selectedDay ||
+        (Array.isArray(doctor.workingDays) && doctor.workingDays.includes(selectedDay))
 
-      return hasSearchMatch && hasSpecialtyMatch && hasFeeMatch && hasAvailabilityMatch
+      return hasSearchMatch && hasSpecialtyMatch && hasFeeMatch && hasBookableDayMatch
     })
-  }, [availability, doctors, maxFee, search, specialty])
+  }, [maxFee, search, selectedDate, specialty, verifiedDoctors])
+
+  const minDate = new Date().toISOString().split('T')[0]
 
   return (
     <div className="space-y-6">
@@ -157,19 +184,17 @@ export default function Doctors() {
           </div>
 
           <div>
-            <label htmlFor="doctor-availability" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-              Availability
+            <label htmlFor="doctor-date" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              Pick a date
             </label>
-            <select
-              id="doctor-availability"
-              value={availability}
-              onChange={(event) => setAvailability(event.target.value)}
+            <input
+              id="doctor-date"
+              type="date"
+              min={minDate}
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
               className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            >
-              <option value="all">All</option>
-              <option value="available">Has slots</option>
-              <option value="no-slots">No slots listed</option>
-            </select>
+            />
           </div>
         </div>
       </section>
@@ -182,7 +207,7 @@ export default function Doctors() {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900">Doctors</h2>
           <p className="text-sm text-slate-500">
-            {loading ? 'Loading...' : `${filteredDoctors.length} match${filteredDoctors.length === 1 ? '' : 'es'}`}
+            {loading ? 'Loading...' : `${filteredDoctors.length} verified match${filteredDoctors.length === 1 ? '' : 'es'}`}
           </p>
         </div>
 
@@ -196,10 +221,13 @@ export default function Doctors() {
           <div className="grid gap-4 lg:grid-cols-2">
             {filteredDoctors.map((doctor) => {
               const fullName = `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim() || 'Doctor'
-              const hasAvailability = Boolean(doctor.availabilityStartTime && doctor.availabilityEndTime)
-              const availabilityLabel = hasAvailability
-                ? `${doctor.availabilityStartTime} - ${doctor.availabilityEndTime}`
+              const availabilityLabel = doctor.availabilityStartTime && doctor.availabilityEndTime
+                ? `${doctor.availabilityStartTime} – ${doctor.availabilityEndTime}`
                 : 'No working hours listed'
+              const workingDaysLabel = formatWorkingDays(doctor.workingDays)
+              const selectedDay = getWeekdayCode(selectedDate)
+              const isBookableOnSelectedDate =
+                !selectedDay || (Array.isArray(doctor.workingDays) && doctor.workingDays.includes(selectedDay))
 
               return (
                 <article key={doctor._id || doctor.userId} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -229,6 +257,18 @@ export default function Doctors() {
                     </div>
                   </div>
 
+                  <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Working days</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-900">{workingDaysLabel}</p>
+                    {selectedDate ? (
+                      <p className={`mt-2 text-sm font-medium ${isBookableOnSelectedDate ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        {isBookableOnSelectedDate
+                          ? `Bookable on ${selectedDate}`
+                          : `Not bookable on ${selectedDate}`}
+                      </p>
+                    ) : null}
+                  </div>
+
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link
                       to={`/doctors/${doctor._id || doctor.userId}`}
@@ -237,7 +277,7 @@ export default function Doctors() {
                       View details
                     </Link>
                     <Link
-                      to="/appointments/book"
+                      to={selectedDate ? `/appointments/book?doctorId=${doctor._id || doctor.userId}&date=${selectedDate}` : `/appointments/book?doctorId=${doctor._id || doctor.userId}`}
                       className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
                     >
                       Book appointment

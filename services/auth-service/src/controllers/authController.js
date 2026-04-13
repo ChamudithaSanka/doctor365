@@ -2,6 +2,7 @@ const User = require('../models/User');
 const { generateTokens, verifyRefreshToken } = require('../../../../shared/authUtils');
 
 const patientServiceBaseUrl = process.env.PATIENT_SERVICE_URL || 'http://localhost:5002';
+const doctorServiceBaseUrl = process.env.DOCTOR_SERVICE_URL || 'http://localhost:5003';
 
 const sanitizeText = (value) => String(value || '').trim();
 
@@ -31,6 +32,34 @@ const normalizePatientPayload = (payload) => ({
   medicalHistorySummary: String(payload.medicalHistorySummary || '').trim(),
 });
 
+const validateDoctorRegistration = (payload) => {
+  const requiredFields = [
+    'specialization',
+    'licenseNumber',
+    'yearsOfExperience',
+    'consultationFee',
+  ];
+
+  const missingFields = requiredFields.filter((field) => payload[field] === undefined || payload[field] === null || payload[field] === '');
+  return missingFields;
+};
+
+const normalizeDoctorPayload = (payload) => ({
+  firstName: String(payload.firstName || '').trim(),
+  lastName: String(payload.lastName || '').trim(),
+  specialization: String(payload.specialization || '').trim(),
+  licenseNumber: String(payload.licenseNumber || '').trim(),
+  yearsOfExperience: Number(payload.yearsOfExperience),
+  consultationFee: Number(payload.consultationFee),
+  hospitalOrClinic: String(payload.hospitalOrClinic || '').trim() || 'Online',
+  workingDays: Array.isArray(payload.workingDays) && payload.workingDays.length > 0
+    ? payload.workingDays
+    : ['MON', 'TUE', 'WED', 'THU', 'FRI'],
+  availabilityStartTime: String(payload.availabilityStartTime || '').trim() || '08:00',
+  availabilityEndTime: String(payload.availabilityEndTime || '').trim() || '18:00',
+  slotMinutes: Number(payload.slotMinutes) || 30,
+});
+
 const createPatientProfile = async (accessToken, payload) => {
   const response = await fetch(`${patientServiceBaseUrl}/api/patients/me`, {
     method: 'PUT',
@@ -52,6 +81,27 @@ const createPatientProfile = async (accessToken, payload) => {
   }
 };
 
+const createDoctorProfile = async (accessToken, payload) => {
+  const response = await fetch(`${doctorServiceBaseUrl}/api/doctors/me`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const serviceMessage = data?.error?.message || data?.message || 'Unable to create doctor profile';
+    const error = new Error(serviceMessage);
+    error.status = response.status;
+    error.details = data?.error?.details;
+    throw error;
+  }
+};
+
 exports.register = async (req, res) => {
   try {
     const {
@@ -59,52 +109,61 @@ exports.register = async (req, res) => {
       password,
       firstName,
       lastName,
+      role,
       dateOfBirth,
       gender,
       phone,
       address,
       emergencyContact,
       medicalHistorySummary,
+      specialization,
+      licenseNumber,
+      yearsOfExperience,
+      consultationFee,
+      hospitalOrClinic,
+      workingDays,
+      availabilityStartTime,
+      availabilityEndTime,
+      slotMinutes,
     } = req.body;
 
-    const targetRole = 'patient';
-    const normalizedPatientPayload = normalizePatientPayload({
-      firstName,
-      lastName,
-      dateOfBirth,
-      gender,
-      phone,
-      address,
-      emergencyContact,
-      medicalHistorySummary,
-    });
+    // Validate role parameter
+    const targetRole = (role && (role === 'doctor' || role === 'patient')) ? role : 'patient';
 
-    // Validate input
+    // Validate basic input only
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Please provide all required fields',
+          message: 'Please provide all required fields: email, password, firstName, lastName',
         },
       });
     }
 
     if (targetRole === 'patient') {
-      const missingPatientFields = validatePatientRegistration({
-        dateOfBirth: normalizedPatientPayload.dateOfBirth,
-        gender: normalizedPatientPayload.gender,
-        phone: normalizedPatientPayload.phone,
-        address: normalizedPatientPayload.address,
-        emergencyContact: normalizedPatientPayload.emergencyContact,
-      });
-
-      if (missingPatientFields.length > 0) {
+      const missingFields = validatePatientRegistration(req.body);
+      if (missingFields.length > 0) {
         return res.status(400).json({
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message: `Missing required patient fields: ${missingPatientFields.join(', ')}`,
+            message: 'Missing required patient profile fields',
+            details: missingFields.map((field) => ({ field, message: `${field} is required` })),
+          },
+        });
+      }
+    }
+
+    if (targetRole === 'doctor') {
+      const missingFields = validateDoctorRegistration(req.body);
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Missing required doctor profile fields',
+            details: missingFields.map((field) => ({ field, message: `${field} is required` })),
           },
         });
       }
@@ -124,10 +183,10 @@ exports.register = async (req, res) => {
 
     // Create new user
     const user = new User({
-      email,
+      email: sanitizeText(email).toLowerCase(),
       password,
-      firstName: normalizedPatientPayload.firstName || firstName,
-      lastName: normalizedPatientPayload.lastName || lastName,
+      firstName: sanitizeText(firstName),
+      lastName: sanitizeText(lastName),
       role: targetRole,
     });
 
@@ -136,28 +195,50 @@ exports.register = async (req, res) => {
     // Generate tokens
     const { accessToken, refreshToken } = generateTokens(user._id, user.email, user.role);
 
-    if (targetRole === 'patient') {
-      try {
-        await createPatientProfile(accessToken, normalizedPatientPayload);
-      } catch (profileError) {
-        await User.findByIdAndDelete(user._id);
-
-        const statusCode = profileError.status >= 400 && profileError.status < 500 ? 400 : 502;
-
-        return res.status(statusCode).json({
-          success: false,
-          error: {
-            code: 'PATIENT_PROFILE_SETUP_FAILED',
-            message: `User was not created because patient profile setup failed: ${profileError.message}`,
-            details: profileError.details || [],
-          },
-        });
-      }
-    }
-
     // Save refresh token to database
     user.refreshToken = refreshToken;
     await user.save();
+
+    try {
+      if (targetRole === 'patient') {
+        await createPatientProfile(accessToken, normalizePatientPayload({
+          firstName,
+          lastName,
+          dateOfBirth,
+          gender,
+          phone,
+          address,
+          emergencyContact,
+          medicalHistorySummary,
+        }));
+      }
+
+      if (targetRole === 'doctor') {
+        await createDoctorProfile(accessToken, normalizeDoctorPayload({
+          firstName,
+          lastName,
+          specialization,
+          licenseNumber,
+          yearsOfExperience,
+          consultationFee,
+          hospitalOrClinic,
+          workingDays,
+          availabilityStartTime,
+          availabilityEndTime,
+          slotMinutes,
+        }));
+      }
+    } catch (profileError) {
+      await User.findByIdAndDelete(user._id);
+      return res.status(profileError.status || 400).json({
+        success: false,
+        error: {
+          code: 'PROFILE_SETUP_FAILED',
+          message: profileError.message || 'Profile setup failed during registration',
+          details: profileError.details,
+        },
+      });
+    }
 
     // Return user info (exclude password and refreshToken)
     res.status(201).json({
@@ -169,6 +250,7 @@ exports.register = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          isVerified: user.isVerified,
         },
         accessToken,
         refreshToken,
@@ -187,62 +269,53 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.createDoctor = async (req, res) => {
+exports.updateDoctorVerification = async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { id } = req.params;
+    const { isVerified } = req.body;
 
-    if (!email || !password || !firstName || !lastName) {
+    if (typeof isVerified !== 'boolean') {
       return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Please provide email, password, firstName, and lastName',
+          message: 'isVerified must be a boolean',
         },
       });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({
+    const user = await User.findOneAndUpdate(
+      { _id: id, role: 'doctor' },
+      { isVerified },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
         success: false,
         error: {
-          code: 'EMAIL_EXISTS',
-          message: 'Email already registered',
+          code: 'NOT_FOUND',
+          message: 'Doctor user not found',
         },
       });
     }
 
-    const user = new User({
-      email: sanitizeText(email).toLowerCase(),
-      password,
-      firstName: sanitizeText(firstName),
-      lastName: sanitizeText(lastName),
-      role: 'doctor',
-      isVerified: true,
-    });
-
-    await user.save();
-
-    res.status(201).json({
+    return res.status(200).json({
       success: true,
       data: {
-        user: {
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-        },
+        id: user._id,
+        role: user.role,
+        isVerified: user.isVerified,
       },
-      message: 'Doctor auth account created successfully',
+      message: 'Doctor account verification updated successfully',
     });
   } catch (error) {
-    console.error('Create doctor error:', error);
-    res.status(500).json({
+    console.error('Update doctor verification error:', error);
+    return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: 'Error creating doctor account',
+        message: 'Error updating doctor verification',
       },
     });
   }
@@ -303,6 +376,7 @@ exports.login = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          isVerified: user.isVerified,
         },
         accessToken,
         refreshToken,

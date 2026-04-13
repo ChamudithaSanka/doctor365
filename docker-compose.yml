@@ -1,91 +1,103 @@
-version: "3.9"
-
 services:
-  mongo:
-    image: mongo:7
-    container_name: doctor365-mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+  # mongo:
+  #   image: mongo:7
+  #   container_name: doctor365-mongo
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
 
   auth-service:
-    build: ./services/auth-service
+    build:
+      context: .
+      dockerfile: ./services/auth-service/Dockerfile
     container_name: doctor365-auth-service
     restart: unless-stopped
     env_file:
       - ./services/auth-service/.env
     ports:
       - "5001:5001"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   patient-service:
-    build: ./services/patient-service
+    build:
+      context: .
+      dockerfile: ./services/patient-service/Dockerfile
     container_name: doctor365-patient-service
     restart: unless-stopped
     env_file:
       - ./services/patient-service/.env
     ports:
       - "5002:5002"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   doctor-service:
-    build: ./services/doctor-service
+    build:
+      context: .
+      dockerfile: ./services/doctor-service/Dockerfile
     container_name: doctor365-doctor-service
     restart: unless-stopped
     env_file:
       - ./services/doctor-service/.env
     ports:
       - "5003:5003"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   appointment-service:
-    build: ./services/appointment-service
+    build:
+      context: .
+      dockerfile: ./services/appointment-service/Dockerfile
     container_name: doctor365-appointment-service
     restart: unless-stopped
     env_file:
       - ./services/appointment-service/.env
     ports:
       - "5004:5004"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   telemedicine-service:
-    build: ./services/telemedicine-service
+    build:
+      context: .
+      dockerfile: ./services/telemedicine-service/Dockerfile
     container_name: doctor365-telemedicine-service
     restart: unless-stopped
     env_file:
       - ./services/telemedicine-service/.env
     ports:
       - "5005:5005"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   payment-service:
-    build: ./services/payment-service
+    build:
+      context: .
+      dockerfile: ./services/payment-service/Dockerfile
     container_name: doctor365-payment-service
     restart: unless-stopped
     env_file:
       - ./services/payment-service/.env
     ports:
       - "5006:5006"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   notification-service:
-    build: ./services/notification-service
+    build:
+      context: .
+      dockerfile: ./services/notification-service/Dockerfile
     container_name: doctor365-notification-service
     restart: unless-stopped
     env_file:
       - ./services/notification-service/.env
     ports:
       - "5007:5007"
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
 
   gateway:
     build: ./gateway
@@ -112,5 +124,5 @@ services:
       - payment-service
       - notification-service
 
-volumes:
-  mongo_data:
+# volumes:
+#   # mongo_data:
