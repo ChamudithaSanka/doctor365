@@ -1,12 +1,12 @@
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app/services/appointment-service
 
 COPY services/appointment-service/package*.json ./
 RUN npm install
 
 COPY services/appointment-service/src ./src
-COPY shared /shared
+COPY shared /app/shared
 
 EXPOSE 5004
 

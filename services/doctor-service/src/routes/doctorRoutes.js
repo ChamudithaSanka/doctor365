@@ -5,17 +5,15 @@ const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', doctorController.getDoctors);
+
+// Protected routes — apply auth per-route so public routes remain public
+router.get('/me', verifyToken, restrictTo('doctor'), doctorController.getMe);
+router.put('/me', verifyToken, restrictTo('doctor'), doctorController.updateMe);
+
+// Admin only
+router.patch('/:id/verify', verifyToken, restrictTo('admin'), doctorController.verifyDoctor);
+
+// Public — must be LAST so it doesn't catch /me
 router.get('/:id', doctorController.getDoctorById);
-
-// Apply verifyToken middleware to all routes below
-router.use(verifyToken);
-
-// Protected routes (Doctor only)
-router.get('/me', restrictTo('doctor'), doctorController.getMe);
-router.put('/me', restrictTo('doctor'), doctorController.updateMe);
-
-// Protected routes (Admin only)
-router.post('/admin', verifyToken, restrictTo('admin'), doctorController.createDoctor);
-router.patch('/:id/verify', restrictTo('admin'), doctorController.verifyDoctor);
 
 module.exports = router;

@@ -7,6 +7,18 @@ const navItems = [
   { label: 'How it works', href: '#how-it-works' },
 ]
 
+function getDashboardPath(user) {
+  if (user?.role === 'doctor') {
+    return user?.isVerified === false ? '/doctor/pending-verification' : '/doctor/dashboard'
+  }
+
+  if (user?.role === 'admin') {
+    return '/admin/dashboard'
+  }
+
+  return '/patient/dashboard'
+}
+
 export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [dashboardPath, setDashboardPath] = useState('/patient/dashboard')
@@ -24,15 +36,7 @@ export default function Header() {
 
       try {
         const user = JSON.parse(rawUser)
-        const role = user?.role
-
-        if (role === 'doctor') {
-          setDashboardPath('/doctor/dashboard')
-        } else if (role === 'admin') {
-          setDashboardPath('/admin/dashboard')
-        } else {
-          setDashboardPath('/patient/dashboard')
-        }
+        setDashboardPath(getDashboardPath(user))
 
         setIsLoggedIn(true)
       } catch {
