@@ -140,3 +140,5 @@ vite.config.ts.timestamp-*
 services/patient-service/generate-tokens.js
 doctor-service-postman-collection.json
 SERVICE_VERIFICATION_REPORT.md
+
+frontend/FULL_PAGE_SET_IMPLEMENTATION_GUIDE.md

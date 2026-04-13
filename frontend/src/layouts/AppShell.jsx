@@ -19,9 +19,10 @@ const navigationByRole = {
   doctor: [
     { label: 'Dashboard', to: '/doctor/dashboard' },
     { label: 'Appointments', to: '/doctor/appointments' },
+    { label: 'Reports', to: '/doctor/reports' },
+    { label: 'Profile', to: '/doctor/profile' },
     { label: 'Consultations', to: '/consultation' },
     { label: 'Notifications', to: '/notifications' },
-    { label: 'Profile', to: '/profile' },
   ],
   doctorPending: [
     { label: 'Verification status', to: '/doctor/pending-verification' },
