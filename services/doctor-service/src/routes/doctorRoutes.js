@@ -5,7 +5,6 @@ const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', doctorController.getDoctors);
-router.get('/:id', doctorController.getDoctorById);
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);
@@ -16,5 +15,8 @@ router.put('/me', restrictTo('doctor'), doctorController.updateMe);
 
 // Protected routes (Admin only)
 router.patch('/:id/verify', restrictTo('admin'), doctorController.verifyDoctor);
+
+// Public route with dynamic id must come after /me and /:id/verify
+router.get('/:id', doctorController.getDoctorById);
 
 module.exports = router;

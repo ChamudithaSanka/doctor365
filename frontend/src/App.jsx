@@ -11,6 +11,7 @@ import AppointmentList from './pages/patient/AppointmentList'
 import AppointmentDetail from './pages/patient/AppointmentDetail'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import DoctorAppointments from './pages/doctor/DoctorAppointments'
+import VerificationPending from './pages/doctor/VerificationPending'
 import AdminDoctorVerification from './pages/admin/AdminDoctorVerification'
 import AdminAppointments from './pages/admin/AdminAppointments'
 import ComingSoon from './pages/shared/ComingSoon'
@@ -27,6 +28,7 @@ function App() {
         <Route element={<AppShell />}>
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctor/pending-verification" element={<VerificationPending />} />
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/doctors/:id" element={<DoctorDetails />} />
           <Route path="/appointments/book" element={<BookAppointment />} />

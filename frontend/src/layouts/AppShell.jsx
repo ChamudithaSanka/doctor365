@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+
+const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
+
+const limitedDoctorPaths = ['/doctor/pending-verification', '/notifications', '/profile']
 
 const navigationByRole = {
   patient: [
@@ -14,6 +18,11 @@ const navigationByRole = {
     { label: 'Dashboard', to: '/doctor/dashboard' },
     { label: 'Appointments', to: '/doctor/appointments' },
     { label: 'Consultations', to: '/consultation' },
+    { label: 'Notifications', to: '/notifications' },
+    { label: 'Profile', to: '/profile' },
+  ],
+  doctorPending: [
+    { label: 'Verification status', to: '/doctor/pending-verification' },
     { label: 'Notifications', to: '/notifications' },
     { label: 'Profile', to: '/profile' },
   ],
@@ -33,11 +42,20 @@ function readAuthUser() {
 
 export default function AppShell() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [user, setUser] = useState(readAuthUser())
+  const [verificationReady, setVerificationReady] = useState(false)
+  const [doctorVerified, setDoctorVerified] = useState(true)
 
   const role = user?.role || 'patient'
-  const navigation = useMemo(() => navigationByRole[role] || navigationByRole.patient, [role])
+  const navigation = useMemo(() => {
+    if (role === 'doctor' && verificationReady && !doctorVerified) {
+      return navigationByRole.doctorPending
+    }
+
+    return navigationByRole[role] || navigationByRole.patient
+  }, [role, verificationReady, doctorVerified])
 
   useEffect(() => {
     const token = localStorage.getItem('doctor365_accessToken')
@@ -53,6 +71,120 @@ export default function AppShell() {
     return () => window.removeEventListener('storage', syncAuthState)
   }, [navigate])
 
+  useEffect(() => {
+    let isActive = true
+    let intervalId = null
+
+    const resolveDoctorVerification = async () => {
+      if (role !== 'doctor') {
+        if (!isActive) {
+          return
+        }
+
+        setDoctorVerified(true)
+        setVerificationReady(true)
+        return
+      }
+
+      const token = localStorage.getItem('doctor365_accessToken')
+      if (!token) {
+        return
+      }
+
+      try {
+        const response = await fetch(`${gatewayBaseUrl}/api/doctors/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!isActive) {
+          return
+        }
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            navigate('/login', { replace: true })
+          }
+          setDoctorVerified(false)
+          setVerificationReady(true)
+          return
+        }
+
+        const data = await response.json()
+        const profile = data?.data || {}
+        const verified = Boolean(profile.isVerified)
+
+        setDoctorVerified(verified)
+        setVerificationReady(true)
+
+        setUser((current) => {
+          if (!current || current.role !== 'doctor') {
+            return current
+          }
+
+          const nextUser = { ...current, isVerified: verified }
+          localStorage.setItem('doctor365_user', JSON.stringify(nextUser))
+          return nextUser
+        })
+      } catch {
+        if (!isActive) {
+          return
+        }
+
+        setDoctorVerified(false)
+        setVerificationReady(true)
+      }
+    }
+
+    resolveDoctorVerification()
+
+    if (role === 'doctor') {
+      intervalId = window.setInterval(resolveDoctorVerification, 15000)
+      window.addEventListener('focus', resolveDoctorVerification)
+    }
+
+    return () => {
+      isActive = false
+      if (intervalId) {
+        window.clearInterval(intervalId)
+      }
+      window.removeEventListener('focus', resolveDoctorVerification)
+    }
+  }, [navigate, role])
+
+  useEffect(() => {
+    if (role !== 'doctor' || !verificationReady || doctorVerified) {
+      return
+    }
+
+    if (!limitedDoctorPaths.some((path) => location.pathname === path || location.pathname.startsWith(`${path}/`))) {
+      navigate('/doctor/pending-verification', { replace: true })
+    }
+  }, [doctorVerified, location.pathname, navigate, role, verificationReady])
+
+  useEffect(() => {
+    if (role === 'doctor' && verificationReady && doctorVerified && location.pathname === '/doctor/pending-verification') {
+      navigate('/doctor/dashboard', { replace: true })
+    }
+  }, [doctorVerified, location.pathname, navigate, role, verificationReady])
+
+  if (role === 'doctor' && !verificationReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6 text-slate-900">
+        <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-700">
+            ...
+          </div>
+          <h1 className="mt-6 text-2xl font-bold tracking-tight text-slate-950">Checking verification status</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            We are confirming your doctor account status before loading the workspace.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('doctor365_accessToken')
     localStorage.removeItem('doctor365_refreshToken')
@@ -67,7 +199,15 @@ export default function AppShell() {
         <div className="border-b border-slate-200 px-6 py-6">
           <Link to="/" className="block">
             <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-            <p className="text-sm text-slate-500">{role === 'doctor' ? 'Doctor workspace' : role === 'admin' ? 'Admin workspace' : 'Patient workspace'}</p>
+            <p className="text-sm text-slate-500">
+              {role === 'doctor'
+                ? doctorVerified
+                  ? 'Doctor workspace'
+                  : 'Verification pending'
+                : role === 'admin'
+                  ? 'Admin workspace'
+                  : 'Patient workspace'}
+            </p>
           </Link>
         </div>
 
@@ -107,7 +247,15 @@ export default function AppShell() {
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <Link to="/" className="block" onClick={() => setMobileOpen(false)}>
                 <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-                <p className="text-xs text-slate-500">{role === 'doctor' ? 'Doctor workspace' : role === 'admin' ? 'Admin workspace' : 'Patient workspace'}</p>
+                <p className="text-xs text-slate-500">
+                  {role === 'doctor'
+                    ? doctorVerified
+                      ? 'Doctor workspace'
+                      : 'Verification pending'
+                    : role === 'admin'
+                      ? 'Admin workspace'
+                      : 'Patient workspace'}
+                </p>
               </Link>
               <button type="button" className="rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600" onClick={() => setMobileOpen(false)}>
                 Close
@@ -160,7 +308,7 @@ export default function AppShell() {
 
               <div>
                 <p className="text-sm font-semibold text-slate-900">Workspace</p>
-                <p className="text-xs text-slate-500">Responsive shell layout</p>
+                <p className="text-xs text-slate-500">{role === 'doctor' && !doctorVerified ? 'Limited access workspace' : 'Responsive shell layout'}</p>
               </div>
             </div>
 
@@ -177,7 +325,9 @@ export default function AppShell() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-900">{user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User'}</p>
-                  <p className="text-xs text-slate-500">{role}</p>
+                  <p className="text-xs text-slate-500">
+                    {role === 'doctor' && !doctorVerified ? 'doctor · pending verification' : role}
+                  </p>
                 </div>
               </div>
             </div>
@@ -186,7 +336,9 @@ export default function AppShell() {
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-7xl">
-            <Outlet />
+            {role !== 'doctor' || doctorVerified || limitedDoctorPaths.some((path) => location.pathname === path || location.pathname.startsWith(`${path}/`)) ? (
+              <Outlet />
+            ) : null}
           </div>
         </main>
       </div>

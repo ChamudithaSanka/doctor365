@@ -4,6 +4,18 @@ import axios from 'axios'
 
 const authBaseUrl = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:5000/api/auth'
 
+const getPostAuthPath = (user) => {
+  if (user?.role === 'admin') {
+    return '/admin/dashboard'
+  }
+
+  if (user?.role === 'doctor') {
+    return user?.isVerified === false ? '/doctor/pending-verification' : '/doctor/dashboard'
+  }
+
+  return '/patient/dashboard'
+}
+
 export default function Login() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -44,14 +56,7 @@ export default function Login() {
       localStorage.setItem('doctor365_refreshToken', refreshToken)
       localStorage.setItem('doctor365_user', JSON.stringify(user))
 
-      // Redirect based on user role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard')
-      } else if (user.role === 'doctor') {
-        navigate('/doctor/dashboard')
-      } else {
-        navigate('/patient/dashboard')
-      }
+      navigate(getPostAuthPath(user), { replace: true })
     } catch (err) {
       setError(
         err?.response?.data?.error?.message ||

@@ -4,6 +4,18 @@ import axios from 'axios'
 
 const authBaseUrl = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:5000/api/auth'
 
+const getPostAuthPath = (user) => {
+  if (user?.role === 'doctor') {
+    return user?.isVerified === false ? '/doctor/pending-verification' : '/doctor/dashboard'
+  }
+
+  if (user?.role === 'admin') {
+    return '/admin/dashboard'
+  }
+
+  return '/patient/dashboard'
+}
+
 const initialFormState = {
   role: 'patient',
   firstName: '',
@@ -81,7 +93,7 @@ export default function Register() {
       localStorage.setItem('doctor365_refreshToken', refreshToken)
       localStorage.setItem('doctor365_user', JSON.stringify(user))
 
-      navigate('/')
+      navigate(getPostAuthPath(user), { replace: true })
     } catch (err) {
       const details = err?.response?.data?.error?.details
       const detailsMessage = Array.isArray(details) && details.length > 0
