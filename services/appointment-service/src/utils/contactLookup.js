@@ -1,5 +1,5 @@
-const DEFAULT_PATIENT_SERVICE_URL = 'http://localhost:5000';
-const DEFAULT_AUTH_SERVICE_URL = 'http://localhost:5000';
+const DEFAULT_PATIENT_SERVICE_URL = 'http://patient-service:5002';
+const DEFAULT_AUTH_SERVICE_URL = 'http://auth-service:5001';
 
 const fetchJson = async (url, options = {}) => {
   const response = await fetch(url, options);

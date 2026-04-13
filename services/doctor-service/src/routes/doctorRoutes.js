@@ -11,10 +11,9 @@ router.get('/me', verifyToken, restrictTo('doctor'), doctorController.getMe);
 router.put('/me', verifyToken, restrictTo('doctor'), doctorController.updateMe);
 
 // Admin only
-router.post('/admin', verifyToken, restrictTo('admin'), doctorController.createDoctor);
 router.patch('/:id/verify', verifyToken, restrictTo('admin'), doctorController.verifyDoctor);
 
-// Public — must be LAST so it doesn't catch /me or /admin
+// Public — must be LAST so it doesn't catch /me
 router.get('/:id', doctorController.getDoctorById);
 
 module.exports = router;

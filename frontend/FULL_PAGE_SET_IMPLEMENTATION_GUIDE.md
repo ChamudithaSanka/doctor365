@@ -24,7 +24,7 @@ Use for patient, doctor, and admin areas.
 ## 2.1 Public Pages
 - `/` - Home / landing page
 - `/login` - Login page
-- `/register` - Register page
+- `/register` - Register page (patient or doctor with role-based fields)
 - `/403` - Access denied page
 - `*` - Not found page
 
@@ -54,7 +54,7 @@ Use for patient, doctor, and admin areas.
 
 ## 2.4 Admin Pages
 - `/admin/dashboard` - Admin dashboard
-- `/admin/doctors` - Create doctor accounts and profiles
+- `/admin/doctor-verification` - Doctor verification
 - `/admin/users` - User management
 - `/admin/transactions` - Transactions page
 - `/admin/notifications` - Notifications center
@@ -194,11 +194,11 @@ Purpose: Manage all users.
 - Doctors
 - Admins
 
-### 5.3 Doctor Creation
-Purpose: Admin creates doctor accounts and links profiles.
-- Create auth user first
-- Create doctor profile with userId
-- Set verified status on create
+### 5.3 Doctor Verification
+Purpose: Admin approves or rejects doctor accounts after license review.
+- Review doctor license and profile details
+- Approve or reject doctor verification status
+- Verification is separate from registration
 
 ### 5.4 Notifications Center
 Purpose: Show all notifications.
@@ -261,7 +261,7 @@ Purpose: Show all payments.
 ### Phase 3
 - Admin dashboard
 - User management
-- Doctor creation
+- Doctor verification
 - Transactions monitoring
 - Notifications center
 - Payment result page
@@ -274,4 +274,4 @@ The frontend is considered complete when:
 - Each role lands in the correct shell and page set
 - All main flows can be reached through navigation
 - Placeholder pages are replaced with functional UI
-- API integration is wired for auth, appointments, notifications, payments, and admin doctor creation
+- API integration is wired for auth, appointments, notifications, payments, and admin doctor verification

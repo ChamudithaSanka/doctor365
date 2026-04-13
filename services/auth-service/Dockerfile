@@ -1,12 +1,13 @@
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app/services/auth-service
 
-COPY package*.json ./
+COPY services/auth-service/package*.json ./
 RUN npm install
 
-COPY . .
+COPY services/auth-service/src ./src
+COPY shared /app/shared
 
-EXPOSE 5000
+EXPOSE 5001
 
 CMD ["node", "src/server.js"]

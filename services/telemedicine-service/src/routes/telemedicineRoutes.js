@@ -1,34 +1,50 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
 const {
   createSession,
+  getUserSessions,
   getSessionByAppointmentId,
   getSessionById,
   startSession,
   endSession,
-  getUserSessions,
+  addPatientFeedback,
+  cancelSession,
 } = require('../controllers/telemedicineController');
+const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 
-// All telemedicine routes require authentication
+// Health check - public
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: process.env.SERVICE_NAME || 'telemedicine-service',
+  });
+});
+
+// Apply verifyToken middleware to all routes below
 router.use(verifyToken);
 
-// POST /telemedicine/sessions - Create a new session (doctor only)
-router.post('/sessions', authorizeRole('doctor'), createSession);
+// Create session (doctor only)
+router.post('/', restrictTo('doctor'), createSession);
 
-// GET /telemedicine/sessions - Get all sessions for the authenticated user
-router.get('/sessions', getUserSessions);
+// Get all sessions for current user
+router.get('/', restrictTo('patient', 'doctor', 'admin'), getUserSessions);
 
-// GET /telemedicine/sessions/appointment/:appointmentId - Get session by appointment ID
-router.get('/sessions/appointment/:appointmentId', getSessionByAppointmentId);
+// Get session by appointment ID
+router.get('/appointment/:appointmentId', restrictTo('patient', 'doctor', 'admin'), getSessionByAppointmentId);
 
-// GET /telemedicine/sessions/:id - Get session by session ID
-router.get('/sessions/:id', getSessionById);
+// Get session by ID
+router.get('/:id', restrictTo('patient', 'doctor', 'admin'), getSessionById);
 
-// PATCH /telemedicine/sessions/:id/start - Start a session (doctor only)
-router.patch('/sessions/:id/start', authorizeRole('doctor'), startSession);
+// Start session (doctor only)
+router.patch('/:id/start', restrictTo('doctor'), startSession);
 
-// PATCH /telemedicine/sessions/:id/end - End a session (doctor only)
-router.patch('/sessions/:id/end', authorizeRole('doctor'), endSession);
+// End session (doctor only)
+router.patch('/:id/end', restrictTo('doctor'), endSession);
+
+// Add patient feedback
+router.patch('/:id/feedback', restrictTo('patient'), addPatientFeedback);
+
+// Cancel session (doctor only)
+router.patch('/:id/cancel', restrictTo('doctor'), cancelSession);
 
 module.exports = router;
