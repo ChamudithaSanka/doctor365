@@ -196,6 +196,8 @@ export default function AppShell() {
     navigate('/', { replace: true })
   }
 
+  const isDoctorsBookingPage = location.pathname.startsWith('/appointments/book')
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 lg:flex">
       <aside className="hidden min-h-screen w-72 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
@@ -222,7 +224,9 @@ export default function AppShell() {
               className={({ isActive }) =>
                 [
                   'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
-                  isActive ? 'bg-blue-700 text-white shadow-sm' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                  (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
+                    ? 'bg-blue-700 text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
                 ].join(' ')
               }
             >
@@ -274,7 +278,9 @@ export default function AppShell() {
                   className={({ isActive }) =>
                     [
                       'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
-                      isActive ? 'bg-blue-700 text-white shadow-sm' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                      (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
+                        ? 'bg-blue-700 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
                     ].join(' ')
                   }
                 >
