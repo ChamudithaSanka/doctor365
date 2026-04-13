@@ -1,0 +1,614 @@
+{
+  "info": {
+    "name": "Doctor365 - Telemedicine Service (Complete)",
+    "description": "Complete telemedicine workflow with real database integration and Zoom meetings. All variables configured. No mock data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. HEALTH CHECKS",
+      "item": [
+        {
+          "name": "Auth Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:5001/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Doctor Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:5003/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Patient Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:5002/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Appointment Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:5004/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Telemedicine Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:5005/health"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. DOCTOR SETUP",
+      "item": [
+        {
+          "name": "1.1 Register Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('doctor_email', body.data.user.email);",
+                  "    console.log('Doctor registered:', body.data.user.email);",
+                  "} else {",
+                  "    console.log('Registration failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Dr\",\n  \"lastName\": \"{{$randomString}}\",\n  \"email\": \"doctor-{{$timestamp}}@hospital.com\",\n  \"password\": \"SecurePassword123!\",\n  \"role\": \"doctor\"\n}"
+            },
+            "url": "http://localhost:5001/auth/register"
+          }
+        },
+        {
+          "name": "1.2 Login Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('doctor_token', body.data.token);",
+                  "    pm.environment.set('doctor_user_id', body.data.user._id);",
+                  "    console.log('Doctor logged in. Token set.');",
+                  "} else {",
+                  "    console.log('Login failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{doctor_email}}\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": "http://localhost:5001/auth/login"
+          }
+        },
+        {
+          "name": "1.3 Update Doctor Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('doctor_profile_id', body.data._id);",
+                  "    console.log('Doctor profile updated:', body.data._id);",
+                  "} else {",
+                  "    console.log('Update failed:', pm.response.code);",
+                  "    console.log(pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Dr\",\n  \"lastName\": \"{{$randomString}}\",\n  \"specialization\": \"{{specialization}}\",\n  \"licenseNumber\": \"LIC-{{$timestamp}}\",\n  \"yearsOfExperience\": 10,\n  \"consultationFee\": 100,\n  \"availabilityStartTime\": \"08:00\",\n  \"availabilityEndTime\": \"18:00\",\n  \"slotMinutes\": 30,\n  \"hospitalOrClinic\": \"{{hospital_name}}\"\n}"
+            },
+            "url": "http://localhost:5003/api/doctors/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. PATIENT SETUP",
+      "item": [
+        {
+          "name": "2.1 Register Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('patient_email', body.data.user.email);",
+                  "    console.log('Patient registered:', body.data.user.email);",
+                  "} else {",
+                  "    console.log('Registration failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Patient\",\n  \"lastName\": \"{{$randomString}}\",\n  \"email\": \"patient-{{$timestamp}}@example.com\",\n  \"password\": \"PatientPass123!\",\n  \"role\": \"patient\"\n}"
+            },
+            "url": "http://localhost:5001/auth/register"
+          }
+        },
+        {
+          "name": "2.2 Login Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('patient_token', body.data.token);",
+                  "    pm.environment.set('patient_user_id', body.data.user._id);",
+                  "    console.log('Patient logged in. Token set.');",
+                  "} else {",
+                  "    console.log('Login failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{patient_email}}\",\n  \"password\": \"PatientPass123!\"\n}"
+            },
+            "url": "http://localhost:5001/auth/login"
+          }
+        },
+        {
+          "name": "2.3 Update Patient Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('patient_profile_id', body.data._id);",
+                  "    console.log('Patient profile updated:', body.data._id);",
+                  "} else {",
+                  "    console.log('Update failed:', pm.response.code);",
+                  "    console.log(pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Patient\",\n  \"lastName\": \"{{$randomString}}\",\n  \"dateOfBirth\": \"{{patient_dob}}\",\n  \"gender\": \"{{patient_gender}}\",\n  \"phone\": \"{{patient_phone}}\",\n  \"address\": \"{{patient_address}}\",\n  \"emergencyContact\": \"{{emergency_contact}}\",\n  \"medicalHistorySummary\": \"{{medical_history}}\"\n}"
+            },
+            "url": "http://localhost:5002/api/patients/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. APPOINTMENT CREATION",
+      "item": [
+        {
+          "name": "3.1 Create Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('appointment_id', body.data._id);",
+                  "    console.log('Appointment created:', body.data._id);",
+                  "    console.log('Status:', body.data.status);",
+                  "} else {",
+                  "    console.log('Creation failed:', pm.response.code);",
+                  "    console.log(pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": \"{{doctor_user_id}}\",\n  \"appointmentDate\": \"{{appointment_date}}\",\n  \"appointmentTime\": \"{{appointment_time}}\",\n  \"reason\": \"{{appointment_reason}}\",\n  \"notes\": \"{{appointment_notes}}\"\n}"
+            },
+            "url": "http://localhost:5004/api/appointments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. TELEMEDICINE SESSION",
+      "item": [
+        {
+          "name": "4.1 Create Telemedicine Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('session_id', body.data._id);",
+                  "    pm.environment.set('zoom_meeting_id', body.data.zoomMeetingId);",
+                  "    pm.environment.set('meeting_link', body.data.meetingLink);",
+                  "    pm.environment.set('doctor_join_url', body.data.doctorJoinUrl);",
+                  "    pm.environment.set('patient_join_url', body.data.patientJoinUrl);",
+                  "    console.log('Session created:', body.data._id);",
+                  "    console.log('Zoom Meeting ID:', body.data.zoomMeetingId);",
+                  "    console.log('Meeting Link:', body.data.meetingLink);",
+                  "} else {",
+                  "    console.log('Creation failed:', pm.response.code);",
+                  "    console.log(pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"{{appointment_id}}\"\n}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        },
+        {
+          "name": "4.2 Get Session by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": "http://localhost:5005/api/telemedicine/sessions/{{session_id}}"
+          }
+        },
+        {
+          "name": "4.3 Start Session (Doctor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    console.log('Session started. Status:', body.data.status);",
+                  "} else {",
+                  "    console.log('Start failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions/{{session_id}}/start"
+          }
+        },
+        {
+          "name": "4.4 End Session (Doctor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    console.log('Session ended. Status:', body.data.status);",
+                  "    console.log('Doctor notes saved');",
+                  "} else {",
+                  "    console.log('End failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorNotes\": \"{{doctor_notes}}\"\n}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions/{{session_id}}/end"
+          }
+        },
+        {
+          "name": "4.5 Add Patient Feedback",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    console.log('Feedback added. Rating:', body.data.patientFeedback.rating);",
+                  "} else {",
+                  "    console.log('Feedback failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"{{feedback_comment}}\"\n}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions/{{session_id}}/feedback"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. QUERY SESSIONS",
+      "item": [
+        {
+          "name": "5.1 Get All Doctor Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        },
+        {
+          "name": "5.2 Get All Patient Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              }
+            ],
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        },
+        {
+          "name": "5.3 Get Session by Appointment ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": "http://localhost:5005/api/telemedicine/sessions/appointment/{{appointment_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. ERROR TESTS",
+      "item": [
+        {
+          "name": "6.1 No Authorization Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        },
+        {
+          "name": "6.2 Patient Cannot Create Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"{{appointment_id}}\"\n}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        },
+        {
+          "name": "6.3 Invalid Appointment ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"invalid-id-123\"\n}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        },
+        {
+          "name": "6.4 Missing Appointment ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "http://localhost:5005/api/telemedicine/sessions"
+          }
+        }
+      ]
+    }
+  ]
+}

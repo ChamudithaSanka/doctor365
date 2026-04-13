@@ -1,0 +1,231 @@
+{
+  "id": "doctor365-env",
+  "name": "Doctor365 - Local Development",
+  "values": [
+    {
+      "key": "auth_service_url",
+      "value": "http://localhost:5001",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_service_url",
+      "value": "http://localhost:5002",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_service_url",
+      "value": "http://localhost:5003",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "appointment_service_url",
+      "value": "http://localhost:5004",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "telemedicine_service_url",
+      "value": "http://localhost:5005",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_user_id",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_email",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_token",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_user_id",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_email",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "zoom_meeting_id",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "meeting_link",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_join_url",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_join_url",
+      "value": "",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "specialization",
+      "value": "General Practitioner",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "years_of_experience",
+      "value": "10",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "consultation_fee",
+      "value": "100",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "availability_start",
+      "value": "08:00",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "availability_end",
+      "value": "18:00",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "slot_minutes",
+      "value": "30",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "hospital_name",
+      "value": "City Medical Center",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_dob",
+      "value": "1990-12-01",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_gender",
+      "value": "Male",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_phone",
+      "value": "+1-555-123-4567",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "patient_address",
+      "value": "123 Main Street, Healthcare City",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "emergency_contact",
+      "value": "+1-555-999-8888",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "medical_history",
+      "value": "No major health issues. Routine checkup.",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "appointment_date",
+      "value": "2026-05-10",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "appointment_time",
+      "value": "10:00",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "appointment_reason",
+      "value": "Regular health checkup and consultation",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "appointment_notes",
+      "value": "Patient is flexible with timing",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_notes",
+      "value": "Patient appears healthy. No concerns noted during consultation. Recommend routine follow-up in 6 months.",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "feedback_rating",
+      "value": "5",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "feedback_comment",
+      "value": "Excellent consultation. Doctor was very professional and thorough. Highly recommend.",
+      "type": "string",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-04-11T00:00:00.000Z",
+  "_postman_exported_using": "Postman/latest"
+}

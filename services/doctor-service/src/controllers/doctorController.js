@@ -1,17 +1,5 @@
 const Doctor = require('../models/Doctor');
 
-const normalizeText = (value) => String(value || '').trim();
-
-const normalizeTime = (value, fallback) => {
-  const normalized = String(value || fallback || '').trim();
-  return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(normalized) ? normalized : fallback;
-};
-
-const parseMinutes = (value, fallback) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-};
-
 // @desc    Get all doctors (Public)
 // @route   GET /api/doctors
 // @access  Public
@@ -44,62 +32,6 @@ const getDoctors = async (req, res, next) => {
     next(error);
   }
 };
-
-// @desc    Create doctor profile by admin
-// @route   POST /api/doctors/admin
-// @access  Private (Admin)
-const createDoctor = async (req, res, next) => {
-  try {
-    const {
-      userId,
-      firstName,
-      lastName,
-      specialization,
-      licenseNumber,
-      yearsOfExperience,
-      consultationFee,
-      hospitalOrClinic,
-      availabilityStartTime,
-      availabilityEndTime,
-      slotMinutes,
-      isVerified,
-    } = req.body;
-
-    const requiredFields = [userId, firstName, lastName, specialization, licenseNumber, yearsOfExperience, consultationFee];
-    if (requiredFields.some((field) => field === undefined || field === null || field === '')) {
-      return res.status(400).json({
-        success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'Please provide all required doctor fields' },
-      });
-    }
-
-    const doctor = new Doctor({
-      userId: normalizeText(userId),
-      firstName: normalizeText(firstName),
-      lastName: normalizeText(lastName),
-      specialization: normalizeText(specialization),
-      licenseNumber: normalizeText(licenseNumber),
-      yearsOfExperience: Number(yearsOfExperience),
-      consultationFee: Number(consultationFee),
-      hospitalOrClinic: normalizeText(hospitalOrClinic) || 'Online',
-      availabilityStartTime: normalizeTime(availabilityStartTime, '08:00'),
-      availabilityEndTime: normalizeTime(availabilityEndTime, '17:00'),
-      slotMinutes: parseMinutes(slotMinutes, 30),
-      isVerified: typeof isVerified === 'boolean' ? isVerified : false,
-    });
-
-    await doctor.save();
-
-    res.status(201).json({
-      success: true,
-      data: doctor,
-      message: 'Doctor profile created successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // @desc    Get doctor by ID (Public)
 // @route   GET /api/doctors/:id
 // @access  Public
@@ -227,7 +159,6 @@ const verifyDoctor = async (req, res, next) => {
 module.exports = {
   getDoctors,
   getDoctorById,
-  createDoctor,
   getMe,
   updateMe,
   verifyDoctor
