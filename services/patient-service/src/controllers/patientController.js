@@ -197,6 +197,38 @@ const getPatientReports = async (req, res, next) => {
   }
 };
 
+// @desc    Get reports for a specific patient by ID (Doctor / Admin view)
+// @route   GET /:id/reports
+// @access  Private (Doctor, Admin)
+const getPatientReportsById = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    let patient;
+
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: patient.reports,
+      patientName: `${patient.firstName} ${patient.lastName}`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Delete a specific report
 // @route   DELETE /me/reports/:reportId
 // @access  Private (Patient)
@@ -352,6 +384,7 @@ module.exports = {
   getPatientById,
   uploadPatientReports,
   getPatientReports,
+  getPatientReportsById,
   deletePatientReport,
   getAllPatients,
   getPrescriptions,

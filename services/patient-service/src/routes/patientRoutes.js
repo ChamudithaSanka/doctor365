@@ -6,6 +6,7 @@ const {
   getPatientById, 
   uploadPatientReports, 
   getPatientReports, 
+  getPatientReportsById,
   deletePatientReport,
   getAllPatients,
   getPrescriptions,
@@ -59,6 +60,9 @@ router.route('/me/prescriptions')
 
 router.route('/:id')
   .get(restrictTo('admin', 'doctor'), getPatientById);
+
+router.route('/:id/reports')
+  .get(restrictTo('doctor', 'admin'), getPatientReportsById);
 
 // Prescription validation rules
 const prescriptionValidation = [
