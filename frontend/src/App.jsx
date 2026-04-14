@@ -29,6 +29,7 @@ import DoctorProfile from './pages/doctor/DoctorProfile'
 import Profile from './pages/patient/Profile'
 import MedicalHistory from './pages/patient/MedicalHistory'
 import Reports from './pages/patient/Reports'
+import Notifications from './pages/patient/Notifications'
 
 function App() {
   return (
@@ -56,10 +57,7 @@ function App() {
             path="/payments"
             element={<ComingSoon title="Payments" description="Track payment status and history here." />}
           />
-          <Route
-            path="/notifications"
-            element={<ComingSoon title="Notifications" description="Read your latest alerts and reminders." />}
-          />
+          <Route path="/notifications" element={<Notifications />} />
           <Route
             path="/profile"
             element={<ComingSoon title="Profile" description="Update your personal and account information." />}
