@@ -442,29 +442,6 @@ exports.updateAppointmentStatus = async (req, res, next) => {
     appointment.status = status;
     await appointment.save();
 
-    if (status !== previousStatus && status !== 'cancelled') {
-      await sendInternalNotification({
-        userId: appointment.patientId,
-        type: 'appointment.status.updated',
-        title: 'Appointment status updated',
-        message: `Your appointment on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} is now ${status}.`,
-        recipientEmail: appointment.patientEmail || undefined,
-        recipientPhone: appointment.patientPhone || undefined,
-        channels: {
-          inApp: true,
-          email: Boolean(appointment.patientEmail),
-          sms: Boolean(appointment.patientPhone),
-        },
-        metadata: {
-          appointmentId: appointment._id,
-          doctorId: appointment.doctorId,
-          previousStatus,
-          status,
-        },
-      });
-
-    }
-
     if (status === 'cancelled' && previousStatus !== 'cancelled') {
       await sendInternalNotification({
         userId: appointment.patientId,
@@ -559,43 +536,6 @@ exports.updateAppointment = async (req, res, next) => {
     const timeChanged = Boolean(appointmentTime) && appointmentTime !== previousAppointmentTime;
 
     await appointment.save();
-
-    if (dateChanged || timeChanged) {
-      await sendInternalNotification({
-        userId: appointment.patientId,
-        type: 'appointment.rescheduled',
-        title: 'Appointment rescheduled',
-        message: `Your appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
-        recipientEmail: appointment.patientEmail || undefined,
-        recipientPhone: appointment.patientPhone || undefined,
-        channels: {
-          inApp: true,
-          email: Boolean(appointment.patientEmail),
-          sms: Boolean(appointment.patientPhone),
-        },
-        metadata: {
-          appointmentId: appointment._id,
-          doctorId: appointment.doctorId,
-        },
-      });
-
-      await sendInternalNotification({
-        userId: appointment.doctorId,
-        type: 'appointment.rescheduled',
-        title: 'Appointment rescheduled',
-        message: `An appointment has been updated to ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime}.`,
-        recipientEmail: appointment.doctorEmail || undefined,
-        channels: {
-          inApp: true,
-          email: Boolean(appointment.doctorEmail),
-          sms: false,
-        },
-        metadata: {
-          appointmentId: appointment._id,
-          patientId: appointment.patientId,
-        },
-      });
-    }
 
     res.status(200).json({
       success: true,
