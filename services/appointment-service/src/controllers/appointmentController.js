@@ -443,6 +443,9 @@ exports.updateAppointmentStatus = async (req, res, next) => {
     await appointment.save();
 
     if (status === 'cancelled' && previousStatus !== 'cancelled') {
+      const doctor = await fetchDoctorProfile(appointment.doctorId);
+      const doctorDisplayName = buildDoctorDisplayName(doctor);
+
       await sendInternalNotification({
         userId: appointment.patientId,
         type: 'appointment.cancelled',
@@ -459,6 +462,10 @@ exports.updateAppointmentStatus = async (req, res, next) => {
           appointmentId: appointment._id,
           doctorId: appointment.doctorId,
           status,
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.appointmentTime,
+          doctorName: doctorDisplayName,
+          recipientRole: 'patient',
         },
       });
 
@@ -581,6 +588,9 @@ exports.deleteAppointment = async (req, res, next) => {
 
     await Appointment.findByIdAndDelete(req.params.id);
 
+    const doctor = await fetchDoctorProfile(appointment.doctorId);
+    const doctorDisplayName = buildDoctorDisplayName(doctor);
+
     await sendInternalNotification({
       userId: appointment.patientId,
       type: 'appointment.cancelled',
@@ -596,6 +606,10 @@ exports.deleteAppointment = async (req, res, next) => {
       metadata: {
         appointmentId: appointment._id,
         doctorId: appointment.doctorId,
+        appointmentDate: appointment.appointmentDate,
+        appointmentTime: appointment.appointmentTime,
+        doctorName: doctorDisplayName,
+        recipientRole: 'patient',
       },
     });
 
@@ -613,6 +627,11 @@ exports.deleteAppointment = async (req, res, next) => {
       metadata: {
         appointmentId: appointment._id,
         patientId: appointment.patientId,
+        appointmentDate: appointment.appointmentDate,
+        appointmentTime: appointment.appointmentTime,
+        doctorName: doctorDisplayName,
+        patientName: appointment.patientEmail || 'Patient',
+        recipientRole: 'doctor',
       },
     });
 

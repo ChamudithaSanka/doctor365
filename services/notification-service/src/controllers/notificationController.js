@@ -1,7 +1,11 @@
 const Notification = require('../models/Notification');
 const { sendEmailNotification } = require('../utils/emailService');
 const { sendSmsNotification } = require('../utils/smsService');
-const { buildAppointmentBookedEmailHtml } = require('../utils/appointmentEmailTemplate');
+const {
+  buildAppointmentBookedEmailHtml,
+  buildAppointmentCancelledEmailHtml,
+  buildAppointmentReminderEmailHtml,
+} = require('../utils/appointmentEmailTemplate');
 
 const normalizeChannels = (input) => {
   const channels = {
@@ -50,6 +54,20 @@ const buildEmailMetadata = ({ type, metadata, title, message }) => {
     return {
       ...metadata,
       emailHtml: buildAppointmentBookedEmailHtml({ metadata, title, message }),
+    };
+  }
+
+  if (type === 'appointment.cancelled') {
+    return {
+      ...metadata,
+      emailHtml: buildAppointmentCancelledEmailHtml({ metadata, title, message }),
+    };
+  }
+
+  if (type === 'appointment.reminder') {
+    return {
+      ...metadata,
+      emailHtml: buildAppointmentReminderEmailHtml({ metadata, title, message }),
     };
   }
 

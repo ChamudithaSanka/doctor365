@@ -7,6 +7,8 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
 const { sendInternalNotification } = require("./utils/notificationClient");
 
+const doctorServiceBaseUrl = process.env.DOCTOR_SERVICE_URL || 'http://localhost:5003';
+
 dotenv.config();
 
 const app = express();
@@ -42,6 +44,29 @@ const parseAppointmentDateTime = (appointment) => {
   return date;
 };
 
+const fetchDoctorProfile = async (doctorId) => {
+  try {
+    const response = await fetch(`${doctorServiceBaseUrl}/api/doctors/${doctorId}`);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data?.data || null;
+  } catch {
+    return null;
+  }
+};
+
+const buildDoctorDisplayName = (doctor) => {
+  if (!doctor) return 'Your doctor';
+
+  const fullName = `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim();
+  if (!fullName) return 'Your doctor';
+
+  return /^dr\.?\s+/i.test(fullName) ? fullName : `Dr. ${fullName}`;
+};
+
 const startReminderScheduler = () => {
   const scanReminders = async () => {
     try {
@@ -63,6 +88,9 @@ const startReminderScheduler = () => {
         const timeUntilAppointment = appointmentDateTime.getTime() - now.getTime();
 
         if (timeUntilAppointment > 0 && timeUntilAppointment <= reminderWindowMs) {
+          const doctor = await fetchDoctorProfile(appointment.doctorId);
+          const doctorDisplayName = buildDoctorDisplayName(doctor);
+
           await sendInternalNotification({
             userId: appointment.patientId,
             type: 'appointment.reminder',
@@ -71,6 +99,10 @@ const startReminderScheduler = () => {
             metadata: {
               appointmentId: appointment._id,
               doctorId: appointment.doctorId,
+              appointmentDate: appointment.appointmentDate,
+              appointmentTime: appointment.appointmentTime,
+              doctorName: doctorDisplayName,
+              recipientRole: 'patient',
             },
           });
 
@@ -82,6 +114,11 @@ const startReminderScheduler = () => {
             metadata: {
               appointmentId: appointment._id,
               patientId: appointment.patientId,
+              appointmentDate: appointment.appointmentDate,
+              appointmentTime: appointment.appointmentTime,
+              doctorName: doctorDisplayName,
+              patientName: appointment.patientEmail || 'Patient',
+              recipientRole: 'doctor',
             },
           });
 
