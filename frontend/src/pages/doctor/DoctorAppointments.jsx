@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { getToken, handleTokenError } from '../../utils/tokenManager'
+import PrescriptionForm from '../../components/PrescriptionForm'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
@@ -52,6 +53,8 @@ export default function DoctorAppointments() {
   const [creatingSession, setCreatingSession] = useState(null)
   const [telemedicineSessions, setTelemedicineSessions] = useState({})
   const [loadingSession, setLoadingSession] = useState(null)
+  const [showPrescriptionForm, setShowPrescriptionForm] = useState(false)
+  const [prescriptionAppointmentId, setPrescriptionAppointmentId] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -554,6 +557,16 @@ export default function DoctorAppointments() {
                       )}
                       
                       <button
+                        onClick={() => {
+                          setPrescriptionAppointmentId(appointment._id)
+                          setShowPrescriptionForm(true)
+                        }}
+                        className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition"
+                      >
+                        💊 Prescribe
+                      </button>
+                      
+                      <button
                         onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
                         disabled={updating === appointment._id}
                         className="rounded-2xl border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -584,6 +597,22 @@ export default function DoctorAppointments() {
           </div>
         )}
       </section>
+
+      {/* Prescription Form Modal */}
+      {showPrescriptionForm && (
+        <PrescriptionForm
+          appointmentId={prescriptionAppointmentId}
+          onClose={() => {
+            setShowPrescriptionForm(false)
+            setPrescriptionAppointmentId(null)
+          }}
+          onSuccess={() => {
+            // Optionally reload appointments to show success
+            setSuccessMessage('Prescription issued successfully!')
+            setTimeout(() => setSuccessMessage(''), 3000)
+          }}
+        />
+      )}
     </div>
   )
 }

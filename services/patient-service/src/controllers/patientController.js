@@ -315,7 +315,7 @@ const getPrescriptions = async (req, res, next) => {
 const addPrescription = async (req, res, next) => {
   try {
     const patientId = req.params.id;
-    const { doctorName, medication, instructions } = req.body;
+    const { doctorName, medication, instructions, diagnosis } = req.body;
 
     let patient;
     if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -335,6 +335,7 @@ const addPrescription = async (req, res, next) => {
     patient.prescriptions.push({
       doctorName,
       doctorId: req.user.userId, // Link to the doctor's user ID from the token
+      diagnosis: diagnosis || '',
       medication,
       instructions,
       date: new Date(),

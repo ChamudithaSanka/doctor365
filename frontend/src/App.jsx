@@ -29,6 +29,7 @@ import DoctorProfile from './pages/doctor/DoctorProfile'
 import Profile from './pages/patient/Profile'
 import MedicalHistory from './pages/patient/MedicalHistory'
 import Reports from './pages/patient/Reports'
+import Prescriptions from './pages/patient/Prescriptions'
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
           <Route path="/patient/profile" element={<Profile />} />
           <Route path="/patient/reports" element={<Reports />} />
           <Route path="/patient/medical-history" element={<MedicalHistory />} />
+          <Route path="/patient/prescriptions" element={<Prescriptions />} />
           <Route
             path="/payments"
             element={<ComingSoon title="Payments" description="Track payment status and history here." />}
