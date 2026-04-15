@@ -32,6 +32,8 @@ export default function AppointmentDetail() {
   const [error, setError] = useState('')
   const [cancelConfirm, setCancelConfirm] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [telemedicineSession, setTelemedicineSession] = useState(null)
+  const [loadingSession, setLoadingSession] = useState(false)
 
   useEffect(() => {
     const token = getToken()
@@ -85,6 +87,93 @@ export default function AppointmentDetail() {
     loadAppointment()
     return () => controller.abort()
   }, [id])
+
+  // Poll telemedicine session status when appointment is confirmed
+  useEffect(() => {
+    if (appointment?.status !== 'confirmed' || !id) return
+
+    const token = getToken()
+    if (!token) return
+
+    const pollSession = async () => {
+      try {
+        const response = await axios.get(
+          `${gatewayBaseUrl}/api/telemedicine/appointment/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+
+        if (response.data.success && response.data.data) {
+          setTelemedicineSession(response.data.data)
+        }
+      } catch (error) {
+        // Silently skip polling errors - session may not exist yet
+        console.log('Polling telemedicine session for appointment:', id)
+      }
+    }
+
+    // Initial fetch
+    pollSession()
+
+    // Poll every 5 seconds
+    const interval = setInterval(pollSession, 5000)
+    return () => clearInterval(interval)
+  }, [appointment?.status, id])
+
+  const fetchTelemedicineSession = async (appointmentId) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    if (loadingSession) return
+    setLoadingSession(true)
+
+    try {
+      console.log('Fetching telemedicine session for appointment:', appointmentId)
+      
+      const response = await axios.get(
+        `${gatewayBaseUrl}/api/telemedicine/appointment/${appointmentId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      console.log('Session fetch response:', response.data)
+
+      if (response.data.success && response.data.data) {
+        setTelemedicineSession(response.data.data)
+        console.log('✅ Session fetched:', response.data.data)
+      }
+    } catch (error) {
+      console.error('❌ Error fetching telemedicine session:', error.response?.data || error.message)
+      // Don't set error state for 404s - it's normal if session doesn't exist yet
+      if (error.response?.status !== 404) {
+        setError(error.response?.data?.error?.message || 'Failed to fetch telemedicine session')
+      }
+    } finally {
+      setLoadingSession(false)
+    }
+  }
+
+  const openPatientJoinUrl = async () => {
+    try {
+      console.log('Opening patient join URL')
+      
+      if (telemedicineSession?.patientJoinUrl) {
+        console.log('Opening URL:', telemedicineSession.patientJoinUrl)
+        window.open(telemedicineSession.patientJoinUrl, '_blank', 'noopener,noreferrer')
+      } else {
+        console.error('❌ No patient join URL found in session:', telemedicineSession)
+        setError('Unable to get meeting URL. Please try again.')
+      }
+    } catch (error) {
+      console.error('❌ Error opening patient join URL:', error)
+      setError('Failed to open meeting.')
+    }
+  }
 
   const handleCancel = async () => {
     const token = getToken()
@@ -286,6 +375,27 @@ export default function AppointmentDetail() {
         {/* Sidebar */}
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-fit space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">Actions</h2>
+
+          {appointment.status === 'confirmed' && (
+            <>
+              {telemedicineSession?.status === 'ended' ? (
+                <button
+                  disabled={true}
+                  className="w-full rounded-2xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 cursor-not-allowed"
+                >
+                  ✅ Meeting Ended
+                </button>
+              ) : (
+                <button
+                  onClick={openPatientJoinUrl}
+                  disabled={loadingSession}
+                  className="w-full rounded-2xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loadingSession ? 'Loading...' : '🎥 Join Meeting'}
+                </button>
+              )}
+            </>
+          )}
 
           {isUpcoming && appointment.status !== 'cancelled' && (
             <>

@@ -28,6 +28,8 @@ export default function MyAppointments() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all') // all, upcoming, completed, cancelled
+  const [telemedicineSessions, setTelemedicineSessions] = useState({})
+  const [loadingSession, setLoadingSession] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -71,6 +73,44 @@ export default function MyAppointments() {
     return () => controller.abort()
   }, [navigate])
 
+  // Poll telemedicine sessions for confirmed appointments every 5 seconds
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+
+    // Fetch sessions for all confirmed appointments
+    const pollSessions = async () => {
+      const confirmedAppointments = appointments.filter((apt) => apt.status === 'confirmed')
+      
+      for (const apt of confirmedAppointments) {
+        try {
+          const response = await axios.get(
+            `${gatewayBaseUrl}/api/telemedicine/appointment/${apt._id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
+
+          if (response.data.success && response.data.data) {
+            setTelemedicineSessions((prev) => ({
+              ...prev,
+              [apt._id]: response.data.data,
+            }))
+          }
+        } catch (error) {
+          // Silently skip polling errors - session may not exist yet
+          console.log('Polling session for appointment:', apt._id)
+        }
+      }
+    }
+
+    // Only poll if there are confirmed appointments
+    if (appointments.some((apt) => apt.status === 'confirmed')) {
+      const interval = setInterval(pollSessions, 5000) // Poll every 5 seconds
+      return () => clearInterval(interval)
+    }
+  }, [appointments])
+
   const filteredAppointments = useMemo(() => {
     const now = new Date()
 
@@ -92,6 +132,73 @@ export default function MyAppointments() {
 
     return filtered.sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate))
   }, [appointments, filter])
+
+  const fetchTelemedicineSession = async (appointmentId) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    // Avoid concurrent requests for same appointment
+    if (loadingSession === appointmentId) return
+    setLoadingSession(appointmentId)
+
+    try {
+      console.log('Fetching telemedicine session for appointment:', appointmentId)
+      
+      const response = await axios.get(
+        `${gatewayBaseUrl}/api/telemedicine/appointment/${appointmentId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      console.log('Session fetch response:', response.data)
+
+      if (response.data.success && response.data.data) {
+        setTelemedicineSessions((prev) => ({
+          ...prev,
+          [appointmentId]: response.data.data,
+        }))
+        console.log('✅ Session fetched:', response.data.data)
+        return response.data.data
+      }
+    } catch (error) {
+      console.error('❌ Error fetching telemedicine session:', error.response?.data || error.message)
+      setError(error.response?.data?.error?.message || 'Failed to fetch telemedicine session')
+    } finally {
+      setLoadingSession(null)
+    }
+  }
+
+  const openPatientJoinUrl = async (appointmentId) => {
+    try {
+      console.log('Opening patient join URL for appointment:', appointmentId)
+      
+      // Check if we already have the session cached
+      if (telemedicineSessions[appointmentId]?.patientJoinUrl) {
+        console.log('Using cached session, opening URL:', telemedicineSessions[appointmentId].patientJoinUrl)
+        window.open(telemedicineSessions[appointmentId].patientJoinUrl, '_blank', 'noopener,noreferrer')
+        return
+      }
+      
+      // Fetch the session if not cached
+      console.log('Session not cached, fetching...')
+      const session = await fetchTelemedicineSession(appointmentId)
+      
+      if (session?.patientJoinUrl) {
+        console.log('✅ Fetched session, opening URL:', session.patientJoinUrl)
+        window.open(session.patientJoinUrl, '_blank', 'noopener,noreferrer')
+      } else {
+        console.error('❌ No patient join URL found in session:', session)
+        setError('Unable to get meeting URL. Please try again.')
+      }
+    } catch (error) {
+      console.error('❌ Error opening patient join URL:', error)
+      setError('Failed to open meeting.')
+    }
+  }
 
   const stats = {
     total: appointments.length,
@@ -209,7 +316,7 @@ export default function MyAppointments() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:flex-col sm:items-end">
+                <div className="flex flex-col items-end gap-2 sm:flex-col sm:items-end">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
                       statusStyles[appointment.status] ||
@@ -218,6 +325,30 @@ export default function MyAppointments() {
                   >
                     {appointment.status || 'unknown'}
                   </span>
+
+                  {appointment.status === 'confirmed' && (
+                    <>
+                      {telemedicineSessions[appointment._id]?.status === 'ended' ? (
+                        <button
+                          disabled={true}
+                          className="whitespace-nowrap rounded-2xl bg-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 cursor-not-allowed"
+                        >
+                          ✅ Meeting Ended
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            openPatientJoinUrl(appointment._id)
+                          }}
+                          disabled={loadingSession === appointment._id}
+                          className="whitespace-nowrap rounded-2xl bg-purple-600 px-3 py-1 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {loadingSession === appointment._id ? 'Loading...' : '🎥 Join Meeting'}
+                        </button>
+                      )}
+                    </>
+                  )}
 
                   <div className="hidden sm:block text-right">
                     <p className="text-xs text-slate-500">Click to view details</p>

@@ -49,6 +49,9 @@ export default function DoctorAppointments() {
   const [filter, setFilter] = useState('all')
   const [updating, setUpdating] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
+  const [creatingSession, setCreatingSession] = useState(null)
+  const [telemedicineSessions, setTelemedicineSessions] = useState({})
+  const [loadingSession, setLoadingSession] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -115,7 +118,7 @@ export default function DoctorAppointments() {
     return filtered.sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate))
   }, [appointments, filter])
 
-  const handleStatusUpdate = async (appointmentId, newStatus) => {
+  const handleStatusUpdate = async (appointmentId, newStatus, appointment) => {
     const token = getToken()
     if (!token) {
       setError('You must be logged in')
@@ -140,6 +143,11 @@ export default function DoctorAppointments() {
         )
       )
 
+      // If status is confirmed, create telemedicine session automatically
+      if (newStatus === 'confirmed' && appointment) {
+        await createTelemedicineSession(appointmentId, appointment)
+      }
+
       setSuccessMessage(`Appointment updated to ${newStatus}`)
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (requestError) {
@@ -153,6 +161,212 @@ export default function DoctorAppointments() {
       )
     } finally {
       setUpdating(null)
+    }
+  }
+
+  const createTelemedicineSession = async (appointmentId, appointment) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    // Avoid creating multiple sessions
+    if (creatingSession === appointmentId) return
+    setCreatingSession(appointmentId)
+
+    try {
+      console.log('Creating telemedicine session for appointment:', appointmentId)
+      
+      const response = await axios.post(
+        `${gatewayBaseUrl}/api/telemedicine`,
+        { appointmentId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      console.log('Session creation response:', response.data)
+
+      if (response.data.success && response.data.data) {
+        setTelemedicineSessions((prev) => ({
+          ...prev,
+          [appointmentId]: response.data.data,
+        }))
+        console.log('✅ Telemedicine session created:', response.data.data)
+        setSuccessMessage('Telemedicine session created successfully!')
+        setTimeout(() => setSuccessMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('❌ Error creating telemedicine session:', error.response?.data || error.message)
+      setError(error.response?.data?.error?.message || 'Failed to create telemedicine session')
+    } finally {
+      setCreatingSession(null)
+    }
+  }
+
+  const fetchTelemedicineSession = async (appointmentId) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    // Avoid concurrent requests for same appointment
+    if (loadingSession === appointmentId) return
+    setLoadingSession(appointmentId)
+
+    try {
+      console.log('Fetching telemedicine session for appointment:', appointmentId)
+      
+      const response = await axios.get(
+        `${gatewayBaseUrl}/api/telemedicine/appointment/${appointmentId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      console.log('Session fetch response:', response.data)
+
+      if (response.data.success && response.data.data) {
+        setTelemedicineSessions((prev) => ({
+          ...prev,
+          [appointmentId]: response.data.data,
+        }))
+        console.log('✅ Session fetched:', response.data.data)
+        return response.data.data
+      }
+    } catch (error) {
+      console.error('❌ Error fetching telemedicine session:', error.response?.data || error.message)
+      setError(error.response?.data?.error?.message || 'Failed to fetch telemedicine session')
+    } finally {
+      setLoadingSession(null)
+    }
+  }
+
+  const openDoctorJoinUrl = async (appointmentId) => {
+    try {
+      console.log('Opening doctor join URL for appointment:', appointmentId)
+      
+      // First, start the session (change status to active)
+      await startTelemedicineSession(appointmentId)
+      
+      // Check if we already have the session cached
+      if (telemedicineSessions[appointmentId]?.doctorJoinUrl) {
+        console.log('Using cached session, opening URL:', telemedicineSessions[appointmentId].doctorJoinUrl)
+        window.open(telemedicineSessions[appointmentId].doctorJoinUrl, '_blank', 'noopener,noreferrer')
+        return
+      }
+      
+      // Fetch the session if not cached
+      console.log('Session not cached, fetching...')
+      const session = await fetchTelemedicineSession(appointmentId)
+      
+      if (session?.doctorJoinUrl) {
+        console.log('✅ Fetched session, opening URL:', session.doctorJoinUrl)
+        window.open(session.doctorJoinUrl, '_blank', 'noopener,noreferrer')
+      } else {
+        console.error('❌ No doctor join URL found in session:', session)
+        setError('Unable to get meeting URL. Please try again.')
+      }
+    } catch (error) {
+      console.error('❌ Error opening doctor join URL:', error)
+      setError('Failed to open meeting.')
+    }
+  }
+
+  const startTelemedicineSession = async (appointmentId) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    try {
+      console.log('🟢 Starting telemedicine session for appointment:', appointmentId)
+      
+      // Get the session ID from cached sessions
+      const sessionId = telemedicineSessions[appointmentId]?._id
+      if (!sessionId) {
+        console.log('Session not cached, fetching first...')
+        const session = await fetchTelemedicineSession(appointmentId)
+        if (!session?._id) {
+          throw new Error('No session ID found')
+        }
+        return startTelemedicineSession(appointmentId)
+      }
+
+      const response = await axios.patch(
+        `${gatewayBaseUrl}/api/telemedicine/${sessionId}/start`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      if (response.data.success) {
+        console.log('✅ Session started:', response.data.data)
+        // Update cached session
+        setTelemedicineSessions((prev) => ({
+          ...prev,
+          [appointmentId]: response.data.data,
+        }))
+        setSuccessMessage('Meeting started')
+        setTimeout(() => setSuccessMessage(''), 2000)
+      }
+    } catch (error) {
+      console.error('❌ Error starting session:', error.response?.data || error.message)
+      // Don't fail if already active
+      if (error.response?.status !== 400) {
+        setError('Failed to start session')
+      }
+    }
+  }
+
+  const endTelemedicineSession = async (appointmentId) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    try {
+      console.log('🔴 Ending telemedicine session for appointment:', appointmentId)
+      
+      const sessionId = telemedicineSessions[appointmentId]?._id
+      if (!sessionId) {
+        console.log('Session not cached, fetching first...')
+        const session = await fetchTelemedicineSession(appointmentId)
+        if (!session?._id) {
+          throw new Error('No session ID found')
+        }
+        return endTelemedicineSession(appointmentId)
+      }
+
+      const response = await axios.patch(
+        `${gatewayBaseUrl}/api/telemedicine/${sessionId}/end`,
+        { doctorNotes: 'Consultation completed' },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      if (response.data.success) {
+        console.log('✅ Session ended:', response.data.data)
+        // Update cached session
+        setTelemedicineSessions((prev) => ({
+          ...prev,
+          [appointmentId]: response.data.data,
+        }))
+        setSuccessMessage('Meeting ended successfully')
+        setTimeout(() => setSuccessMessage(''), 2000)
+      }
+    } catch (error) {
+      console.error('❌ Error ending session:', error.response?.data || error.message)
+      // Don't fail if already ended
+      if (error.response?.status !== 400) {
+        setError('Failed to end session')
+      }
     }
   }
 
@@ -289,7 +503,7 @@ export default function DoctorAppointments() {
                   {appointment.status === 'pending' && (
                     <>
                       <button
-                        onClick={() => handleStatusUpdate(appointment._id, 'confirmed')}
+                        onClick={() => handleStatusUpdate(appointment._id, 'confirmed', appointment)}
                         disabled={updating === appointment._id}
                         className="rounded-2xl bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -314,6 +528,31 @@ export default function DoctorAppointments() {
                       >
                         {updating === appointment._id ? 'Updating...' : 'Mark Complete'}
                       </button>
+                      
+                      {telemedicineSessions[appointment._id]?.status === 'ended' ? (
+                        <button
+                          disabled={true}
+                          className="rounded-2xl bg-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 cursor-not-allowed"
+                        >
+                          ✅ Meeting Ended
+                        </button>
+                      ) : telemedicineSessions[appointment._id]?.status === 'active' ? (
+                        <button
+                          onClick={() => endTelemedicineSession(appointment._id)}
+                          className="rounded-2xl bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          🔴 End Meeting
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => openDoctorJoinUrl(appointment._id)}
+                          disabled={loadingSession === appointment._id || creatingSession === appointment._id}
+                          className="rounded-2xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {loadingSession === appointment._id ? 'Loading...' : '🎥 Join Meeting'}
+                        </button>
+                      )}
+                      
                       <button
                         onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
                         disabled={updating === appointment._id}
@@ -324,26 +563,7 @@ export default function DoctorAppointments() {
                     </>
                   )}
 
-                  {appointment.status !== 'completed' && appointment.status !== 'cancelled' && (
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-                        Update status
-                      </label>
-                      <select
-                        value={appointment.status}
-                        onChange={(event) => handleStatusUpdate(appointment._id, event.target.value)}
-                        disabled={updating === appointment._id}
-                        className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-purple-500 focus:ring-4 focus:ring-purple-100 disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        <option value={appointment.status}>{statusStyles[appointment.status] ? appointment.status : 'Current status'}</option>
-                        {getStatusOptionsForAppointment(appointment.status).map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+
 
                   {(appointment.status === 'completed' || appointment.status === 'cancelled') && (
                     <div className="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 text-center">

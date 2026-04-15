@@ -44,8 +44,10 @@ const getZoomAccessToken = async () => {
 
 /**
  * Create a Zoom meeting and return meeting details
+ * @param {string} zoomHostEmail - Must be a registered Zoom user in the workspace
+ * @param {string} appointmentDateTime - ISO datetime string
  */
-const createMeeting = async (doctorEmail, appointmentDateTime) => {
+const createMeeting = async (zoomHostEmail, appointmentDateTime) => {
   try {
     const accessToken = await getZoomAccessToken();
 
@@ -63,16 +65,18 @@ const createMeeting = async (doctorEmail, appointmentDateTime) => {
       settings: {
         host_video: true,
         participant_video: true,
-        join_before_host: false,
+        join_before_host: false, // Patient CANNOT join before doctor starts
         mute_upon_entry: false,
-        waiting_room: false,
+        waiting_room: true, // Patient requires doctor approval to join
+        allow_multiple_devices: true,
         audio: 'both',
         auto_recording: 'cloud',
       },
     };
 
+    // Note: Must use an actual registered Zoom user email
     const response = await axios.post(
-      `${ZOOM_API_BASE_URL}/users/${doctorEmail}/meetings`,
+      `${ZOOM_API_BASE_URL}/users/${zoomHostEmail}/meetings`,
       meetingData,
       {
         headers: {
@@ -154,40 +158,9 @@ const deleteMeeting = async (doctorEmail, zoomMeetingId) => {
   }
 };
 
-/**
- * Get meeting recordings
- */
-const getMeetingRecordings = async (doctorEmail, zoomMeetingId) => {
-  try {
-    const accessToken = await getZoomAccessToken();
-
-    const response = await axios.get(
-      `${ZOOM_API_BASE_URL}/users/${doctorEmail}/recordings?meeting_id=${zoomMeetingId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (response.data.recording_files && response.data.recording_files.length > 0) {
-      return {
-        recordingId: response.data.id,
-        recordingUrl: response.data.recording_files[0].download_url,
-      };
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Zoom get recordings error:', error.response?.data || error.message);
-    return null;
-  }
-};
-
 module.exports = {
   createMeeting,
   getMeetingDetails,
   deleteMeeting,
-  getMeetingRecordings,
   getZoomAccessToken,
 };
