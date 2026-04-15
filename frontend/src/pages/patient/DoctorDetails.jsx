@@ -49,68 +49,73 @@ const computeNextAvailableSlot = (doctor, selectedDate) => {
     ? doctor.workingDays
     : defaultWorkingDays
 
-  const today = new Date()
-  const baseDate = selectedDate ? new Date(selectedDate) : today
+  const parseMinutes = (time, fallbackHours, fallbackMinutes) => {
+    if (!time || typeof time !== 'string') {
+      return fallbackHours * 60 + fallbackMinutes
+    }
+
+    const [hours, minutes] = time.split(':').map(Number)
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+      return fallbackHours * 60 + fallbackMinutes
+    }
+
+    return hours * 60 + minutes
+  }
+
+  const startMinutes = parseMinutes(doctor?.availabilityStartTime, 8, 0)
+  const endMinutes = parseMinutes(doctor?.availabilityEndTime, 18, 0)
+  const slotMinutes = Number(doctor?.slotMinutes || 30)
+
+  if (!Number.isFinite(slotMinutes) || slotMinutes <= 0 || startMinutes >= endMinutes) {
+    return null
+  }
+
+  const baseDate = selectedDate ? new Date(selectedDate) : new Date()
   if (Number.isNaN(baseDate.getTime())) {
     return null
   }
 
-  const startMinutes = Number(doctor?.availabilityStartTime ? doctor.availabilityStartTime.split(':')[0] : 8) * 60 + Number(doctor?.availabilityStartTime ? doctor.availabilityStartTime.split(':')[1] : 0)
-  const endMinutes = Number(doctor?.availabilityEndTime ? doctor.availabilityEndTime.split(':')[0] : 18) * 60 + Number(doctor?.availabilityEndTime ? doctor.availabilityEndTime.split(':')[1] : 0)
-  const slotMinutes = Number(doctor?.slotMinutes || 30)
-
-  if (!Number.isFinite(startMinutes) || !Number.isFinite(endMinutes) || !Number.isFinite(slotMinutes) || slotMinutes <= 0) {
-    return null
-  }
-
-  const findNextDate = (date) => {
-    const candidate = new Date(date)
-    const dayCode = weekdayLabels[candidate.getDay()]
-    if (workingDays.includes(dayCode)) {
-      return candidate
-    }
-
-    for (let i = 1; i <= 7; i += 1) {
-      const next = new Date(candidate)
-      next.setDate(candidate.getDate() + i)
-      const nextDayCode = weekdayLabels[next.getDay()]
-      if (workingDays.includes(nextDayCode)) {
-        return next
-      }
-    }
-
-    return null
-  }
-
-  const nextWorkingDate = findNextDate(baseDate)
-  if (!nextWorkingDate) {
-    return null
-  }
-
   const now = new Date()
-  const sameDay = nextWorkingDate.toDateString() === now.toDateString()
-  const currentMinutes = now.getHours() * 60 + now.getMinutes()
-  let nextMinutes = startMinutes
 
-  if (sameDay && currentMinutes > startMinutes) {
-    nextMinutes = currentMinutes
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
-  while (nextMinutes <= currentMinutes && sameDay) {
-    nextMinutes += slotMinutes
+  for (let i = 0; i < 14; i += 1) {
+    const day = new Date(baseDate)
+    day.setHours(0, 0, 0, 0)
+    day.setDate(day.getDate() + i)
+
+    const dayCode = weekdayLabels[day.getDay()]
+    if (!workingDays.includes(dayCode)) {
+      continue
+    }
+
+    const isToday = day.toDateString() === now.toDateString()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const baseline = isToday ? Math.max(nowMinutes, startMinutes) : startMinutes
+
+    const offsetFromStart = baseline - startMinutes
+    const stepCount = Math.ceil(offsetFromStart / slotMinutes)
+    const nextMinutes = startMinutes + Math.max(0, stepCount) * slotMinutes
+
+    if (nextMinutes >= endMinutes) {
+      continue
+    }
+
+    const hours = String(Math.floor(nextMinutes / 60)).padStart(2, '0')
+    const minutes = String(nextMinutes % 60).padStart(2, '0')
+
+    return {
+      date: formatLocalDate(day),
+      time: `${hours}:${minutes}`,
+    }
   }
 
-  if (nextMinutes >= endMinutes) {
-    return null
-  }
-
-  const hours = String(Math.floor(nextMinutes / 60)).padStart(2, '0')
-  const minutes = String(nextMinutes % 60).padStart(2, '0')
-
-  return {
-    date: nextWorkingDate.toISOString().split('T')[0],
-    time: `${hours}:${minutes}`,
-  }
+  return null
 }
 
 export default function DoctorDetails() {
