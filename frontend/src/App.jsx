@@ -23,6 +23,7 @@ import NotFound from './pages/shared/NotFound'
 // Doctor pages
 import DoctorReports from './pages/doctor/DoctorReports'
 import DoctorProfile from './pages/doctor/DoctorProfile'
+import DoctorPatientProfile from './pages/doctor/DoctorPatientProfile'
 
 // Patient pages
 import Profile from './pages/patient/Profile'
@@ -61,6 +62,7 @@ function App() {
             element={<ComingSoon title="Profile" description="Update your personal and account information." />}
           />
           <Route path="/doctor/appointments" element={<DoctorAppointments />} />
+          <Route path="/doctor/patient/:patientId" element={<DoctorPatientProfile />} />
           <Route path="/doctor/reports" element={<DoctorReports />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route
