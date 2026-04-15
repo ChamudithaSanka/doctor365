@@ -365,7 +365,7 @@ export default function MyAppointments() {
                 : `No ${filter} appointments.`}
             </p>
             <Link
-              to="/appointments/book"
+              to="/doctors"
               className="mt-4 inline-block rounded-2xl bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-700 transition"
             >
               Book an appointment

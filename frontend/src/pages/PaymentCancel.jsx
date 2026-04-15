@@ -27,10 +27,10 @@ export default function PaymentCancel() {
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
-            to="/appointments/book"
+            to="/doctors"
             className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
           >
-            Try again
+            Back to Doctors
           </Link>
           <Link
             to="/patient/dashboard"

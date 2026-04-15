@@ -51,6 +51,7 @@ export default function AppShell() {
   const [user, setUser] = useState(readAuthUser())
   const [verificationReady, setVerificationReady] = useState(false)
   const [doctorVerified, setDoctorVerified] = useState(true)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const role = user?.role || 'patient'
   const navigation = useMemo(() => {
@@ -172,6 +173,60 @@ export default function AppShell() {
       navigate('/doctor/dashboard', { replace: true })
     }
   }, [doctorVerified, location.pathname, navigate, role, verificationReady])
+
+  useEffect(() => {
+    const token = localStorage.getItem('doctor365_accessToken')
+    if (!token) {
+      return
+    }
+
+    let isActive = true
+
+    const loadUnreadCount = async () => {
+      try {
+        const response = await fetch(`${gatewayBaseUrl}/api/notifications/me?page=1&limit=100`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!isActive) {
+          return
+        }
+
+        if (response.status === 401) {
+          navigate('/login', { replace: true })
+          return
+        }
+
+        if (!response.ok) {
+          return
+        }
+
+        const data = await response.json()
+        const items = Array.isArray(data?.data?.items) ? data.data.items : []
+        const unread = items.filter((item) => item.status !== 'read').length
+        setUnreadCount(unread)
+      } catch {
+        if (!isActive) {
+          return
+        }
+      }
+    }
+
+    loadUnreadCount()
+
+    const intervalId = window.setInterval(loadUnreadCount, 30000)
+    window.addEventListener('focus', loadUnreadCount)
+    window.addEventListener('doctor365:notifications-updated', loadUnreadCount)
+
+    return () => {
+      isActive = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', loadUnreadCount)
+      window.removeEventListener('doctor365:notifications-updated', loadUnreadCount)
+    }
+  }, [navigate])
 
   if (role === 'doctor' && !verificationReady) {
     return (
@@ -325,9 +380,15 @@ export default function AppShell() {
             <div className="flex items-center gap-3">
               <NavLink
                 to="/notifications"
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                aria-label="Open notifications"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
-                Notifications
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9a6 6 0 1 0-12 0v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.568 1.082 5.454 1.31m5.715 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                {unreadCount > 0 ? (
+                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" aria-hidden="true" />
+                ) : null}
               </NavLink>
               <div className="hidden items-center gap-3 sm:flex">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700 text-sm font-semibold text-white">

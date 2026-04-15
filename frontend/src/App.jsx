@@ -4,7 +4,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
-import PaymentFailed from './pages/PaymentFailed'
 import AppShell from './layouts/AppShell'
 import PatientDashboard from './pages/patient/PatientDashboard'
 import Doctors from './pages/patient/Doctors'
@@ -30,6 +29,8 @@ import Profile from './pages/patient/Profile'
 import MedicalHistory from './pages/patient/MedicalHistory'
 import Reports from './pages/patient/Reports'
 import Prescriptions from './pages/patient/Prescriptions'
+import Notifications from './pages/patient/Notifications'
+import Payments from './pages/patient/Payments'
 
 function App() {
   return (
@@ -40,7 +41,6 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
-        <Route path="/payment/failed" element={<PaymentFailed />} />
         <Route element={<AppShell />}>
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
@@ -53,15 +53,8 @@ function App() {
           <Route path="/patient/profile" element={<Profile />} />
           <Route path="/patient/reports" element={<Reports />} />
           <Route path="/patient/medical-history" element={<MedicalHistory />} />
-          <Route path="/patient/prescriptions" element={<Prescriptions />} />
-          <Route
-            path="/payments"
-            element={<ComingSoon title="Payments" description="Track payment status and history here." />}
-          />
-          <Route
-            path="/notifications"
-            element={<ComingSoon title="Notifications" description="Read your latest alerts and reminders." />}
-          />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route
             path="/profile"
             element={<ComingSoon title="Profile" description="Update your personal and account information." />}
