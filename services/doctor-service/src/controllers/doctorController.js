@@ -156,10 +156,74 @@ const verifyDoctor = async (req, res, next) => {
   }
 };
 
+// @desc    Toggle doctor active status (enable/disable)
+// @route   PATCH /api/doctors/:id/status
+// @access  Private (Admin)
+const toggleDoctorStatus = async (req, res, next) => {
+  try {
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isObjectId
+      ? { $or: [{ _id: req.params.id }, { userId: req.params.id }] }
+      : { userId: req.params.id };
+
+    const doctor = await Doctor.findOne(query);
+
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Doctor not found' }
+      });
+    }
+
+    doctor.isActive = !doctor.isActive;
+    await doctor.save();
+
+    res.status(200).json({
+      success: true,
+      data: doctor,
+      message: `Doctor ${doctor.isActive ? 'enabled' : 'disabled'} successfully`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a doctor
+// @route   DELETE /api/doctors/:id
+// @access  Private (Admin)
+const deleteDoctor = async (req, res, next) => {
+  try {
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    
+    let doctor;
+    if (isObjectId) {
+      doctor = await Doctor.findByIdAndDelete(req.params.id);
+    } else {
+      doctor = await Doctor.findOneAndDelete({ userId: req.params.id });
+    }
+
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Doctor not found' }
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Doctor deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDoctors,
   getDoctorById,
   getMe,
   updateMe,
-  verifyDoctor
+  verifyDoctor,
+  toggleDoctorStatus,
+  deleteDoctor
 };

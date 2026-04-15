@@ -368,6 +368,50 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Check if user's profile is active
+    let isActive = true;
+    if (user.role === 'patient') {
+      const patientServiceUrl = process.env.PATIENT_SERVICE_URL || 'http://localhost:5002';
+      try {
+        const response = await fetch(`${patientServiceUrl}/api/patients/me`, {
+          headers: {
+            'Authorization': `Bearer ${generateTokens(user._id, user.email, user.role).accessToken}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          isActive = data?.data?.isActive !== false;
+        }
+      } catch (err) {
+        console.warn('Could not verify patient status:', err.message);
+      }
+    } else if (user.role === 'doctor') {
+      const doctorServiceUrl = process.env.DOCTOR_SERVICE_URL || 'http://localhost:5003';
+      try {
+        const response = await fetch(`${doctorServiceUrl}/api/doctors/me`, {
+          headers: {
+            'Authorization': `Bearer ${generateTokens(user._id, user.email, user.role).accessToken}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          isActive = data?.data?.isActive !== false;
+        }
+      } catch (err) {
+        console.warn('Could not verify doctor status:', err.message);
+      }
+    }
+
+    if (!isActive) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'ACCOUNT_DISABLED',
+          message: 'Your account has been disabled. Please contact support for more information.',
+        },
+      });
+    }
+
     // Generate tokens
     const { accessToken, refreshToken } = generateTokens(user._id, user.email, user.role);
 

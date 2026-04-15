@@ -7,7 +7,7 @@ const {
   getPaymentById,
   updatePaymentStatus,
 } = require('../controllers/paymentController');
-const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
+const { verifyToken, restrictTo, checkAccountActive } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.post('/payhere/notify', handlePayHereNotify);
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);
+router.use(checkAccountActive);
 
 // Initialize checkout for PayHere (patient only)
 router.post('/checkout/payhere', restrictTo('patient'), initiatePayHereCheckout);

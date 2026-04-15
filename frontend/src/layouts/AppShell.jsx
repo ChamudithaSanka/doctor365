@@ -33,6 +33,13 @@ const navigationByRole = {
   admin: [
     { label: 'Doctor verification', to: '/admin/doctor-verification' },
     { label: 'Appointments', to: '/admin/appointments' },
+    {
+      label: 'Manage Users',
+      submenu: [
+        { label: 'Patients', to: '/admin/manage-patients' },
+        { label: 'Doctors', to: '/admin/manage-doctors' },
+      ],
+    },
   ],
 }
 
@@ -51,6 +58,8 @@ export default function AppShell() {
   const [user, setUser] = useState(readAuthUser())
   const [verificationReady, setVerificationReady] = useState(false)
   const [doctorVerified, setDoctorVerified] = useState(true)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [expandedSubmenu, setExpandedSubmenu] = useState(null)
 
   const role = user?.role || 'patient'
   const navigation = useMemo(() => {
@@ -173,6 +182,137 @@ export default function AppShell() {
     }
   }, [doctorVerified, location.pathname, navigate, role, verificationReady])
 
+  // Check if user account is still active
+  useEffect(() => {
+    const token = localStorage.getItem('doctor365_accessToken')
+    if (!token) {
+      return
+    }
+
+    let isActive = true
+    let intervalId = null
+
+    const checkAccountActive = async () => {
+      try {
+        let endpoint = ''
+        if (role === 'patient') {
+          endpoint = `${gatewayBaseUrl}/api/patients/me`
+        } else if (role === 'doctor') {
+          endpoint = `${gatewayBaseUrl}/api/doctors/me`
+        }
+
+        if (!endpoint) {
+          return
+        }
+
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!isActive) {
+          return
+        }
+
+        if (response.status === 401) {
+          navigate('/login', { replace: true })
+          return
+        }
+
+        if (response.status === 403) {
+          // Account disabled
+          localStorage.removeItem('doctor365_accessToken')
+          localStorage.removeItem('doctor365_refreshToken')
+          localStorage.removeItem('doctor365_user')
+          navigate('/login?disabled=true', { replace: true })
+          return
+        }
+
+        if (response.ok) {
+          const data = await response.json()
+          const accountActive = data?.data?.isActive !== false
+          
+          if (!accountActive) {
+            localStorage.removeItem('doctor365_accessToken')
+            localStorage.removeItem('doctor365_refreshToken')
+            localStorage.removeItem('doctor365_user')
+            navigate('/login?disabled=true', { replace: true })
+          }
+        }
+      } catch (error) {
+        console.warn('Could not verify account status:', error)
+      }
+    }
+
+    // Check immediately and then periodically
+    checkAccountActive()
+    intervalId = window.setInterval(checkAccountActive, 30000)
+    window.addEventListener('focus', checkAccountActive)
+
+    return () => {
+      isActive = false
+      if (intervalId) {
+        window.clearInterval(intervalId)
+      }
+      window.removeEventListener('focus', checkAccountActive)
+    }
+  }, [navigate, role])
+
+  useEffect(() => {
+    const token = localStorage.getItem('doctor365_accessToken')
+    if (!token) {
+      return
+    }
+
+    let isActive = true
+
+    const loadUnreadCount = async () => {
+      try {
+        const response = await fetch(`${gatewayBaseUrl}/api/notifications/me?page=1&limit=100`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!isActive) {
+          return
+        }
+
+        if (response.status === 401) {
+          navigate('/login', { replace: true })
+          return
+        }
+
+        if (!response.ok) {
+          return
+        }
+
+        const data = await response.json()
+        const items = Array.isArray(data?.data?.items) ? data.data.items : []
+        const unread = items.filter((item) => item.status !== 'read').length
+        setUnreadCount(unread)
+      } catch {
+        if (!isActive) {
+          return
+        }
+      }
+    }
+
+    loadUnreadCount()
+
+    const intervalId = window.setInterval(loadUnreadCount, 30000)
+    window.addEventListener('focus', loadUnreadCount)
+    window.addEventListener('doctor365:notifications-updated', loadUnreadCount)
+
+    return () => {
+      isActive = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', loadUnreadCount)
+      window.removeEventListener('doctor365:notifications-updated', loadUnreadCount)
+    }
+  }, [navigate])
+
   if (role === 'doctor' && !verificationReady) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6 text-slate-900">
@@ -218,22 +358,67 @@ export default function AppShell() {
         </div>
 
         <nav className="flex-1 space-y-2 px-4 py-6">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                [
-                  'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
-                  (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
-                    ? 'bg-blue-700 text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
-                ].join(' ')
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {navigation.map((item) => {
+            if (item.submenu) {
+              const isOpen = expandedSubmenu === item.label
+              const hasActiveSubitem = item.submenu.some((subitem) => location.pathname === subitem.to || location.pathname.startsWith(`${subitem.to}/`))
+
+              return (
+                <div key={item.label}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedSubmenu(isOpen ? null : item.label)}
+                    className={[
+                      'w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition',
+                      hasActiveSubitem || isOpen
+                        ? 'bg-blue-700 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                    ].join(' ')}
+                  >
+                    <span>{item.label}</span>
+                    <span className={`transition ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+                  </button>
+                  {isOpen && (
+                    <div className="mt-1 space-y-1 pl-4">
+                      {item.submenu.map((subitem) => (
+                        <NavLink
+                          key={subitem.to}
+                          to={subitem.to}
+                          className={({ isActive }) =>
+                            [
+                              'flex items-center rounded-xl px-4 py-2 text-sm font-medium transition',
+                              isActive
+                                ? 'bg-blue-600 text-white'
+                                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                            ].join(' ')
+                          }
+                        >
+                          {subitem.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  [
+                    'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
+                    (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
+                      ? 'bg-blue-700 text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                  ].join(' ')
+                }
+              >
+                {item.label}
+              </NavLink>
+            )
+          })}
         </nav>
 
         <div className="border-t border-slate-200 p-4">
@@ -271,23 +456,69 @@ export default function AppShell() {
             </div>
 
             <nav className="space-y-2 px-4 py-5">
-              {navigation.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) =>
-                    [
-                      'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
-                      (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
-                        ? 'bg-blue-700 text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
-                    ].join(' ')
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
+              {navigation.map((item) => {
+                if (item.submenu) {
+                  const isOpen = expandedSubmenu === item.label
+                  const hasActiveSubitem = item.submenu.some((subitem) => location.pathname === subitem.to || location.pathname.startsWith(`${subitem.to}/`))
+
+                  return (
+                    <div key={item.label}>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSubmenu(isOpen ? null : item.label)}
+                        className={[
+                          'w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition',
+                          hasActiveSubitem || isOpen
+                            ? 'bg-blue-700 text-white shadow-sm'
+                            : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                        ].join(' ')}
+                      >
+                        <span>{item.label}</span>
+                        <span className={`transition ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+                      </button>
+                      {isOpen && (
+                        <div className="mt-1 space-y-1 pl-4">
+                          {item.submenu.map((subitem) => (
+                            <NavLink
+                              key={subitem.to}
+                              to={subitem.to}
+                              onClick={() => setMobileOpen(false)}
+                              className={({ isActive }) =>
+                                [
+                                  'flex items-center rounded-xl px-4 py-2 text-sm font-medium transition',
+                                  isActive
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                                ].join(' ')
+                              }
+                            >
+                              {subitem.label}
+                            </NavLink>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      [
+                        'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
+                        (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
+                          ? 'bg-blue-700 text-white shadow-sm'
+                          : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                      ].join(' ')
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                )
+              })}
             </nav>
 
             <div className="border-t border-slate-200 p-4">

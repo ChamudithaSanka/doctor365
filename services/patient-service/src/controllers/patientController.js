@@ -353,6 +353,72 @@ const addPrescription = async (req, res, next) => {
   }
 };
 
+// @desc    Toggle patient active status (enable/disable)
+// @route   PATCH /:id/status
+// @access  Private (Admin)
+const togglePatientStatus = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    patient.isActive = !patient.isActive;
+    await patient.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Patient ${patient.isActive ? 'enabled' : 'disabled'} successfully`,
+      data: patient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a patient
+// @route   DELETE /:id
+// @access  Private (Admin)
+const deletePatient = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findByIdAndDelete(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOneAndDelete({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Patient deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMe,
   updateMe,
@@ -363,4 +429,6 @@ module.exports = {
   getAllPatients,
   getPrescriptions,
   addPrescription,
+  togglePatientStatus,
+  deletePatient,
 };

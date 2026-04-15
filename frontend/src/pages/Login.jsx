@@ -23,11 +23,18 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sessionExpired, setSessionExpired] = useState(false)
+  const [accountDisabled, setAccountDisabled] = useState(false)
 
   useEffect(() => {
-    // Check if redirected due to expired token
+    // Check if redirected due to expired token or disabled account
     if (searchParams.get('expired') === 'true') {
       setSessionExpired(true)
+      // Clear old token
+      localStorage.removeItem('doctor365_accessToken')
+      localStorage.removeItem('doctor365_refreshToken')
+    }
+    if (searchParams.get('disabled') === 'true') {
+      setAccountDisabled(true)
       // Clear old token
       localStorage.removeItem('doctor365_accessToken')
       localStorage.removeItem('doctor365_refreshToken')
@@ -111,6 +118,13 @@ export default function Login() {
               <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-100">
                 <p className="font-semibold">Session Expired</p>
                 <p className="mt-1">Your session has expired. Please log in again to continue.</p>
+              </div>
+            )}
+
+            {accountDisabled && (
+              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">
+                <p className="font-semibold">Account Disabled</p>
+                <p className="mt-1">Your account has been disabled. Please contact support for more information.</p>
               </div>
             )}
 
