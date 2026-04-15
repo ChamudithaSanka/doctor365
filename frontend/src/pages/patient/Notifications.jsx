@@ -34,6 +34,7 @@ export default function Notifications() {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all')
   const [markingId, setMarkingId] = useState('')
+  const [markingAll, setMarkingAll] = useState(false)
 
   useEffect(() => {
     const token = getToken()
@@ -131,6 +132,7 @@ export default function Notifications() {
           return updated || { ...item, status: 'read', readAt: new Date().toISOString() }
         })
       )
+      window.dispatchEvent(new Event('doctor365:notifications-updated'))
     } catch (requestError) {
       if (handleTokenError(requestError)) {
         return
@@ -142,6 +144,63 @@ export default function Notifications() {
       )
     } finally {
       setMarkingId('')
+    }
+  }
+
+  const markAllAsRead = async () => {
+    const token = getToken()
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
+
+    const unreadItems = items.filter((item) => item.status !== 'read')
+    if (unreadItems.length === 0) {
+      return
+    }
+
+    setMarkingAll(true)
+
+    try {
+      await Promise.all(
+        unreadItems.map((item) =>
+          axios.patch(
+            `${gatewayBaseUrl}/api/notifications/${item._id}/read`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
+        )
+      )
+
+      setItems((current) =>
+        current.map((item) => {
+          if (item.status === 'read') {
+            return item
+          }
+
+          return {
+            ...item,
+            status: 'read',
+            readAt: item.readAt || new Date().toISOString(),
+          }
+        })
+      )
+      window.dispatchEvent(new Event('doctor365:notifications-updated'))
+    } catch (requestError) {
+      if (handleTokenError(requestError)) {
+        return
+      }
+
+      setError(
+        requestError?.response?.data?.error?.message ||
+          'Could not mark all notifications as read. Please try again.'
+      )
+    } finally {
+      setMarkingAll(false)
     }
   }
 
@@ -175,7 +234,8 @@ export default function Notifications() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
           {[
             { value: 'all', label: 'All' },
             { value: 'unread', label: 'Unread' },
@@ -195,6 +255,15 @@ export default function Notifications() {
               {option.label}
             </button>
           ))}
+          </div>
+          <button
+            type="button"
+            onClick={markAllAsRead}
+            disabled={markingAll || unreadCount === 0}
+            className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {markingAll ? 'Updating...' : 'Mark all as read'}
+          </button>
         </div>
       </section>
 
