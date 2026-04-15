@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: doctor365
+resources:
+  - 00-namespace.yaml
+  - 01-configmaps.yaml
+  - 02-secrets.yaml
+  - 03-mongodb.yaml
+  - 10-auth-service.yaml
+  - 11-patient-service.yaml
+  - 12-doctor-service.yaml
+  - 13-appointment-service.yaml
+  - 14-telemedicine-service.yaml
+  - 15-payment-service.yaml
+  - 16-notification-service.yaml
+  - 17-gateway.yaml
+  - 18-frontend.yaml
+  - 19-ingress.yaml

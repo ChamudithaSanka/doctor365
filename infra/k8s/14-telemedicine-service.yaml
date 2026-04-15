@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemedicine-service
+  namespace: doctor365
+  labels:
+    app: telemedicine-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: telemedicine-service
+  template:
+    metadata:
+      labels:
+        app: telemedicine-service
+    spec:
+      containers:
+        - name: telemedicine-service
+          image: doctor365/telemedicine-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5005
+          envFrom:
+            - configMapRef:
+                name: telemedicine-config
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: TELEMEDICINE_MONGODB_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: JWT_SECRET
+            - name: ZOOM_ACCOUNT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: telemedicine-secret
+                  key: ZOOM_ACCOUNT_ID
+            - name: ZOOM_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: telemedicine-secret
+                  key: ZOOM_CLIENT_ID
+            - name: ZOOM_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: telemedicine-secret
+                  key: ZOOM_CLIENT_SECRET
+            - name: ZOOM_MEETING_HOST_ID
+              valueFrom:
+                secretKeyRef:
+                  name: telemedicine-secret
+                  key: ZOOM_MEETING_HOST_ID
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5005
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5005
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemedicine-service
+  namespace: doctor365
+spec:
+  selector:
+    app: telemedicine-service
+  ports:
+    - name: http
+      port: 5005
+      targetPort: 5005
+  type: ClusterIP
