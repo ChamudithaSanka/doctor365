@@ -87,6 +87,10 @@ const patientSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        diagnosis: {
+          type: String,
+          default: '',
+        },
         medication: [
           {
             name: String,

@@ -28,6 +28,7 @@ import DoctorProfile from './pages/doctor/DoctorProfile'
 import Profile from './pages/patient/Profile'
 import MedicalHistory from './pages/patient/MedicalHistory'
 import Reports from './pages/patient/Reports'
+import Prescriptions from './pages/patient/Prescriptions'
 import Notifications from './pages/patient/Notifications'
 import Payments from './pages/patient/Payments'
 
