@@ -53,6 +53,7 @@ function App() {
           <Route path="/patient/profile" element={<Profile />} />
           <Route path="/patient/reports" element={<Reports />} />
           <Route path="/patient/medical-history" element={<MedicalHistory />} />
+          <Route path="/patient/prescriptions" element={<Prescriptions />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route
