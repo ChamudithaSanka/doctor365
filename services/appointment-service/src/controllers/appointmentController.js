@@ -56,6 +56,15 @@ const getWeekdayCode = (dateValue) => {
   return weekdayMap[date.getDay()];
 };
 
+const buildDoctorDisplayName = (doctor) => {
+  if (!doctor) return 'Your doctor';
+
+  const fullName = `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim();
+  if (!fullName) return 'Your doctor';
+
+  return /^dr\.?\s+/i.test(fullName) ? fullName : `Dr. ${fullName}`;
+};
+
 // @desc    Create a new appointment
 // @route   POST /api/appointments
 // @access  Private (patient)
@@ -201,6 +210,8 @@ exports.createAppointment = async (req, res, next) => {
       getUserContact(doctorId),
     ]);
 
+    const doctorDisplayName = buildDoctorDisplayName(doctor);
+
     appointment.patientEmail = req.user.email || null;
     appointment.patientPhone = patientPhone;
     appointment.doctorEmail = doctorContact?.email || null;
@@ -224,6 +235,9 @@ exports.createAppointment = async (req, res, next) => {
         doctorId,
         appointmentDate,
         appointmentTime,
+        reason,
+        doctorName: doctorDisplayName,
+        recipientRole: 'patient',
       },
     });
 
@@ -243,6 +257,10 @@ exports.createAppointment = async (req, res, next) => {
         patientId: req.user.userId,
         appointmentDate,
         appointmentTime,
+        reason,
+        doctorName: doctorDisplayName,
+        patientEmail: req.user.email || null,
+        recipientRole: 'doctor',
       },
     });
 
