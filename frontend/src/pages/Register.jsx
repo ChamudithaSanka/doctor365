@@ -37,6 +37,27 @@ const initialFormState = {
   hospitalOrClinic: '',
 }
 
+const formatSriLankanPhone = (phone) => {
+  const trimmed = String(phone || '').trim()
+  if (!trimmed) return ''
+
+  if (trimmed.startsWith('+94')) {
+    return `+94${trimmed.slice(3).replace(/\D/g, '')}`
+  }
+
+  const digits = trimmed.replace(/\D/g, '')
+
+  if (digits.startsWith('94')) {
+    return `+${digits}`
+  }
+
+  if (digits.startsWith('0')) {
+    return `+94${digits.slice(1)}`
+  }
+
+  return `+94${digits}`
+}
+
 const buildRegistrationPayload = (payload) => {
   const commonFields = {
     role: payload.role,
@@ -51,11 +72,11 @@ const buildRegistrationPayload = (payload) => {
       ...commonFields,
       dateOfBirth: payload.dateOfBirth,
       gender: payload.gender,
-      phone: payload.phone,
+      phone: formatSriLankanPhone(payload.phone),
       address: payload.address,
       city: payload.city,
-      country: payload.country,
-      emergencyContact: payload.emergencyContact,
+      country: 'Sri Lanka',
+      emergencyContact: formatSriLankanPhone(payload.emergencyContact),
       medicalHistorySummary: payload.medicalHistorySummary,
     }
   }
@@ -332,37 +353,20 @@ export default function Register() {
                     />
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="city" className="block text-sm font-medium text-slate-700">
-                        City
-                      </label>
-                      <input
-                        id="city"
-                        name="city"
-                        type="text"
-                        placeholder="e.g., Colombo, Kandy"
-                        value={formData.city}
-                        onChange={handleChange}
-                        required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="country" className="block text-sm font-medium text-slate-700">
-                        Country
-                      </label>
-                      <input
-                        id="country"
-                        name="country"
-                        type="text"
-                        placeholder="Sri Lanka"
-                        value={formData.country}
-                        onChange={handleChange}
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-slate-700">
+                      City
+                    </label>
+                    <input
+                      id="city"
+                      name="city"
+                      type="text"
+                      placeholder="e.g., Colombo, Kandy"
+                      value={formData.city}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
                   </div>
 
                   <div>

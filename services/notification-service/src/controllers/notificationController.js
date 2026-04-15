@@ -1,6 +1,11 @@
 const Notification = require('../models/Notification');
 const { sendEmailNotification } = require('../utils/emailService');
 const { sendSmsNotification } = require('../utils/smsService');
+const {
+  buildAppointmentBookedEmailHtml,
+  buildAppointmentCancelledEmailHtml,
+  buildAppointmentReminderEmailHtml,
+} = require('../utils/appointmentEmailTemplate');
 
 const normalizeChannels = (input) => {
   const channels = {
@@ -43,6 +48,31 @@ const getRecipientDetails = (reqBody, metadata = {}) => ({
   email: reqBody.recipientEmail || metadata.recipientEmail || metadata.email || null,
   phone: reqBody.recipientPhone || metadata.recipientPhone || metadata.phone || null,
 });
+
+const buildEmailMetadata = ({ type, metadata, title, message }) => {
+  if (type === 'appointment.booked') {
+    return {
+      ...metadata,
+      emailHtml: buildAppointmentBookedEmailHtml({ metadata, title, message }),
+    };
+  }
+
+  if (type === 'appointment.cancelled') {
+    return {
+      ...metadata,
+      emailHtml: buildAppointmentCancelledEmailHtml({ metadata, title, message }),
+    };
+  }
+
+  if (type === 'appointment.reminder') {
+    return {
+      ...metadata,
+      emailHtml: buildAppointmentReminderEmailHtml({ metadata, title, message }),
+    };
+  }
+
+  return metadata;
+};
 
 // @desc    Create notification (internal)
 // @route   POST /notifications
@@ -127,7 +157,7 @@ const createNotification = async (req, res, next) => {
           to: recipients.email,
           subject: title,
           text: message,
-          metadata,
+          metadata: buildEmailMetadata({ type, metadata, title, message }),
         })
       );
     }

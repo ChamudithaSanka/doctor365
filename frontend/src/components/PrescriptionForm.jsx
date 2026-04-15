@@ -13,12 +13,57 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
   const [selectedAppointment, setSelectedAppointment] = useState(appointmentId || '')
   const [patientInfo, setPatientInfo] = useState(null)
   const [loadingPatient, setLoadingPatient] = useState(false)
+  const [doctorName, setDoctorName] = useState('')
 
   const [formData, setFormData] = useState({
     diagnosis: '',
     medications: [{ name: '', dosage: '', frequency: '', duration: '' }],
     instructions: '',
   })
+
+  const getDoctorNameFromStoredUser = () => {
+    try {
+      const rawUser = localStorage.getItem('doctor365_user')
+      if (!rawUser) return ''
+
+      const user = JSON.parse(rawUser)
+      const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
+
+      if (fullName) return fullName
+      if (typeof user?.name === 'string' && user.name.trim()) return user.name.trim()
+      if (typeof user?.email === 'string' && user.email.trim()) return user.email.trim()
+
+      return ''
+    } catch {
+      return ''
+    }
+  }
+
+  useEffect(() => {
+    const loadDoctorIdentity = async () => {
+      const token = getToken()
+      if (!token) return
+
+      try {
+        const response = await axios.get(`${gatewayBaseUrl}/api/doctors/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        const doctor = response.data?.data
+        const fullName = `${doctor?.firstName || ''} ${doctor?.lastName || ''}`.trim()
+        if (fullName) {
+          setDoctorName(fullName)
+          return
+        }
+      } catch {
+        // Fallback to locally stored auth user if doctor profile isn't available.
+      }
+
+      setDoctorName(getDoctorNameFromStoredUser())
+    }
+
+    loadDoctorIdentity()
+  }, [])
 
   // Fetch appointments on mount
   useEffect(() => {
@@ -159,7 +204,7 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
       const response = await axios.post(
         `${gatewayBaseUrl}/api/patients/${appointment.patientId}/prescriptions`,
         {
-          doctorName: `Dr. ${formData.doctorName || 'Unknown'}`,
+          doctorName: doctorName || 'Unknown doctor',
           medication: formData.medications,
           instructions: formData.instructions.trim(),
           diagnosis: formData.diagnosis.trim(),
