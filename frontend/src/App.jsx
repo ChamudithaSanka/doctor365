@@ -52,10 +52,7 @@ function App() {
           <Route path="/patient/profile" element={<Profile />} />
           <Route path="/patient/reports" element={<Reports />} />
           <Route path="/patient/medical-history" element={<MedicalHistory />} />
-          <Route
-            path="/payments"
-            element={<ComingSoon title="Payments" description="Track payment status and history here." />}
-          />
+          <Route path="/payments" element={<Payments />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route
             path="/profile"
