@@ -51,6 +51,27 @@ const generateTimeSlots = (startTime, endTime, slotMinutes) => {
   return slots
 }
 
+const toLocalDateTime = (dateValue, timeValue) => {
+  if (!dateValue || !timeValue) return null
+
+  const [hours, minutes] = String(timeValue).split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null
+
+  const date = new Date(dateValue)
+  if (Number.isNaN(date.getTime())) return null
+
+  date.setHours(hours, minutes, 0, 0)
+  return date
+}
+
+const isSameCalendarDay = (left, right) => {
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  )
+}
+
 export default function BookAppointment() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -111,11 +132,22 @@ export default function BookAppointment() {
 
   const availableSlots = useMemo(() => {
     if (!selectedDoctor || !appointmentDate) return []
-    return generateTimeSlots(
+    const allSlots = generateTimeSlots(
       selectedDoctor.availabilityStartTime,
       selectedDoctor.availabilityEndTime,
       selectedDoctor.slotMinutes || 30
     )
+
+    const selectedDate = new Date(appointmentDate)
+    const now = new Date()
+    if (Number.isNaN(selectedDate.getTime()) || !isSameCalendarDay(selectedDate, now)) {
+      return allSlots
+    }
+
+    return allSlots.filter((slot) => {
+      const slotDateTime = toLocalDateTime(appointmentDate, slot)
+      return slotDateTime && slotDateTime > now
+    })
   }, [selectedDoctor, appointmentDate])
 
   const minDate = new Date().toISOString().split('T')[0]
@@ -124,6 +156,12 @@ export default function BookAppointment() {
     e.preventDefault()
     if (!selectedDoctor || !appointmentDate || !appointmentTime || !reason) {
       setError('Please fill in all required fields')
+      return
+    }
+
+    const selectedDateTime = toLocalDateTime(appointmentDate, appointmentTime)
+    if (!selectedDateTime || selectedDateTime <= new Date()) {
+      setError('Please select a future appointment time')
       return
     }
 
@@ -403,6 +441,11 @@ export default function BookAppointment() {
                 </option>
               ))}
             </select>
+            {appointmentDate && availableSlots.length === 0 && (
+              <p className="mt-2 text-xs text-amber-700">
+                No future slots are available for the selected date.
+              </p>
+            )}
           </div>
 
           <div>

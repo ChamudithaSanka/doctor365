@@ -19,12 +19,6 @@ const appointmentSchema = new mongoose.Schema(
     appointmentDate: {
       type: Date,
       required: [true, 'Appointment date is required'],
-      validate: {
-        validator: function (value) {
-          return value > new Date();
-        },
-        message: 'Appointment date must be in the future',
-      },
     },
     appointmentTime: {
       type: String,

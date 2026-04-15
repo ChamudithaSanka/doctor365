@@ -73,6 +73,27 @@ exports.createAppointment = async (req, res, next) => {
       });
     }
 
+    const appointmentDateTime = getAppointmentDateTime(appointmentDate, appointmentTime);
+    if (!appointmentDateTime) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_DATETIME',
+          message: 'Please provide a valid appointment date and time',
+        },
+      });
+    }
+
+    if (appointmentDateTime <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'PAST_DATETIME',
+          message: 'Appointment date and time must be in the future',
+        },
+      });
+    }
+
     if (paymentOrderId) {
       const existingByPayment = await Appointment.findOne({
         paymentOrderId,
