@@ -6,13 +6,18 @@ const {
   getMyPayments,
   getPaymentById,
   updatePaymentStatus,
+  refundPayment,
 } = require('../controllers/paymentController');
 const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
+const { verifyInternalToken } = require('../middleware/internalTokenMiddleware');
 
 const router = express.Router();
 
 // Public callback endpoint from PayHere
 router.post('/payhere/notify', handlePayHereNotify);
+
+// Internal refund endpoint (requires internal token)
+router.post('/refund', verifyInternalToken, refundPayment);
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);

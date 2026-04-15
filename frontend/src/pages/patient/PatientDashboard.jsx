@@ -224,6 +224,12 @@ export default function PatientDashboard() {
               >
                 Update profile
               </Link>
+              <Link
+                to="/payments"
+                className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              >
+                View payments
+              </Link>
             </div>
           </div>
 
