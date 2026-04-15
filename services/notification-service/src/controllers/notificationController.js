@@ -267,6 +267,62 @@ const createNotification = async (req, res, next) => {
 };
 
 // @desc    Get current user's notifications
+// @desc    Get all notifications (admin only)
+// @route   GET /notifications
+// @access  Private (admin)
+const getAllNotifications = async (req, res, next) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 100);
+
+    const query = {};
+
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+
+    if (req.query.type) {
+      query.type = req.query.type;
+    }
+
+    if (req.query.userId) {
+      query.userId = req.query.userId;
+    }
+
+    if (req.query.startDate || req.query.endDate) {
+      query.createdAt = {};
+      if (req.query.startDate) {
+        query.createdAt.$gte = new Date(req.query.startDate);
+      }
+      if (req.query.endDate) {
+        query.createdAt.$lte = new Date(req.query.endDate);
+      }
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Notification.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Notification.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        items,
+        pagination: {
+          page,
+          limit,
+          total,
+        },
+      },
+      message: 'Notifications retrieved successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @route   GET /notifications/me
 // @access  Private
 const getMyNotifications = async (req, res, next) => {
@@ -353,6 +409,7 @@ const markAsRead = async (req, res, next) => {
 
 module.exports = {
   createNotification,
+  getAllNotifications,
   getMyNotifications,
   markAsRead,
 };
