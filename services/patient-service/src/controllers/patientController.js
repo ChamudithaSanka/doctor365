@@ -465,6 +465,44 @@ const addMedicalHistory = async (req, res, next) => {
   }
 };
 
+// @desc    Get medical history for a patient (doctor/admin reads another patient's history)
+// @route   GET /:id/medical-history
+// @access  Private (Doctor, Admin)
+const getPatientMedicalHistory = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    let patient;
+
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        patientName: `${patient.firstName} ${patient.lastName}`,
+        patientId: patient._id,
+        userId: patient.userId,
+        medicalHistory: patient.medicalHistory || [],
+        medicalHistorySummary: patient.medicalHistorySummary || '',
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMe,
   updateMe,
@@ -478,4 +516,5 @@ module.exports = {
   getMedicalHistory,
   updateMedicalHistory,
   addMedicalHistory,
+  getPatientMedicalHistory,
 };

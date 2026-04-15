@@ -13,6 +13,7 @@ const {
   getMedicalHistory,
   updateMedicalHistory,
   addMedicalHistory,
+  getPatientMedicalHistory,
 } = require('../controllers/patientController');
 const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 const { uploadReports } = require('../middleware/uploadMiddleware');
@@ -84,6 +85,7 @@ router.route('/:id/prescriptions')
   .post(restrictTo('doctor', 'admin'), prescriptionValidation, addPrescription);
 
 router.route('/:id/medical-history')
+  .get(restrictTo('doctor', 'admin'), getPatientMedicalHistory)
   .post(restrictTo('doctor', 'admin'), addMedicalHistory);
 
 module.exports = router;
