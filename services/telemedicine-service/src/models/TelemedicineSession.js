@@ -64,14 +64,6 @@ const telemedicineSessionSchema = new mongoose.Schema(
       maxlength: [2000, 'Doctor notes cannot exceed 2000 characters'],
       default: null,
     },
-    recordingId: {
-      type: String,
-      default: null,
-    },
-    recordingUrl: {
-      type: String,
-      default: null,
-    },
     patientFeedback: {
       rating: {
         type: Number,

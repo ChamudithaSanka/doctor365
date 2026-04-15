@@ -79,7 +79,7 @@ app.use(
 app.use(
   "/api/telemedicine",
   createProxyMiddleware({
-    target: `${services.telemedicine}/telemedicine`,
+    target: `${services.telemedicine}/api/telemedicine`,
     changeOrigin: true,
     onProxyReq: proxyConfig.onProxyReq,
   })

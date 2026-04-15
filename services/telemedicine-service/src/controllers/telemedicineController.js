@@ -1,5 +1,5 @@
 const TelemedicineSession = require('../models/TelemedicineSession');
-const { createMeeting, getMeetingRecordings } = require('../utils/zoomUtils');
+const { createMeeting } = require('../utils/zoomUtils');
 
 // Fetch doctor profile from doctor service
 const fetchDoctorProfile = async (doctorId) => {
@@ -116,16 +116,29 @@ exports.createSession = async (req, res, next) => {
 
     let zoomMeetingData;
     try {
-      // Use the actual Zoom account owner's email from environment, not the doctor's email
-      const zoomHostEmail = process.env.ZOOM_MEETING_HOST_ID || doctorEmail;
-      zoomMeetingData = await createMeeting(zoomHostEmail, appointmentDateTime.toISOString());
+      // IMPORTANT: Must use the actual registered Zoom user (service account)
+      // Doctor's email from the system is NOT a registered Zoom user
+      const serviceAccountEmail = process.env.ZOOM_MEETING_HOST_ID;
+      if (!serviceAccountEmail) {
+        throw new Error('Zoom service account not configured (ZOOM_MEETING_HOST_ID)');
+      }
+      
+      console.log(`📌 Creating Zoom meeting on service account: ${serviceAccountEmail}`);
+      console.log(`👨‍⚕️ Doctor email: ${doctorEmail} (will have effective control via waiting room approval)`);
+      
+      zoomMeetingData = await createMeeting(serviceAccountEmail, appointmentDateTime.toISOString());
+      
+      console.log(`✅ Meeting created successfully`);
+      console.log(`  📍 Meeting ID: ${zoomMeetingData.zoomMeetingId}`);
+      console.log(`  🔒 Waiting room: ENABLED (doctor must approve patient entry)`);
+      console.log(`  🚪 Join before host: DISABLED (patient cannot start without doctor)`);
     } catch (error) {
-      console.error('Zoom meeting creation failed:', error);
+      console.error('❌ Zoom meeting creation failed:', error.message);
       return res.status(500).json({
         success: false,
         error: {
           code: 'ZOOM_ERROR',
-          message: 'Failed to create Zoom meeting',
+          message: 'Failed to create Zoom meeting: ' + error.message,
         },
       });
     }
@@ -387,19 +400,6 @@ exports.endSession = async (req, res, next) => {
     session.endedAt = new Date();
     if (doctorNotes) {
       session.doctorNotes = doctorNotes;
-    }
-
-    // Try to fetch recordings
-    if (session.zoomMeetingId) {
-      try {
-        const recordingData = await getMeetingRecordings(doctorEmail, session.zoomMeetingId);
-        if (recordingData) {
-          session.recordingId = recordingData.recordingId;
-          session.recordingUrl = recordingData.recordingUrl;
-        }
-      } catch (error) {
-        console.log('Recording fetch failed (non-critical):', error.message);
-      }
     }
 
     await session.save();
