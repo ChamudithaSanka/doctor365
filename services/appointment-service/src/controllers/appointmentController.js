@@ -2,6 +2,7 @@ const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
 const { getPatientPhone, getUserContact } = require('../utils/contactLookup');
 const { sendInternalNotification } = require('../utils/notificationClient');
+const { refundPaymentForAppointment } = require('../utils/paymentClient');
 
 const doctorServiceBaseUrl = process.env.DOCTOR_SERVICE_URL || 'http://localhost:5003';
 
@@ -444,6 +445,15 @@ exports.updateAppointmentStatus = async (req, res, next) => {
           status,
         },
       });
+
+      // Refund payment if appointment was paid
+      if (appointment.paymentOrderId) {
+        await refundPaymentForAppointment(
+          appointment._id,
+          appointment.patientId,
+          appointment.paymentOrderId
+        );
+      }
     }
 
     res.status(200).json({

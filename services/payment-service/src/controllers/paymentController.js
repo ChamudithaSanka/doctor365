@@ -337,7 +337,7 @@ const createPayment = async (req, res, next) => {
 const getMyPayments = async (req, res, next) => {
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 100);
 
     const query = { patientId: req.user.userId };
 
@@ -354,13 +354,11 @@ const getMyPayments = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: {
-        items,
-        pagination: {
-          page,
-          limit,
-          total,
-        },
+      data: items,
+      pagination: {
+        page,
+        limit,
+        total,
       },
       message: 'Payments retrieved successfully',
     });
@@ -461,6 +459,81 @@ const updatePaymentStatus = async (req, res, next) => {
   }
 };
 
+// @desc    Refund payment when appointment is cancelled
+// @route   POST /payments/refund
+// @access  Private (internal service only)
+const refundPayment = async (req, res, next) => {
+  try {
+    const { appointmentId, patientId, paymentOrderId, reason } = req.body;
+
+    if (!appointmentId || !patientId || !paymentOrderId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Please provide appointmentId, patientId, and paymentOrderId',
+        },
+      });
+    }
+
+    const payment = await Payment.findOne({
+      orderId: paymentOrderId,
+      appointmentId,
+      patientId,
+    });
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Payment not found for this appointment',
+        },
+      });
+    }
+
+    const previousStatus = payment.status;
+
+    // Only refund paid or pending payments
+    if (!['paid', 'pending'].includes(payment.status)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_STATUS',
+          message: `Cannot refund payments with status: ${payment.status}`,
+        },
+      });
+    }
+
+    payment.status = 'refunded';
+    payment.metadata = {
+      ...payment.metadata,
+      refund: {
+        refundedAt: new Date(),
+        reason: reason || 'appointment_cancelled',
+        previousStatus,
+      },
+    };
+
+    await payment.save();
+
+    // Send refund notification
+    await notifyPaymentResult({
+      payment,
+      status: 'refunded',
+      message: 'Your payment has been refunded due to appointment cancellation.',
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: payment,
+      message: 'Payment refunded successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   initiatePayHereCheckout,
   handlePayHereNotify,
@@ -468,4 +541,5 @@ module.exports = {
   getMyPayments,
   getPaymentById,
   updatePaymentStatus,
+  refundPayment,
 };
