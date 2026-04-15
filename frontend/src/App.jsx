@@ -4,7 +4,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
-import PaymentFailed from './pages/PaymentFailed'
 import AppShell from './layouts/AppShell'
 import PatientDashboard from './pages/patient/PatientDashboard'
 import Doctors from './pages/patient/Doctors'
@@ -40,7 +39,6 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
-        <Route path="/payment/failed" element={<PaymentFailed />} />
         <Route element={<AppShell />}>
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
