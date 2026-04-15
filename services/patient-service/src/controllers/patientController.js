@@ -353,6 +353,118 @@ const addPrescription = async (req, res, next) => {
   }
 };
 
+// @desc    Get medical history for current patient
+// @route   GET /me/medical-history
+// @access  Private (Patient)
+const getMedicalHistory = async (req, res, next) => {
+  try {
+    const patient = await Patient.findOne({ userId: req.user.userId });
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        medicalHistory: patient.medicalHistory || [],
+        medicalHistorySummary: patient.medicalHistorySummary || '',
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update medical history for current patient
+// @route   PUT /me/medical-history
+// @access  Private (Patient)
+const updateMedicalHistory = async (req, res, next) => {
+  try {
+    const { medicalHistory } = req.body;
+
+    if (!Array.isArray(medicalHistory)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Medical history must be an array' },
+      });
+    }
+
+    const patient = await Patient.findOneAndUpdate(
+      { userId: req.user.userId },
+      { $set: { medicalHistory } },
+      { new: true, runValidators: true }
+    );
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Medical history updated successfully',
+      data: patient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add medical history for a patient (doctor adds for patient)
+// @route   POST /:id/medical-history
+// @access  Private (Doctor, Admin)
+const addMedicalHistory = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    const { date, condition, treatment } = req.body;
+
+    if (!date || !condition || !treatment) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Date, condition, and treatment are required' },
+      });
+    }
+
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    const medicalHistoryEntry = {
+      date: new Date(date),
+      condition,
+      treatment,
+      doctorName: req.body.doctorName || 'Unknown Doctor',
+    };
+
+    patient.medicalHistory.push(medicalHistoryEntry);
+    await patient.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Medical history added successfully',
+      data: patient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMe,
   updateMe,
@@ -363,4 +475,7 @@ module.exports = {
   getAllPatients,
   getPrescriptions,
   addPrescription,
+  getMedicalHistory,
+  updateMedicalHistory,
+  addMedicalHistory,
 };
