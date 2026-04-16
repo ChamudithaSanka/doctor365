@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { isDeliveryDisabledForTesting } = require('./deliveryControl');
 
 let transporter;
 
@@ -28,6 +29,10 @@ const getTransporter = () => {
 const sendEmailNotification = async ({ to, subject, text, metadata = {} }) => {
   if (!to) {
     throw new Error('Recipient email is required');
+  }
+
+  if (isDeliveryDisabledForTesting()) {
+    return;
   }
 
   const sender = process.env.SENDER_EMAIL || process.env.GMAIL_USER;

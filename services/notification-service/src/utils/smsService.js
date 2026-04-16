@@ -1,4 +1,5 @@
 const twilio = require('twilio');
+const { isDeliveryDisabledForTesting } = require('./deliveryControl');
 
 let client;
 
@@ -22,6 +23,10 @@ const getClient = () => {
 const sendSmsNotification = async ({ to, body }) => {
   if (!to) {
     throw new Error('Recipient phone number is required');
+  }
+
+  if (isDeliveryDisabledForTesting()) {
+    return;
   }
 
   const from = process.env.TWILIO_PHONE_NUMBER;
