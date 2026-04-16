@@ -72,6 +72,12 @@ const isSameCalendarDay = (left, right) => {
   )
 }
 
+const getDoctorWorkingDays = (doctor) => {
+  return Array.isArray(doctor?.workingDays) && doctor.workingDays.length > 0
+    ? doctor.workingDays
+    : ['MON', 'TUE', 'WED', 'THU', 'FRI']
+}
+
 export default function BookAppointment() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -132,6 +138,13 @@ export default function BookAppointment() {
 
   const availableSlots = useMemo(() => {
     if (!selectedDoctor || !appointmentDate) return []
+    const workingDays = getDoctorWorkingDays(selectedDoctor)
+    const selectedDayCode = getWeekdayCode(appointmentDate)
+
+    if (!selectedDayCode || !workingDays.includes(selectedDayCode)) {
+      return []
+    }
+
     const allSlots = generateTimeSlots(
       selectedDoctor.availabilityStartTime,
       selectedDoctor.availabilityEndTime,
@@ -156,6 +169,13 @@ export default function BookAppointment() {
     e.preventDefault()
     if (!selectedDoctor || !appointmentDate || !appointmentTime || !reason) {
       setError('Please fill in all required fields')
+      return
+    }
+
+    const selectedDayCode = getWeekdayCode(appointmentDate)
+    const workingDays = getDoctorWorkingDays(selectedDoctor)
+    if (!selectedDayCode || !workingDays.includes(selectedDayCode)) {
+      setError(`This doctor is not available on ${selectedDayCode || 'the selected day'}. Please choose another date.`)
       return
     }
 
@@ -443,7 +463,7 @@ export default function BookAppointment() {
             </select>
             {appointmentDate && availableSlots.length === 0 && (
               <p className="mt-2 text-xs text-amber-700">
-                No future slots are available for the selected date.
+                No slots are available for the selected date.
               </p>
             )}
           </div>
