@@ -28,7 +28,7 @@ export default function MyAppointments() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState('all') // all, upcoming, completed, cancelled
+  const [filter, setFilter] = useState('all') // all, completed, cancelled
   const [telemedicineSessions, setTelemedicineSessions] = useState({})
   const [loadingSession, setLoadingSession] = useState(null)
   const [showVideoCall, setShowVideoCall] = useState(false)
