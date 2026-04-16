@@ -1,10 +1,8 @@
 const Patient = require('../models/Patient');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
-// @desc    Get current patient profile
-// @route   GET /me
-// @access  Private (Patient, Admin)
 const getMe = async (req, res, next) => {
   try {
     const patient = await Patient.findOne({ userId: req.user.userId });
@@ -29,9 +27,6 @@ const getMe = async (req, res, next) => {
   }
 };
 
-// @desc    Update or create current patient profile
-// @route   PUT /me
-// @access  Private (Patient, Admin)
 const updateMe = async (req, res, next) => {
   try {
     const {
@@ -79,20 +74,15 @@ const updateMe = async (req, res, next) => {
   }
 };
 
-// @desc    Get patient profile by ID
-// @route   GET /:id
-// @access  Private (Admin, Doctor)
 const getPatientById = async (req, res, next) => {
   try {
     const patientId = req.params.id;
     let patient;
 
-    // We first try to find by MongoDB _id, if the provided ID is a valid ObjectId
     if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
       patient = await Patient.findById(patientId);
     }
 
-    // If not found by _id, try to find by userId (from auth)
     if (!patient) {
       patient = await Patient.findOne({ userId: patientId });
     }
@@ -117,9 +107,6 @@ const getPatientById = async (req, res, next) => {
   }
 };
 
-// @desc    Upload medical reports
-// @route   POST /me/reports
-// @access  Private (Patient)
 const uploadPatientReports = async (req, res, next) => {
   try {
     const { title } = req.body;
@@ -172,9 +159,6 @@ const uploadPatientReports = async (req, res, next) => {
   }
 };
 
-// @desc    Get all reports for current patient
-// @route   GET /me/reports
-// @access  Private (Patient, Doctor, Admin)
 const getPatientReports = async (req, res, next) => {
   try {
     const patient = await Patient.findOne({ userId: req.user.userId });
@@ -198,9 +182,6 @@ const getPatientReports = async (req, res, next) => {
   }
 };
 
-// @desc    Get reports for a specific patient by ID (Doctor / Admin view)
-// @route   GET /:id/reports
-// @access  Private (Doctor, Admin)
 const getPatientReportsById = async (req, res, next) => {
   try {
     const patientId = req.params.id;
@@ -230,9 +211,6 @@ const getPatientReportsById = async (req, res, next) => {
   }
 };
 
-// @desc    Delete a specific report
-// @route   DELETE /me/reports/:reportId
-// @access  Private (Patient)
 const deletePatientReport = async (req, res, next) => {
   try {
     const patient = await Patient.findOne({ userId: req.user.userId });
@@ -285,15 +263,30 @@ const downloadReport = async (req, res, next) => {
     const { reportId } = req.params;
     const { download } = req.query;
 
-    const patient = await Patient.findOne({ 'reports._id': reportId });
+    console.log(`[downloadReport] reportId: ${reportId}`);
 
-    if (!patient) {
-      return res.status(404).json({
+    // Must cast to ObjectId — querying subdocument _id with a plain string won't match
+    let reportObjectId;
+    try {
+      reportObjectId = new mongoose.Types.ObjectId(reportId);
+    } catch {
+      return res.status(400).json({
         success: false,
-        error: { code: 'NOT_FOUND', message: 'Report not found' },
+        error: { code: 'BAD_REQUEST', message: 'Invalid report ID format' },
       });
     }
 
+    const patient = await Patient.findOne({ 'reports._id': reportObjectId });
+
+    if (!patient) {
+      console.log(`[downloadReport] No patient found with report _id: ${reportId}`);
+      return res.status(404).json({
+        success: false,
+        error: { code: 'REPORT_NOT_IN_DB', message: 'Report record not found in database' },
+      });
+    }
+
+    // Patients can only access their own reports; doctors/admins can access any
     if (req.user.role === 'patient' && patient.userId !== req.user.userId) {
       return res.status(403).json({
         success: false,
@@ -301,29 +294,40 @@ const downloadReport = async (req, res, next) => {
       });
     }
 
-    const report = patient.reports.id(reportId);
-    if (!report || !fs.existsSync(report.filePath)) {
+    const report = patient.reports.id(reportObjectId);
+    if (!report) {
       return res.status(404).json({
         success: false,
-        error: { code: 'FILE_NOT_FOUND', message: 'Physical file not found on server' },
+        error: { code: 'REPORT_SUBDOC_MISSING', message: 'Report subdocument not found' },
+      });
+    }
+
+    const absolutePath = path.resolve(report.filePath);
+    console.log(`[downloadReport] Resolved file path: ${absolutePath}`);
+
+    if (!fs.existsSync(absolutePath)) {
+      console.error(`[downloadReport] File not on disk: ${absolutePath}`);
+      return res.status(404).json({
+        success: false,
+        error: { code: 'FILE_NOT_ON_DISK', message: 'Physical file not found on server' },
       });
     }
 
     res.set('Content-Type', report.mimeType);
+    res.set(
+      'Content-Disposition',
+      download === 'true'
+        ? `attachment; filename="${report.originalName}"`
+        : `inline; filename="${report.originalName}"`
+    );
 
-    if (download === 'true') {
-      res.download(report.filePath, report.originalName);
-    } else {
-      res.sendFile(path.resolve(report.filePath));
-    }
+    res.sendFile(absolutePath);
   } catch (error) {
+    console.error(`[downloadReport] Unexpected error:`, error);
     next(error);
   }
 };
 
-// @desc    Get all patients
-// @route   GET /
-// @access  Private (Admin)
 const getAllPatients = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -356,9 +360,6 @@ const getAllPatients = async (req, res, next) => {
   }
 };
 
-// @desc    Get prescriptions for current patient
-// @route   GET /me/prescriptions
-// @access  Private (Patient)
 const getPrescriptions = async (req, res, next) => {
   try {
     const patient = await Patient.findOne({ userId: req.user.userId });
@@ -378,9 +379,37 @@ const getPrescriptions = async (req, res, next) => {
   }
 };
 
-// @desc    Add a prescription to a patient
-// @route   POST /:id/prescriptions
+// @desc    Get prescriptions for a specific patient by ID (Doctor / Admin view)
+// @route   GET /:id/prescriptions
 // @access  Private (Doctor, Admin)
+const getPatientPrescriptions = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    let patient;
+
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: patient.prescriptions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const addPrescription = async (req, res, next) => {
   try {
     const patientId = req.params.id;
@@ -422,9 +451,6 @@ const addPrescription = async (req, res, next) => {
   }
 };
 
-// @desc    Get medical history for current patient
-// @route   GET /me/medical-history
-// @access  Private (Patient)
 const getMedicalHistory = async (req, res, next) => {
   try {
     const patient = await Patient.findOne({ userId: req.user.userId });
@@ -447,9 +473,6 @@ const getMedicalHistory = async (req, res, next) => {
   }
 };
 
-// @desc    Update medical history for current patient
-// @route   PUT /me/medical-history
-// @access  Private (Patient)
 const updateMedicalHistory = async (req, res, next) => {
   try {
     const { medicalHistory } = req.body;
@@ -484,9 +507,6 @@ const updateMedicalHistory = async (req, res, next) => {
   }
 };
 
-// @desc    Add medical history for a patient (doctor adds for patient)
-// @route   POST /:id/medical-history
-// @access  Private (Doctor, Admin)
 const addMedicalHistory = async (req, res, next) => {
   try {
     const patientId = req.params.id;
@@ -514,14 +534,13 @@ const addMedicalHistory = async (req, res, next) => {
       });
     }
 
-    const medicalHistoryEntry = {
+    patient.medicalHistory.push({
       date: new Date(date),
       condition,
       treatment,
       doctorName: req.body.doctorName || 'Unknown Doctor',
-    };
+    });
 
-    patient.medicalHistory.push(medicalHistoryEntry);
     await patient.save();
 
     res.status(201).json({
@@ -534,9 +553,6 @@ const addMedicalHistory = async (req, res, next) => {
   }
 };
 
-// @desc    Get medical history for a patient (doctor/admin reads another patient's history)
-// @route   GET /:id/medical-history
-// @access  Private (Doctor, Admin)
 const getPatientMedicalHistory = async (req, res, next) => {
   try {
     const patientId = req.params.id;
@@ -583,6 +599,7 @@ module.exports = {
   downloadReport,
   getAllPatients,
   getPrescriptions,
+  getPatientPrescriptions,
   addPrescription,
   getMedicalHistory,
   updateMedicalHistory,
