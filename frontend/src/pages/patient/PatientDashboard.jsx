@@ -34,6 +34,7 @@ export default function PatientDashboard() {
   const [appointments, setAppointments] = useState([])
   const [reports, setReports] = useState([])
   const [prescriptions, setPrescriptions] = useState([])
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -68,6 +69,21 @@ export default function PatientDashboard() {
         setAppointments(Array.isArray(appointmentsResponse.data.data) ? appointmentsResponse.data.data : [])
         setReports(Array.isArray(reportsResponse.data.data) ? reportsResponse.data.data : [])
         setPrescriptions(Array.isArray(prescriptionsResponse.data.data) ? prescriptionsResponse.data.data : [])
+
+        try {
+          const notificationsResponse = await axios.get(`${gatewayBaseUrl}/api/notifications/me?page=1&limit=100`, {
+            headers: authHeaders,
+            signal: controller.signal,
+          })
+          const notificationItems = Array.isArray(notificationsResponse.data?.data?.items)
+            ? notificationsResponse.data.data.items
+            : []
+          setUnreadNotifications(notificationItems.filter((item) => item.status !== 'read').length)
+        } catch (notificationError) {
+          if (notificationError.name !== 'CanceledError') {
+            setUnreadNotifications(0)
+          }
+        }
       } catch (requestError) {
         if (requestError.name === 'CanceledError') {
           return
@@ -98,18 +114,11 @@ export default function PatientDashboard() {
       .sort((left, right) => new Date(left.appointmentDate) - new Date(right.appointmentDate))
   }, [appointments])
 
-  const recentAppointments = useMemo(() => {
-    return [...appointments]
-      .sort((left, right) => new Date(right.appointmentDate) - new Date(left.appointmentDate))
-      .slice(0, 5)
-  }, [appointments])
-
-  const nextAppointment = upcomingAppointments[0] || null
-
   const quickStats = [
     { label: 'Upcoming appointments', value: upcomingAppointments.length },
     { label: 'Medical reports', value: reports.length },
     { label: 'Prescriptions', value: prescriptions.length },
+    { label: 'Unread notifications', value: unreadNotifications },
   ]
 
   const fullName = patient ? `${patient.firstName || ''} ${patient.lastName || ''}`.trim() : 'Patient'
@@ -120,21 +129,21 @@ export default function PatientDashboard() {
       <section className="overflow-hidden rounded-[2rem] bg-gradient-to-r from-blue-700 to-green-600 p-6 text-white shadow-lg sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Patient dashboard</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Your health dashboard</p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
               {loading ? 'Loading your care summary...' : `Welcome back, ${fullName}`}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
-              Review your appointments, reports, and prescriptions from live backend data.
+              Keep track of your upcoming care, health records, and prescriptions in one place.
             </p>
           </div>
 
           <div className="rounded-3xl bg-white/10 p-4 backdrop-blur-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Profile snapshot</p>
             <div className="mt-3 space-y-1 text-sm text-white/90">
-              <p>{patient?.phone || 'Phone not set'}</p>
-              <p>{patient?.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'Gender not set'}</p>
-              <p>{age !== null ? `${age} years old` : 'Date of birth not set'}</p>
+              <p>Phone: {patient?.phone || 'Not set'}</p>
+              <p>Gender: {patient?.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'Not set'}</p>
+              <p>Age: {age !== null ? `${age} years old` : 'Not set'}</p>
             </div>
           </div>
         </div>
@@ -151,7 +160,7 @@ export default function PatientDashboard() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {quickStats.map((item) => (
           <div key={item.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm font-medium text-slate-500">{item.label}</p>
@@ -165,7 +174,7 @@ export default function PatientDashboard() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-slate-900">Upcoming appointments</h2>
-              <p className="mt-1 text-sm text-slate-500">Pulled from the appointment service</p>
+              <p className="mt-1 text-sm text-slate-500">Your next scheduled visits</p>
             </div>
             <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
               {upcomingAppointments.length} scheduled
@@ -182,14 +191,18 @@ export default function PatientDashboard() {
                 <article key={item._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-semibold text-slate-900">Doctor ID: {String(item.doctorId || 'unknown').slice(0, 12)}</p>
+                      <p className="font-semibold text-slate-900">
+                        Doctor: {item.doctorName || item.doctor?.name || item.doctor?.fullName || 'Assigned doctor'}
+                      </p>
                       <p className="mt-1 text-sm text-slate-500">{formatDateTime(item.appointmentDate)}</p>
-                      <p className="mt-1 text-sm text-slate-500">Reason: {item.reason || 'Not provided'}</p>
+                      <p className="mt-1 text-sm text-slate-500">Visit reason: {item.reason || 'Not provided'}</p>
                     </div>
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[item.status] || 'bg-slate-100 text-slate-700 ring-slate-200'}`}
                     >
-                      {item.status || 'unknown'}
+                      {item.status
+                        ? `${String(item.status).charAt(0).toUpperCase()}${String(item.status).slice(1).toLowerCase()}`
+                        : 'Unknown'}
                     </span>
                   </div>
                 </article>
@@ -210,153 +223,29 @@ export default function PatientDashboard() {
                 to="/doctors"
                 className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
-                Book appointment
+                Book Appointment
               </Link>
               <Link
                 to="/appointments"
                 className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
-                View appointments
+                My appointments
               </Link>
               <Link
-                to="/profile"
+                to="/patient/prescriptions"
                 className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
-                Update profile
+                Prescriptions
               </Link>
               <Link
-                to="/payments"
+                to="/patient/reports"
                 className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
-                View payments
+                Medical reports
               </Link>
-            </div>
-          </div>
-
-          <div className="rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
-            <h2 className="text-xl font-semibold">Next appointment</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              {nextAppointment
-                ? `Your next visit is scheduled for ${formatDateTime(nextAppointment.appointmentDate)}.`
-                : 'No upcoming appointments are scheduled yet.'}
-            </p>
-            <div className="mt-4 rounded-2xl bg-white/10 p-4">
-              <p className="text-sm text-slate-300">Status</p>
-              <p className="mt-1 text-2xl font-bold">{nextAppointment?.status || 'Not scheduled'}</p>
             </div>
           </div>
         </aside>
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Medical reports</h2>
-              <p className="mt-1 text-sm text-slate-500">Uploaded files from the patient service</p>
-            </div>
-            <Link to="/reports" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
-              View all
-            </Link>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            {loading ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Loading reports...</div>
-            ) : reports.length > 0 ? (
-              reports.slice(0, 4).map((report) => (
-                <article key={report._id || report.fileName} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="font-semibold text-slate-900">{report.title || report.originalName}</p>
-                  <p className="mt-1 text-sm text-slate-500">{report.originalName}</p>
-                  <p className="mt-1 text-xs text-slate-400">Uploaded {formatDateTime(report.uploadDate)}</p>
-                </article>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
-                No reports uploaded yet.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Prescriptions</h2>
-              <p className="mt-1 text-sm text-slate-500">Latest prescriptions from your care team</p>
-            </div>
-            <Link to="/prescriptions" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
-              View all
-            </Link>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            {loading ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-                Loading prescriptions...
-              </div>
-            ) : prescriptions.length > 0 ? (
-              prescriptions.slice(0, 4).map((prescription) => (
-                <article key={`${prescription.doctorId}-${prescription.date}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="font-semibold text-slate-900">{prescription.doctorName}</p>
-                  <p className="mt-1 text-sm text-slate-500">{formatDateTime(prescription.date)}</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {Array.isArray(prescription.medication) && prescription.medication.length > 0
-                      ? prescription.medication
-                          .map((item) => `${item.name}${item.dosage ? ` (${item.dosage})` : ''}`)
-                          .join(', ')
-                      : 'No medication listed'}
-                  </p>
-                </article>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
-                No prescriptions available yet.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">Recent appointments</h2>
-            <p className="mt-1 text-sm text-slate-500">Sorted by newest date from the backend</p>
-          </div>
-          <Link to="/appointments" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
-            Open appointments
-          </Link>
-        </div>
-
-        <div className="mt-5 space-y-4">
-          {loading ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-              Loading appointment history...
-            </div>
-          ) : recentAppointments.length > 0 ? (
-            recentAppointments.map((appointment) => (
-              <article key={appointment._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="font-semibold text-slate-900">Appointment {String(appointment._id).slice(-6)}</p>
-                    <p className="mt-1 text-sm text-slate-500">{formatDateTime(appointment.appointmentDate)}</p>
-                    <p className="mt-1 text-sm text-slate-500">Reason: {appointment.reason || 'Not provided'}</p>
-                  </div>
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[appointment.status] || 'bg-slate-100 text-slate-700 ring-slate-200'}`}
-                  >
-                    {appointment.status || 'unknown'}
-                  </span>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
-              No appointment history is available yet.
-            </div>
-          )}
-        </div>
       </section>
     </div>
   )
