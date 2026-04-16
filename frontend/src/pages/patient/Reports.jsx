@@ -98,6 +98,8 @@ export default function Reports() {
   }
 
   const handleDelete = async (reportId) => {
+    if (!window.confirm('Are you sure you want to delete this report? This action cannot be undone.')) return
+    
     const token = getToken()
     if (!token) return
     try {
@@ -107,6 +109,46 @@ export default function Reports() {
       setReports((prev) => prev.filter((r) => r._id !== reportId))
     } catch (err) {
       setError(err?.response?.data?.error?.message || 'Unable to delete report.')
+    }
+  }
+
+  const handleView = async (reportId) => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const res = await axios.get(`${gatewayBaseUrl}/api/patients/reports/${reportId}/file`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      })
+      const contentType = res.headers['content-type']
+      const file = new Blob([res.data], { type: contentType })
+      const fileURL = URL.createObjectURL(file)
+      window.open(fileURL, '_blank')
+    } catch (err) {
+      console.error('View failed', err)
+      setError('Unable to open the file. Please try downloading it instead.')
+    }
+  }
+
+  const handleDownload = async (reportId, filename) => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const res = await axios.get(`${gatewayBaseUrl}/api/patients/reports/${reportId}/file?download=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      })
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download failed', err)
+      setError('Download failed. Please try again.')
     }
   }
 
@@ -245,12 +287,26 @@ export default function Reports() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleDelete(report._id)}
-                    className="shrink-0 rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      onClick={() => handleView(report._id)}
+                      className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => handleDownload(report._id, report.originalName)}
+                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={() => handleDelete(report._id)}
+                      className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
