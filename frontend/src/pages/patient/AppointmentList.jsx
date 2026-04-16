@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { getToken, handleTokenError, clearToken } from '../../utils/tokenManager'
+import { getToken, handleTokenError } from '../../utils/tokenManager'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
@@ -25,6 +25,7 @@ const statusStyles = {
 export default function MyAppointments() {
   const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
+  const [doctorProfiles, setDoctorProfiles] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all') // all, upcoming, completed, cancelled
@@ -72,6 +73,48 @@ export default function MyAppointments() {
     loadAppointments()
     return () => controller.abort()
   }, [navigate])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const loadDoctorProfiles = async () => {
+      const uniqueDoctorIds = [...new Set(appointments.map((apt) => apt.doctorId).filter(Boolean))]
+      const missingDoctorIds = uniqueDoctorIds.filter((doctorId) => !doctorProfiles[doctorId])
+
+      if (missingDoctorIds.length === 0) return
+
+      try {
+        const responses = await Promise.all(
+          missingDoctorIds.map((doctorId) =>
+            axios.get(`${gatewayBaseUrl}/api/doctors/${doctorId}`, {
+              signal: controller.signal,
+            })
+          )
+        )
+
+        const fetchedProfiles = {}
+        responses.forEach((response, index) => {
+          fetchedProfiles[missingDoctorIds[index]] = response.data?.data || null
+        })
+
+        setDoctorProfiles((prev) => ({
+          ...prev,
+          ...fetchedProfiles,
+        }))
+      } catch (requestError) {
+        if (requestError.name !== 'CanceledError') {
+          // Keep list usable even if profile lookup fails for some doctors.
+          console.warn('Unable to fetch some doctor profiles for appointments list')
+        }
+      }
+    }
+
+    if (appointments.length > 0) {
+      loadDoctorProfiles()
+    }
+
+    return () => controller.abort()
+  }, [appointments, doctorProfiles])
 
   // Poll telemedicine sessions for confirmed appointments every 5 seconds
   useEffect(() => {
@@ -122,10 +165,7 @@ export default function MyAppointments() {
         return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
       })
     } else if (filter === 'completed') {
-      filtered = appointments.filter((apt) => {
-        const aptDate = new Date(apt.appointmentDate)
-        return !Number.isNaN(aptDate.getTime()) && aptDate < now
-      })
+      filtered = appointments.filter((apt) => apt.status === 'completed')
     } else if (filter === 'cancelled') {
       filtered = appointments.filter((apt) => apt.status === 'cancelled')
     }
@@ -208,11 +248,22 @@ export default function MyAppointments() {
       return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
     }).length,
     completed: appointments.filter((apt) => {
-      const now = new Date()
-      const aptDate = new Date(apt.appointmentDate)
-      return !Number.isNaN(aptDate.getTime()) && aptDate < now
+      return apt.status === 'completed'
     }).length,
     cancelled: appointments.filter((apt) => apt.status === 'cancelled').length,
+  }
+
+  const getDoctorSummary = (appointment) => {
+    const doctorProfile = doctorProfiles[appointment.doctorId]
+    const appointmentDoctorName = String(appointment.doctorName || '').trim()
+    const profileFullName = [doctorProfile?.firstName, doctorProfile?.lastName].filter(Boolean).join(' ').trim()
+    const doctorName = appointmentDoctorName || profileFullName || 'Doctor details unavailable'
+    const specialization = appointment.specialization || doctorProfile?.specialization || 'Specialization unavailable'
+
+    return {
+      name: /^dr\.?\s+/i.test(doctorName) ? doctorName : `Dr. ${doctorName}`,
+      specialization,
+    }
   }
 
   return (
@@ -282,24 +333,24 @@ export default function MyAppointments() {
             Loading your appointments...
           </div>
         ) : filteredAppointments.length > 0 ? (
-          filteredAppointments.map((appointment) => (
-            <Link
+          filteredAppointments.map((appointment) => {
+            const doctorSummary = getDoctorSummary(appointment)
+
+            return (
+            <article
               key={appointment._id}
-              to={`/appointments/${appointment._id}`}
-              className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-slate-300 sm:p-6"
+              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-slate-300 sm:p-6"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1">
                   <div className="flex items-start gap-3 sm:items-center">
                     <div>
                       <p className="font-semibold text-slate-900">
-                        Doctor ID: {String(appointment.doctorId || 'unknown').slice(0, 12)}...
+                        {doctorSummary.name}
                       </p>
+                      <p className="text-sm text-slate-500 mt-1">{doctorSummary.specialization}</p>
                       <p className="text-sm text-slate-500 mt-1">
-                        {formatDateTime(appointment.appointmentDate)}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        Time: {appointment.appointmentTime || 'Not set'}
+                        {formatDateTime(appointment.appointmentDate)} • {appointment.appointmentTime || 'Time not set'}
                       </p>
                     </div>
                   </div>
@@ -350,13 +401,16 @@ export default function MyAppointments() {
                     </>
                   )}
 
-                  <div className="hidden sm:block text-right">
-                    <p className="text-xs text-slate-500">Click to view details</p>
-                  </div>
+                  <Link
+                    to={`/appointments/${appointment._id}`}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-2xl border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    View Details
+                  </Link>
                 </div>
               </div>
-            </Link>
-          ))
+            </article>
+          )})
         ) : (
           <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
             <p className="text-slate-500">
