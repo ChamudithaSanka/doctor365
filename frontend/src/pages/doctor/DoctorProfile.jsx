@@ -32,6 +32,7 @@ const initialSlots = {
 export default function DoctorProfile() {
   const [profileEdit, setProfileEdit] = useState(false)
   const [formData, setFormData] = useState(doctorData)
+  const [savedFormData, setSavedFormData] = useState(doctorData)
   const [slots, setSlots] = useState(initialSlots)
   const [profileSaved, setProfileSaved] = useState(false)
   const [availSaved, setAvailSaved] = useState(false)
@@ -57,16 +58,24 @@ export default function DoctorProfile() {
 
         const doc = response.data?.data || null
         if (doc) {
-          setFormData((prev) => ({
-            ...prev,
+          const nextFormData = {
             firstName: doc.firstName || '',
             lastName: doc.lastName || '',
+            email: doc.email || '',
+            phone: doc.phone || doc.phoneNumber || '',
             specialty: doc.specialization || '',
+            qualifications: Array.isArray(doc.qualifications)
+              ? doc.qualifications.join(', ')
+              : (doc.qualifications || ''),
             experience: doc.yearsOfExperience ? String(doc.yearsOfExperience) : '',
             hospital: doc.hospitalOrClinic || '',
+            bio: doc.bio || '',
             consultationFee: doc.consultationFee ? String(doc.consultationFee) : '',
             avatar: (doc.firstName ? doc.firstName[0] : '') + (doc.lastName ? doc.lastName[0] : ''),
-          }))
+          }
+
+          setFormData(nextFormData)
+          setSavedFormData(nextFormData)
 
           // map global availability to per-day slots (weekdays enabled)
           const mapped = { ...initialSlots }
@@ -142,6 +151,11 @@ export default function DoctorProfile() {
         headers: { Authorization: `Bearer ${token}` },
       })
 
+      setSavedFormData((prev) => ({
+        ...prev,
+        ...formData,
+        avatar: (formData.firstName ? formData.firstName[0] : '') + (formData.lastName ? formData.lastName[0] : ''),
+      }))
       setProfileSaved(true)
       setProfileEdit(false)
       setTimeout(() => setProfileSaved(false), 3000)
@@ -243,6 +257,7 @@ export default function DoctorProfile() {
             <h3 className="text-lg font-semibold text-slate-900">Professional information</h3>
             {!profileEdit && (
               <button
+                type="button"
                 onClick={() => setProfileEdit(true)}
                 className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
               >
@@ -297,7 +312,7 @@ export default function DoctorProfile() {
                 <button type="submit" className="rounded-full bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
                   Save changes
                 </button>
-                <button type="button" onClick={() => { setProfileEdit(false); setFormData(doctorData) }} className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                <button type="button" onClick={() => { setProfileEdit(false); setFormData(savedFormData) }} className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                   Cancel
                 </button>
               </div>
