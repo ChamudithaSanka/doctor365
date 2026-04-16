@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { getToken, handleTokenError } from '../../utils/tokenManager'
 import PrescriptionForm from '../../components/PrescriptionForm'
+import AgoraVideoCall from '../../components/AgoraVideoCall'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
@@ -65,6 +66,8 @@ export default function DoctorAppointments() {
   const [loadingSession, setLoadingSession] = useState(null)
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false)
   const [prescriptionAppointmentId, setPrescriptionAppointmentId] = useState(null)
+  const [showVideoCall, setShowVideoCall] = useState(false)
+  const [activeSessionData, setActiveSessionData] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -244,19 +247,32 @@ export default function DoctorAppointments() {
         }
       )
 
-      console.log('Session creation response:', response.data)
+      console.log('📊 Session creation response:', response.data)
+      console.log('   Success:', response.data.success)
+      console.log('   Data keys:', response.data.data ? Object.keys(response.data.data) : 'no data')
+      console.log('   AppID in response:', response.data.data?.appId)
 
       if (response.data.success && response.data.data) {
+        const sessionData = response.data.data
+        
+        // Verify required fields
+        if (!sessionData.appId) {
+          console.warn('⚠️ WARNING: appId is missing from created session!')
+          console.warn('   Session fields:', Object.keys(sessionData))
+        }
+        
         setTelemedicineSessions((prev) => ({
           ...prev,
-          [appointmentId]: response.data.data,
+          [appointmentId]: sessionData,
         }))
-        console.log('✅ Telemedicine session created:', response.data.data)
+        console.log('✅ Telemedicine session created:', sessionData)
         setSuccessMessage('Telemedicine session created successfully!')
         setTimeout(() => setSuccessMessage(''), 3000)
       }
     } catch (error) {
       console.error('❌ Error creating telemedicine session:', error.response?.data || error.message)
+      console.error('   Status:', error.response?.status)
+      console.error('   Error response:', error.response?.data)
       setError(error.response?.data?.error?.message || 'Failed to create telemedicine session')
     } finally {
       setCreatingSession(null)
@@ -284,35 +300,49 @@ export default function DoctorAppointments() {
         }
       )
 
-      console.log('Session fetch response:', response.data)
+      console.log('📊 Session fetch response:', response.data)
+      console.log('   Success:', response.data.success)
+      console.log('   Data:', response.data.data)
+      console.log('   AppID in response:', response.data.data?.appId)
 
       if (response.data.success && response.data.data) {
+        const sessionData = response.data.data
+        
+        // Verify required fields
+        if (!sessionData.appId) {
+          console.warn('⚠️ WARNING: appId is missing from session data!')
+          console.warn('   Session fields:', Object.keys(sessionData))
+        }
+        
         setTelemedicineSessions((prev) => ({
           ...prev,
-          [appointmentId]: response.data.data,
+          [appointmentId]: sessionData,
         }))
-        console.log('✅ Session fetched:', response.data.data)
-        return response.data.data
+        console.log('✅ Session fetched:', sessionData)
+        return sessionData
       }
     } catch (error) {
       console.error('❌ Error fetching telemedicine session:', error.response?.data || error.message)
+      console.error('   Status:', error.response?.status)
+      console.error('   Error response:', error.response?.data)
       setError(error.response?.data?.error?.message || 'Failed to fetch telemedicine session')
     } finally {
       setLoadingSession(null)
     }
   }
 
-  const openDoctorJoinUrl = async (appointmentId) => {
+  const openVideoCall = async (appointmentId) => {
     try {
-      console.log('Opening doctor join URL for appointment:', appointmentId)
+      console.log('Opening Agora video call for appointment:', appointmentId)
       
       // First, start the session (change status to active)
       await startTelemedicineSession(appointmentId)
       
       // Check if we already have the session cached
-      if (telemedicineSessions[appointmentId]?.doctorJoinUrl) {
-        console.log('Using cached session, opening URL:', telemedicineSessions[appointmentId].doctorJoinUrl)
-        window.open(telemedicineSessions[appointmentId].doctorJoinUrl, '_blank', 'noopener,noreferrer')
+      if (telemedicineSessions[appointmentId]) {
+        console.log('Using cached session, showing Agora video component')
+        setActiveSessionData(telemedicineSessions[appointmentId])
+        setShowVideoCall(true)
         return
       }
       
@@ -320,16 +350,17 @@ export default function DoctorAppointments() {
       console.log('Session not cached, fetching...')
       const session = await fetchTelemedicineSession(appointmentId)
       
-      if (session?.doctorJoinUrl) {
-        console.log('✅ Fetched session, opening URL:', session.doctorJoinUrl)
-        window.open(session.doctorJoinUrl, '_blank', 'noopener,noreferrer')
+      if (session) {
+        console.log('✅ Fetched session, showing Agora video component')
+        setActiveSessionData(session)
+        setShowVideoCall(true)
       } else {
-        console.error('❌ No doctor join URL found in session:', session)
-        setError('Unable to get meeting URL. Please try again.')
+        console.error('❌ No session found:', session)
+        setError('Unable to join video call. Please try again.')
       }
     } catch (error) {
-      console.error('❌ Error opening doctor join URL:', error)
-      setError('Failed to open meeting.')
+      console.error('❌ Error opening video call:', error)
+      setError('Failed to open video call.')
     }
   }
 
@@ -428,6 +459,13 @@ export default function DoctorAppointments() {
     }
   }
 
+  const handleVideoCallLeave = () => {
+    setShowVideoCall(false)
+    setActiveSessionData(null)
+    setSuccessMessage('You left the video call')
+    setTimeout(() => setSuccessMessage(''), 2000)
+  }
+
   const stats = {
     total: appointments.length,
     pending: appointments.filter((apt) => apt.status === 'pending').length,
@@ -436,20 +474,33 @@ export default function DoctorAppointments() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Doctor appointments</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Accept, reject, and update appointments</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
-          Review patient bookings, accept or reject requests, and update appointment status as care progresses.
-        </p>
-      </section>
-
-      {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+    <>
+      {/* Video Call Component - Full Screen */}
+      {showVideoCall && activeSessionData && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+          <AgoraVideoCall 
+            sessionData={activeSessionData}
+            userRole="doctor"
+            onLeave={handleVideoCallLeave}
+          />
         </div>
       )}
+
+      {/* Main Content */}
+      <div className="space-y-6">
+        <section className="rounded-[2rem] bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white shadow-lg sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Doctor appointments</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Accept, reject, and update appointments</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+            Review patient bookings, accept or reject requests, and update appointment status as care progresses.
+          </p>
+        </section>
+
+        {error && (
+          <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
       {successMessage && (
         <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
@@ -578,7 +629,6 @@ export default function DoctorAppointments() {
                       Patient Profile Unavailable
                     </button>
                   )}
-
                   {appointment.status === 'pending' && (
                     <>
                       <button
@@ -624,7 +674,7 @@ export default function DoctorAppointments() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => openDoctorJoinUrl(appointment._id)}
+                          onClick={() => openVideoCall(appointment._id)}
                           disabled={loadingSession === appointment._id || creatingSession === appointment._id}
                           className="rounded-2xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -691,6 +741,7 @@ export default function DoctorAppointments() {
           }}
         />
       )}
-    </div>
+      </div>
+    </>
   )
 }

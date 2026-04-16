@@ -35,26 +35,16 @@ spec:
                 secretKeyRef:
                   name: common-secret
                   key: JWT_SECRET
-            - name: ZOOM_ACCOUNT_ID
+            - name: AGORA_APP_ID
               valueFrom:
                 secretKeyRef:
                   name: telemedicine-secret
-                  key: ZOOM_ACCOUNT_ID
-            - name: ZOOM_CLIENT_ID
+                  key: AGORA_APP_ID
+            - name: AGORA_APP_CERTIFICATE
               valueFrom:
                 secretKeyRef:
                   name: telemedicine-secret
-                  key: ZOOM_CLIENT_ID
-            - name: ZOOM_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: telemedicine-secret
-                  key: ZOOM_CLIENT_SECRET
-            - name: ZOOM_MEETING_HOST_ID
-              valueFrom:
-                secretKeyRef:
-                  name: telemedicine-secret
-                  key: ZOOM_MEETING_HOST_ID
+                  key: AGORA_APP_CERTIFICATE
           livenessProbe:
             httpGet:
               path: /health

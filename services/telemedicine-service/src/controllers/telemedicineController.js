@@ -1,5 +1,5 @@
 const TelemedicineSession = require('../models/TelemedicineSession');
-const { createMeeting } = require('../utils/zoomUtils');
+const { createMeeting } = require('../utils/agoraUtils');
 
 // Fetch doctor profile from doctor service
 const fetchDoctorProfile = async (doctorId) => {
@@ -50,7 +50,7 @@ const fetchAppointment = async (appointmentId, token) => {
   }
 };
 
-// @desc    Create telemedicine session (doctor creates with Zoom meeting)
+// @desc    Create telemedicine session (doctor creates with Agora RTC channel)
 // @route   POST /api/telemedicine/sessions
 // @access  Private (doctor)
 exports.createSession = async (req, res, next) => {
@@ -109,36 +109,27 @@ exports.createSession = async (req, res, next) => {
       });
     }
 
-    // Create Zoom meeting
-    const appointmentDateTime = new Date(appointment.appointmentDate);
-    const [hours, minutes] = appointment.appointmentTime.split(':').map(Number);
-    appointmentDateTime.setHours(hours, minutes, 0, 0);
-
-    let zoomMeetingData;
+    // Create Agora meeting
+    let agoraMeetingData;
     try {
-      // IMPORTANT: Must use the actual registered Zoom user (service account)
-      // Doctor's email from the system is NOT a registered Zoom user
-      const serviceAccountEmail = process.env.ZOOM_MEETING_HOST_ID;
-      if (!serviceAccountEmail) {
-        throw new Error('Zoom service account not configured (ZOOM_MEETING_HOST_ID)');
-      }
+      const channelName = `appointment-${appointmentId}`;
       
-      console.log(`📌 Creating Zoom meeting on service account: ${serviceAccountEmail}`);
-      console.log(`👨‍⚕️ Doctor email: ${doctorEmail} (will have effective control via waiting room approval)`);
+      console.log(`📌 Creating Agora channel: ${channelName}`);
+      console.log(`👨‍⚕️ Doctor: ${doctorEmail}`);
       
-      zoomMeetingData = await createMeeting(serviceAccountEmail, appointmentDateTime.toISOString());
+      // Generate Agora tokens for doctor and patient
+      agoraMeetingData = await createMeeting(channelName, 1, 2);
       
-      console.log(`✅ Meeting created successfully`);
-      console.log(`  📍 Meeting ID: ${zoomMeetingData.zoomMeetingId}`);
-      console.log(`  🔒 Waiting room: ENABLED (doctor must approve patient entry)`);
-      console.log(`  🚪 Join before host: DISABLED (patient cannot start without doctor)`);
+      console.log(`✅ Agora channel created successfully`);
+      console.log(`  📍 Channel: ${agoraMeetingData.agoraChannelName}`);
+      console.log(`  🔐 Token Expiration: ${new Date(agoraMeetingData.tokenExpiration * 1000).toISOString()}`);
     } catch (error) {
-      console.error('❌ Zoom meeting creation failed:', error.message);
+      console.error('❌ Agora channel creation failed:', error.message);
       return res.status(500).json({
         success: false,
         error: {
-          code: 'ZOOM_ERROR',
-          message: 'Failed to create Zoom meeting: ' + error.message,
+          code: 'AGORA_ERROR',
+          message: 'Failed to create Agora channel: ' + error.message,
         },
       });
     }
@@ -148,12 +139,14 @@ exports.createSession = async (req, res, next) => {
       appointmentId,
       patientId: appointment.patientId,
       doctorId,
-      meetingProvider: 'zoom',
-      zoomMeetingId: zoomMeetingData.zoomMeetingId,
-      meetingLink: zoomMeetingData.meetingLink,
-      meetingPassword: zoomMeetingData.meetingPassword,
-      doctorJoinUrl: zoomMeetingData.doctorJoinUrl,
-      patientJoinUrl: zoomMeetingData.patientJoinUrl,
+      meetingProvider: 'agora',
+      agoraChannelName: agoraMeetingData.agoraChannelName,
+      agoraChannelId: agoraMeetingData.agoraChannelId,
+      doctorToken: agoraMeetingData.doctorToken,
+      patientToken: agoraMeetingData.patientToken,
+      doctorUid: agoraMeetingData.doctorUid,
+      patientUid: agoraMeetingData.patientUid,
+      tokenExpiration: new Date(agoraMeetingData.tokenExpiration * 1000),
       status: 'scheduled',
     });
 
@@ -161,7 +154,10 @@ exports.createSession = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: agoraMeetingData.appId,
+      },
       message: 'Telemedicine session created successfully',
     });
   } catch (error) {
@@ -197,7 +193,10 @@ exports.getUserSessions = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: sessions,
+      data: sessions.map(session => ({
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      })),
       message: 'Sessions retrieved successfully',
     });
   } catch (error) {
@@ -242,7 +241,10 @@ exports.getSessionByAppointmentId = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      },
       message: 'Session retrieved successfully',
     });
   } catch (error) {
@@ -287,7 +289,10 @@ exports.getSessionById = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      },
       message: 'Session retrieved successfully',
     });
   } catch (error) {
@@ -343,7 +348,10 @@ exports.startSession = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      },
       message: 'Session started successfully',
     });
   } catch (error) {
@@ -406,7 +414,10 @@ exports.endSession = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      },
       message: 'Session ended successfully',
     });
   } catch (error) {
@@ -478,7 +489,10 @@ exports.addPatientFeedback = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      },
       message: 'Feedback added successfully',
     });
   } catch (error) {
@@ -533,7 +547,10 @@ exports.cancelSession = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: session,
+      data: {
+        ...session.toObject(),
+        appId: process.env.AGORA_APP_ID,
+      },
       message: 'Session cancelled successfully',
     });
   } catch (error) {
