@@ -8,6 +8,7 @@ const {
   getPatientReports, 
   getPatientReportsById,
   deletePatientReport,
+  downloadReport,
   getAllPatients,
   getPrescriptions,
   addPrescription,
@@ -69,6 +70,9 @@ router.route('/me/prescriptions')
 router.route('/me/medical-history')
   .get(restrictTo('patient'), getMedicalHistory)
   .put(restrictTo('patient'), updateMedicalHistory);
+
+router.route('/reports/:reportId/file')
+  .get(restrictTo('patient', 'doctor', 'admin'), downloadReport);
 
 router.route('/:id')
   .get(restrictTo('admin', 'doctor'), getPatientById);
