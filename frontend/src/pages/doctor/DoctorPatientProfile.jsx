@@ -100,10 +100,13 @@ export default function DoctorPatientProfile() {
     }
 
     const controller = new AbortController()
+    let isActive = true
 
     const loadPatientData = async () => {
-      setLoading(true)
-      setError('')
+      if (isActive) {
+        setLoading(true)
+        setError('')
+      }
 
       try {
         const patientRes = await axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
@@ -114,6 +117,8 @@ export default function DoctorPatientProfile() {
         if (!patientRes.data?.success || !patientRes.data?.data) {
           throw new Error('Patient profile not found')
         }
+
+        if (!isActive) return
 
         setPatient(patientRes.data.data)
 
@@ -127,6 +132,8 @@ export default function DoctorPatientProfile() {
             signal: controller.signal,
           }),
         ])
+
+        if (!isActive) return
 
         if (reportsResult.status === 'fulfilled' && reportsResult.value.data?.success) {
           setReports(Array.isArray(reportsResult.value.data.data) ? reportsResult.value.data.data : [])
@@ -142,6 +149,8 @@ export default function DoctorPatientProfile() {
           setPrescriptions([])
         }
       } catch (requestError) {
+        if (!isActive) return
+
         if (requestError.name !== 'CanceledError') {
           if (handleTokenError(requestError)) {
             return
@@ -152,12 +161,17 @@ export default function DoctorPatientProfile() {
           )
         }
       } finally {
-        setLoading(false)
+        if (isActive) {
+          setLoading(false)
+        }
       }
     }
 
     loadPatientData()
-    return () => controller.abort()
+    return () => {
+      isActive = false
+      controller.abort()
+    }
   }, [patientId, navigate])
 
   if (loading) {
