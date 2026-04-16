@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { getToken, handleTokenError, clearToken } from '../../utils/tokenManager'
+import AgoraVideoCall from '../../components/AgoraVideoCall'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
@@ -30,6 +31,8 @@ export default function MyAppointments() {
   const [filter, setFilter] = useState('all') // all, upcoming, completed, cancelled
   const [telemedicineSessions, setTelemedicineSessions] = useState({})
   const [loadingSession, setLoadingSession] = useState(null)
+  const [showVideoCall, setShowVideoCall] = useState(false)
+  const [activeSessionData, setActiveSessionData] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -154,15 +157,23 @@ export default function MyAppointments() {
         }
       )
 
-      console.log('Session fetch response:', response.data)
+      console.log('📊 Session fetch response:', response.data)
+      console.log('   Success:', response.data.success)
+      console.log('   AppID in response:', response.data.data?.appId)
 
       if (response.data.success && response.data.data) {
+        const sessionData = response.data.data
+        
+        if (!sessionData.appId) {
+          console.warn('⚠️ WARNING: appId is missing from session data!')
+        }
+        
         setTelemedicineSessions((prev) => ({
           ...prev,
-          [appointmentId]: response.data.data,
+          [appointmentId]: sessionData,
         }))
-        console.log('✅ Session fetched:', response.data.data)
-        return response.data.data
+        console.log('✅ Session fetched:', sessionData)
+        return sessionData
       }
     } catch (error) {
       console.error('❌ Error fetching telemedicine session:', error.response?.data || error.message)
@@ -174,12 +185,13 @@ export default function MyAppointments() {
 
   const openPatientJoinUrl = async (appointmentId) => {
     try {
-      console.log('Opening patient join URL for appointment:', appointmentId)
+      console.log('Opening video call for appointment:', appointmentId)
       
       // Check if we already have the session cached
-      if (telemedicineSessions[appointmentId]?.patientJoinUrl) {
-        console.log('Using cached session, opening URL:', telemedicineSessions[appointmentId].patientJoinUrl)
-        window.open(telemedicineSessions[appointmentId].patientJoinUrl, '_blank', 'noopener,noreferrer')
+      if (telemedicineSessions[appointmentId]) {
+        console.log('Using cached session, showing video component')
+        setActiveSessionData(telemedicineSessions[appointmentId])
+        setShowVideoCall(true)
         return
       }
       
@@ -187,15 +199,16 @@ export default function MyAppointments() {
       console.log('Session not cached, fetching...')
       const session = await fetchTelemedicineSession(appointmentId)
       
-      if (session?.patientJoinUrl) {
-        console.log('✅ Fetched session, opening URL:', session.patientJoinUrl)
-        window.open(session.patientJoinUrl, '_blank', 'noopener,noreferrer')
+      if (session) {
+        console.log('✅ Fetched session, showing video component')
+        setActiveSessionData(session)
+        setShowVideoCall(true)
       } else {
-        console.error('❌ No patient join URL found in session:', session)
-        setError('Unable to get meeting URL. Please try again.')
+        console.error('❌ No session found:', session)
+        setError('Unable to join meeting. Please try again.')
       }
     } catch (error) {
-      console.error('❌ Error opening patient join URL:', error)
+      console.error('❌ Error opening video call:', error)
       setError('Failed to open meeting.')
     }
   }
@@ -215,8 +228,26 @@ export default function MyAppointments() {
     cancelled: appointments.filter((apt) => apt.status === 'cancelled').length,
   }
 
+  const handleVideoCallLeave = () => {
+    setShowVideoCall(false)
+    setActiveSessionData(null)
+  }
+
   return (
-    <div className="space-y-6">
+    <>
+      {/* Video Call Component - Full Screen */}
+      {showVideoCall && activeSessionData && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+          <AgoraVideoCall 
+            sessionData={activeSessionData}
+            userRole="patient"
+            onLeave={handleVideoCallLeave}
+          />
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="space-y-6">
       <section className="rounded-[2rem] bg-gradient-to-r from-green-600 to-teal-600 p-6 text-white shadow-lg sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Your appointments</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Manage your consultations</h1>
@@ -373,6 +404,7 @@ export default function MyAppointments() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </>
   )
 }

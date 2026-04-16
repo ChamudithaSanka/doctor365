@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const connectDB = require("./config/db");
 const telemedicineRoutes = require("./routes/telemedicineRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
+const { getAgoraConfig } = require("./utils/agoraUtils");
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     service: process.env.SERVICE_NAME || "telemedicine-service",
+    agoraConfig: getAgoraConfig(),
   });
 });
 
@@ -73,6 +75,46 @@ app.post("/generate-token", (req, res) => {
   }
 });
 
+// Debug endpoint - Agora configuration status
+app.get("/debug/agora-config", (req, res) => {
+  const config = getAgoraConfig();
+  res.status(200).json({
+    success: true,
+    agoraConfig: config,
+    appIdValue: process.env.AGORA_APP_ID,
+    appCertificateValue: process.env.AGORA_APP_CERTIFICATE ? 'Set' : 'Not set',
+    message: 'Agora configuration status',
+  });
+});
+
+// Test endpoint - Generate a sample token (development only)
+app.get("/debug/test-token/:channelName", (req, res) => {
+  try {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(403).json({
+        success: false,
+        error: 'Debug endpoint only available in development mode'
+      });
+    }
+    
+    const { channelName } = req.params;
+    const { createMeeting } = require('./utils/agoraUtils');
+    
+    const meetingData = createMeeting(channelName, 1, 2);
+    
+    res.status(200).json({
+      success: true,
+      data: meetingData,
+      message: 'Test token generated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Telemedicine routes
 app.use("/api/telemedicine", telemedicineRoutes);
 
@@ -87,7 +129,10 @@ async function startServer() {
 
     app.listen(PORT, () => {
       console.log(`${process.env.SERVICE_NAME || "telemedicine-service"} running on port ${PORT}`);
-      console.log(`📹 Zoom Integration: ${process.env.ZOOM_CLIENT_ID ? '✅ Enabled' : '❌ Disabled'}`);
+      const config = getAgoraConfig();
+      console.log(`🎥 Agora Integration: ${config.isValid ? '✅ Enabled' : '❌ Disabled'}`);
+      console.log(`   App ID: ${config.appId}`);
+      console.log(`   App Certificate: ${config.appCertificate}`);
       console.log(`🔑 Test token generation: POST /generate-token (development only)\n`);
     });
   } catch (error) {

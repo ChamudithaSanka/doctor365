@@ -17,20 +17,41 @@ const telemedicineSessionSchema = new mongoose.Schema(
     meetingProvider: {
       type: String,
       enum: {
-        values: ['zoom'],
-        message: 'Meeting provider must be: zoom',
+        values: ['agora'],
+        message: 'Meeting provider must be: agora',
       },
-      default: 'zoom',
+      default: 'agora',
     },
-    zoomMeetingId: {
+    // Agora RTC Fields
+    agoraChannelName: {
+      type: String,
+      required: [true, 'Agora channel name is required'],
+    },
+    agoraChannelId: {
       type: String,
       default: null,
     },
-    meetingLink: {
+    doctorToken: {
       type: String,
-      required: [true, 'Meeting link is required'],
+      required: [true, 'Doctor token is required'],
     },
-    meetingPassword: {
+    patientToken: {
+      type: String,
+      required: [true, 'Patient token is required'],
+    },
+    doctorUid: {
+      type: Number,
+      default: 1,
+    },
+    patientUid: {
+      type: Number,
+      default: 2,
+    },
+    tokenExpiration: {
+      type: Date,
+      required: true,
+    },
+    meetingLink: {
       type: String,
       default: null,
     },
@@ -110,5 +131,6 @@ const telemedicineSessionSchema = new mongoose.Schema(
 telemedicineSessionSchema.index({ appointmentId: 1 });
 telemedicineSessionSchema.index({ patientId: 1, status: 1 });
 telemedicineSessionSchema.index({ doctorId: 1, status: 1 });
+telemedicineSessionSchema.index({ agoraChannelName: 1 });
 
 module.exports = mongoose.model('TelemedicineSession', telemedicineSessionSchema);
