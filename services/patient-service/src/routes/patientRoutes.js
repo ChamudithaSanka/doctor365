@@ -6,12 +6,18 @@ const {
   getPatientById, 
   uploadPatientReports, 
   getPatientReports, 
+  getPatientReportsById,
   deletePatientReport,
+  downloadReport,
   getAllPatients,
   getPrescriptions,
   addPrescription,
   togglePatientStatus,
-  deletePatient
+  getMedicalHistory,
+  updateMedicalHistory,
+  addMedicalHistory,
+  getPatientMedicalHistory,
+  deletePatient,
 } = require('../controllers/patientController');
 const { verifyToken, restrictTo, checkPatientActive } = require('../middleware/authMiddleware');
 const { uploadReports } = require('../middleware/uploadMiddleware');
@@ -63,8 +69,18 @@ router.route('/me/reports/:reportId')
 router.route('/me/prescriptions')
   .get(restrictTo('patient'), checkPatientActive, getPrescriptions);
 
+router.route('/me/medical-history')
+  .get(restrictTo('patient'), getMedicalHistory)
+  .put(restrictTo('patient'), updateMedicalHistory);
+
+router.route('/reports/:reportId/file')
+  .get(restrictTo('patient', 'doctor', 'admin'), downloadReport);
+
 router.route('/:id')
   .get(restrictTo('admin', 'doctor'), getPatientById);
+
+router.route('/:id/reports')
+  .get(restrictTo('doctor', 'admin'), getPatientReportsById);
 
 // Prescription validation rules
 const prescriptionValidation = [
@@ -84,5 +100,9 @@ router.route('/:id/status')
 
 router.route('/:id')
   .delete(restrictTo('admin'), deletePatient);
+
+router.route('/:id/medical-history')
+  .get(restrictTo('doctor', 'admin'), getPatientMedicalHistory)
+  .post(restrictTo('doctor', 'admin'), addMedicalHistory);
 
 module.exports = router;

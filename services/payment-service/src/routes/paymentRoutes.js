@@ -3,6 +3,7 @@ const {
   initiatePayHereCheckout,
   handlePayHereNotify,
   createPayment,
+  getAllPayments,
   getMyPayments,
   getPaymentById,
   updatePaymentStatus,
@@ -28,6 +29,9 @@ router.post('/checkout/payhere', restrictTo('patient'), initiatePayHereCheckout)
 
 // Create payment (patient only)
 router.post('/', restrictTo('patient'), createPayment);
+
+// Get all payments (admin only)
+router.get('/', restrictTo('admin'), getAllPayments);
 
 // Get my payments (patient)
 router.get('/me', restrictTo('patient'), getMyPayments);

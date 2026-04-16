@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: doctor365
+  labels:
+    app: payment-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: doctor365/payment-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5006
+          envFrom:
+            - configMapRef:
+                name: payment-config
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: PAYMENT_MONGODB_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: JWT_SECRET
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: INTERNAL_SERVICE_TOKEN
+            - name: PAYHERE_MERCHANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_MERCHANT_ID
+            - name: PAYHERE_MERCHANT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_MERCHANT_SECRET
+            - name: PAYHERE_RETURN_URL
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_RETURN_URL
+            - name: PAYHERE_CANCEL_URL
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_CANCEL_URL
+            - name: PAYHERE_NOTIFY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_NOTIFY_URL
+            - name: PAYHERE_CURRENCY
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_CURRENCY
+            - name: PAYHERE_IS_SANDBOX
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: PAYHERE_IS_SANDBOX
+            - name: ADMIN_CALLBACK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: payment-secret
+                  key: ADMIN_CALLBACK_TOKEN
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5006
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5006
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: doctor365
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - name: http
+      port: 5006
+      targetPort: 5006
+  type: ClusterIP

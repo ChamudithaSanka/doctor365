@@ -18,6 +18,9 @@ import AdminDoctorVerification from './pages/admin/AdminDoctorVerification'
 import AdminAppointments from './pages/admin/AdminAppointments'
 import ManagePatients from './pages/admin/ManagePatients'
 import ManageDoctors from './pages/admin/ManageDoctors'
+import AdminTransactions from './pages/admin/AdminTransactions'
+import AdminPaymentResult from './pages/admin/AdminPaymentResult'
+import AdminNotifications from './pages/admin/AdminNotifications'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
 import NotFound from './pages/shared/NotFound'
@@ -25,6 +28,7 @@ import NotFound from './pages/shared/NotFound'
 // Doctor pages
 import DoctorReports from './pages/doctor/DoctorReports'
 import DoctorProfile from './pages/doctor/DoctorProfile'
+import DoctorPatientProfile from './pages/doctor/DoctorPatientProfile'
 
 // Patient pages
 import Profile from './pages/patient/Profile'
@@ -55,6 +59,7 @@ function App() {
           <Route path="/patient/profile" element={<Profile />} />
           <Route path="/patient/reports" element={<Reports />} />
           <Route path="/patient/medical-history" element={<MedicalHistory />} />
+          <Route path="/patient/prescriptions" element={<Prescriptions />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route
@@ -62,6 +67,7 @@ function App() {
             element={<ComingSoon title="Profile" description="Update your personal and account information." />}
           />
           <Route path="/doctor/appointments" element={<DoctorAppointments />} />
+          <Route path="/doctor/patient/:patientId" element={<DoctorPatientProfile />} />
           <Route path="/doctor/reports" element={<DoctorReports />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route
@@ -73,6 +79,9 @@ function App() {
           <Route path="/admin/appointments" element={<AdminAppointments />} />
           <Route path="/admin/manage-patients" element={<ManagePatients />} />
           <Route path="/admin/manage-doctors" element={<ManageDoctors />} />
+          <Route path="/admin/transactions" element={<AdminTransactions />} />
+          <Route path="/admin/payment-results/:transactionId" element={<AdminPaymentResult />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
         </Route>
         <Route path="/403" element={<AccessDenied />} />
         <Route path="*" element={<NotFound />} />

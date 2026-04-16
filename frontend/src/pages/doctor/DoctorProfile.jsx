@@ -150,9 +150,41 @@ export default function DoctorProfile() {
     }
   }
 
-  const handleAvailSave = () => {
-    setAvailSaved(true)
-    setTimeout(() => setAvailSaved(false), 3000)
+  const handleAvailSave = async () => {
+    try {
+      const token = localStorage.getItem('doctor365_accessToken')
+      if (!token) return
+
+      // Build workingDays array from toggle state (use 3-letter codes)
+      const dayCodeMap = {
+        Monday: 'MON',
+        Tuesday: 'TUE',
+        Wednesday: 'WED',
+        Thursday: 'THU',
+        Friday: 'FRI',
+        Saturday: 'SAT',
+        Sunday: 'SUN',
+      }
+      const workingDays = Object.keys(slots)
+        .filter((d) => slots[d].enabled)
+        .map((d) => dayCodeMap[d])
+
+      // Use the first enabled day to derive global availability times
+      const enabledDay = Object.keys(slots).find((d) => slots[d].enabled)
+      const availabilityStartTime = enabledDay ? slots[enabledDay].start : '08:00'
+      const availabilityEndTime = enabledDay ? slots[enabledDay].end : '18:00'
+
+      await axios.put(
+        `${gatewayBaseUrl}/api/doctors/me`,
+        { workingDays, availabilityStartTime, availabilityEndTime, slotMinutes: Number(slotMinutes) || 30 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      setAvailSaved(true)
+      setTimeout(() => setAvailSaved(false), 3000)
+    } catch (err) {
+      setError('Unable to save availability. Make sure you are signed in as a doctor.')
+    }
   }
 
   const profileFields = [
@@ -182,7 +214,7 @@ export default function DoctorProfile() {
         <div className="mb-6 rounded-[2rem] bg-gradient-to-r from-blue-700 to-green-600 p-6 text-white shadow-lg sm:p-8">
           <div className="flex items-center gap-6">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold text-white ring-2 ring-white/30">
-              {doctorData.avatar}
+              {formData.avatar || '?'}
             </div>
             <div>
               <h2 className="text-2xl font-bold">Dr. {formData.firstName} {formData.lastName}</h2>

@@ -331,6 +331,66 @@ const createPayment = async (req, res, next) => {
   }
 };
 
+// @desc    Get all payments (admin only)
+// @route   GET /payments
+// @access  Private (admin)
+const getAllPayments = async (req, res, next) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 100);
+
+    const query = {};
+
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+
+    if (req.query.patientId) {
+      query.patientId = req.query.patientId;
+    }
+
+    if (req.query.startDate || req.query.endDate) {
+      query.createdAt = {};
+      if (req.query.startDate) {
+        query.createdAt.$gte = new Date(req.query.startDate);
+      }
+      if (req.query.endDate) {
+        query.createdAt.$lte = new Date(req.query.endDate);
+      }
+    }
+
+    if (req.query.search) {
+      query.$or = [
+        { transactionId: { $regex: req.query.search, $options: 'i' } },
+        { orderId: { $regex: req.query.search, $options: 'i' } },
+        { patientId: { $regex: req.query.search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Payment.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Payment.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        items,
+        pagination: {
+          page,
+          limit,
+          total,
+        },
+      },
+      message: 'Payments retrieved successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get current user's payments
 // @route   GET /payments/me
 // @access  Private (patient)
@@ -538,6 +598,7 @@ module.exports = {
   initiatePayHereCheckout,
   handlePayHereNotify,
   createPayment,
+  getAllPayments,
   getMyPayments,
   getPaymentById,
   updatePaymentStatus,

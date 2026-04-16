@@ -31,6 +31,7 @@ const navigationByRole = {
     { label: 'Profile', to: '/profile' },
   ],
   admin: [
+    { label: 'Dashboard', to: '/admin/dashboard' },
     { label: 'Doctor verification', to: '/admin/doctor-verification' },
     { label: 'Appointments', to: '/admin/appointments' },
     {
@@ -40,6 +41,8 @@ const navigationByRole = {
         { label: 'Doctors', to: '/admin/manage-doctors' },
       ],
     },
+    { label: 'Transactions', to: '/admin/transactions' },
+    { label: 'Notifications', to: '/admin/notifications' },
   ],
 }
 
@@ -338,6 +341,7 @@ export default function AppShell() {
   }
 
   const isDoctorsBookingPage = location.pathname.startsWith('/appointments/book')
+  const notificationsPath = role === 'admin' ? '/admin/notifications' : '/notifications'
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 lg:flex">
@@ -555,7 +559,7 @@ export default function AppShell() {
 
             <div className="flex items-center gap-3">
               <NavLink
-                to="/notifications"
+                to={notificationsPath}
                 aria-label="Open notifications"
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >

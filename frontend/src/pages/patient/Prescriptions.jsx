@@ -11,9 +11,16 @@ const formatDate = (dateString) => {
   return new Intl.DateTimeFormat('en-LK', { dateStyle: 'long' }).format(date)
 }
 
+const getDoctorDisplayName = (doctorName) => {
+  const name = (doctorName || '').trim()
+  if (!name) return 'Unknown doctor'
+  return /^dr\.?\s+/i.test(name) ? name : `Dr. ${name}`
+}
+
 export default function PatientPrescriptions() {
   const navigate = useNavigate()
   const [prescriptions, setPrescriptions] = useState([])
+  const [doctorNamesById, setDoctorNamesById] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedPrescription, setExpandedPrescription] = useState(null)
@@ -59,6 +66,58 @@ export default function PatientPrescriptions() {
     return () => controller.abort()
   }, [navigate])
 
+  useEffect(() => {
+    const token = getToken()
+    if (!token || prescriptions.length === 0) return
+
+    const unknownDoctorIds = [
+      ...new Set(
+        prescriptions
+          .filter((prescription) => {
+            const rawName = (prescription?.doctorName || '').trim().toLowerCase()
+            const isUnknown = !rawName || rawName === 'unknown' || rawName === 'unknown doctor' || rawName === 'dr. unknown'
+            return Boolean(isUnknown && prescription?.doctorId)
+          })
+          .map((prescription) => prescription.doctorId)
+      ),
+    ]
+
+    if (unknownDoctorIds.length === 0) return
+
+    const controller = new AbortController()
+
+    const loadDoctorNames = async () => {
+      const updates = {}
+
+      await Promise.all(
+        unknownDoctorIds.map(async (doctorId) => {
+          try {
+            const response = await axios.get(`${gatewayBaseUrl}/api/doctors/${doctorId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: controller.signal,
+            })
+
+            const doctor = response.data?.data
+            const fullName = `${doctor?.firstName || ''} ${doctor?.lastName || ''}`.trim()
+            if (fullName) {
+              updates[doctorId] = fullName
+            }
+          } catch {
+            // Keep fallback name if lookup fails.
+          }
+        })
+      )
+
+      if (Object.keys(updates).length > 0) {
+        setDoctorNamesById((previous) => ({ ...previous, ...updates }))
+      }
+    }
+
+    loadDoctorNames()
+
+    return () => controller.abort()
+  }, [prescriptions])
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -102,7 +161,7 @@ export default function PatientPrescriptions() {
                     <div className="space-y-2">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
                         <h3 className="text-lg font-semibold text-slate-900">
-                          Dr. {prescription.doctorName}
+                          {getDoctorDisplayName(doctorNamesById[prescription.doctorId] || prescription.doctorName)}
                         </h3>
                         <span className="text-sm text-slate-500">{formatDate(prescription.date)}</span>
                       </div>

@@ -503,6 +503,13 @@ export default function DoctorAppointments() {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-2 sm:min-w-fit">
+                  <Link
+                    to={`/doctor/patient/${appointment.patientId}`}
+                    className="rounded-2xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition text-center"
+                  >
+                    📋 Patient Profile
+                  </Link>
+
                   {appointment.status === 'pending' && (
                     <>
                       <button
