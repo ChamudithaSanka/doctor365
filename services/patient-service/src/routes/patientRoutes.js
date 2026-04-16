@@ -12,12 +12,14 @@ const {
   getAllPatients,
   getPrescriptions,
   addPrescription,
+  togglePatientStatus,
   getMedicalHistory,
   updateMedicalHistory,
   addMedicalHistory,
   getPatientMedicalHistory,
+  deletePatient,
 } = require('../controllers/patientController');
-const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
+const { verifyToken, restrictTo, checkPatientActive } = require('../middleware/authMiddleware');
 const { uploadReports } = require('../middleware/uploadMiddleware');
 const { validate } = require('../middleware/validationMiddleware');
 
@@ -54,18 +56,18 @@ const patientValidation = [
 ];
 
 router.route('/me')
-  .get(restrictTo('patient', 'admin'), getMe)
-  .put(restrictTo('patient', 'admin'), patientValidation, updateMe);
+  .get(restrictTo('patient', 'admin'), checkPatientActive, getMe)
+  .put(restrictTo('patient', 'admin'), checkPatientActive, patientValidation, updateMe);
 
 router.route('/me/reports')
-  .get(restrictTo('patient', 'doctor', 'admin'), getPatientReports)
-  .post(restrictTo('patient'), uploadReports, uploadPatientReports);
+  .get(restrictTo('patient', 'doctor', 'admin'), checkPatientActive, getPatientReports)
+  .post(restrictTo('patient'), checkPatientActive, uploadReports, uploadPatientReports);
 
 router.route('/me/reports/:reportId')
-  .delete(restrictTo('patient'), deletePatientReport);
+  .delete(restrictTo('patient'), checkPatientActive, deletePatientReport);
 
 router.route('/me/prescriptions')
-  .get(restrictTo('patient'), getPrescriptions);
+  .get(restrictTo('patient'), checkPatientActive, getPrescriptions);
 
 router.route('/me/medical-history')
   .get(restrictTo('patient'), getMedicalHistory)
@@ -91,6 +93,13 @@ const prescriptionValidation = [
 
 router.route('/:id/prescriptions')
   .post(restrictTo('doctor', 'admin'), prescriptionValidation, addPrescription);
+
+// Admin routes for managing patient status and deletion
+router.route('/:id/status')
+  .patch(restrictTo('admin'), togglePatientStatus);
+
+router.route('/:id')
+  .delete(restrictTo('admin'), deletePatient);
 
 router.route('/:id/medical-history')
   .get(restrictTo('doctor', 'admin'), getPatientMedicalHistory)

@@ -16,6 +16,11 @@ import DoctorAppointments from './pages/doctor/DoctorAppointments'
 import VerificationPending from './pages/doctor/VerificationPending'
 import AdminDoctorVerification from './pages/admin/AdminDoctorVerification'
 import AdminAppointments from './pages/admin/AdminAppointments'
+import ManagePatients from './pages/admin/ManagePatients'
+import ManageDoctors from './pages/admin/ManageDoctors'
+import AdminTransactions from './pages/admin/AdminTransactions'
+import AdminPaymentResult from './pages/admin/AdminPaymentResult'
+import AdminNotifications from './pages/admin/AdminNotifications'
 import ComingSoon from './pages/shared/ComingSoon'
 import AccessDenied from './pages/shared/AccessDenied'
 import NotFound from './pages/shared/NotFound'
@@ -72,6 +77,11 @@ function App() {
           <Route path="/admin/dashboard" element={<Navigate to="/admin/doctor-verification" replace />} />
           <Route path="/admin/doctor-verification" element={<AdminDoctorVerification />} />
           <Route path="/admin/appointments" element={<AdminAppointments />} />
+          <Route path="/admin/manage-patients" element={<ManagePatients />} />
+          <Route path="/admin/manage-doctors" element={<ManageDoctors />} />
+          <Route path="/admin/transactions" element={<AdminTransactions />} />
+          <Route path="/admin/payment-results/:transactionId" element={<AdminPaymentResult />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
         </Route>
         <Route path="/403" element={<AccessDenied />} />
         <Route path="*" element={<NotFound />} />

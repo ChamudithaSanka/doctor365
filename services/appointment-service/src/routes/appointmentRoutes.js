@@ -8,7 +8,7 @@ const {
   updateAppointment,
   deleteAppointment,
 } = require('../controllers/appointmentController');
-const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
+const { verifyToken, restrictTo, checkAccountActive } = require('../middleware/authMiddleware');
 
 // Health check - public
 router.get('/health', (req, res) => {
@@ -20,6 +20,7 @@ router.get('/health', (req, res) => {
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);
+router.use(checkAccountActive);
 // Get all appointments (admin only)
 router.get('/', restrictTo('admin'), getMyAppointments);
 // Create appointment (patient only)
