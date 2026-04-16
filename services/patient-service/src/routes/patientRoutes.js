@@ -16,6 +16,7 @@ const {
   updateMedicalHistory,
   addMedicalHistory,
   getPatientMedicalHistory,
+  getPatientPrescriptions, // ← add this to your controller exports too
 } = require('../controllers/patientController');
 const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 const { uploadReports } = require('../middleware/uploadMiddleware');
@@ -48,7 +49,7 @@ const patientValidation = [
     .isIn(['male', 'female']).withMessage('Gender must be male or female'),
   body('phone').matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).withMessage('Please provide a valid phone number'),
   body('address').notEmpty().withMessage('Address is required'),
-    body('city').notEmpty().withMessage('City is required'),
+  body('city').notEmpty().withMessage('City is required'),
   body('emergencyContact').matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).withMessage('Please provide a valid emergency contact number'),
   validate
 ];
@@ -71,6 +72,7 @@ router.route('/me/medical-history')
   .get(restrictTo('patient'), getMedicalHistory)
   .put(restrictTo('patient'), updateMedicalHistory);
 
+// ✅ Must stay before /:id to avoid being swallowed by the wildcard
 router.route('/reports/:reportId/file')
   .get(restrictTo('patient', 'doctor', 'admin'), downloadReport);
 
@@ -90,6 +92,7 @@ const prescriptionValidation = [
 ];
 
 router.route('/:id/prescriptions')
+  .get(restrictTo('doctor', 'admin'), getPatientPrescriptions)  // ← NEW: doctors can now view prescriptions
   .post(restrictTo('doctor', 'admin'), prescriptionValidation, addPrescription);
 
 router.route('/:id/medical-history')
