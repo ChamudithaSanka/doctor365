@@ -90,8 +90,8 @@ const getPatientById = async (req, res, next) => {
     // We first try to find by MongoDB _id, if the provided ID is a valid ObjectId
     if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
       patient = await Patient.findById(patientId);
-    } 
-    
+    }
+
     // If not found by _id, try to find by userId (from auth)
     if (!patient) {
       patient = await Patient.findOne({ userId: patientId });
@@ -122,8 +122,8 @@ const getPatientById = async (req, res, next) => {
 // @access  Private (Patient)
 const uploadPatientReports = async (req, res, next) => {
   try {
-    const { title } = req.body; // Default title if provided
-    
+    const { title } = req.body;
+
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
@@ -136,7 +136,6 @@ const uploadPatientReports = async (req, res, next) => {
 
     const patient = await Patient.findOne({ userId: req.user.userId });
     if (!patient) {
-      // Clean up uploaded files if patient not found
       req.files.forEach(file => fs.unlinkSync(file.path));
       return res.status(404).json({
         success: false,
@@ -164,7 +163,6 @@ const uploadPatientReports = async (req, res, next) => {
       data: patient.reports,
     });
   } catch (error) {
-    // Cleanup on error
     if (req.files) {
       req.files.forEach(file => {
         if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
@@ -179,9 +177,6 @@ const uploadPatientReports = async (req, res, next) => {
 // @access  Private (Patient, Doctor, Admin)
 const getPatientReports = async (req, res, next) => {
   try {
-    // If patient is looking at own reports, use userId from token
-    // If doc/admin is looking, they might pass patientId in query or we might need another route
-    // For now, let's assume this route is primarily for the logged-in patient
     const patient = await Patient.findOne({ userId: req.user.userId });
 
     if (!patient) {
@@ -265,13 +260,11 @@ const deletePatientReport = async (req, res, next) => {
       });
     }
 
-    // Delete file from disk
     const report = patient.reports[reportIndex];
     if (fs.existsSync(report.filePath)) {
       fs.unlinkSync(report.filePath);
     }
 
-    // Remove from array
     patient.reports.splice(reportIndex, 1);
     await patient.save();
 
@@ -279,6 +272,50 @@ const deletePatientReport = async (req, res, next) => {
       success: true,
       message: 'Report deleted successfully',
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Download/View a specific report
+// @route   GET /reports/:reportId/file
+// @access  Private (Patient, Doctor, Admin)
+const downloadReport = async (req, res, next) => {
+  try {
+    const { reportId } = req.params;
+    const { download } = req.query;
+
+    const patient = await Patient.findOne({ 'reports._id': reportId });
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Report not found' },
+      });
+    }
+
+    if (req.user.role === 'patient' && patient.userId !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You are not authorized to access this report' },
+      });
+    }
+
+    const report = patient.reports.id(reportId);
+    if (!report || !fs.existsSync(report.filePath)) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'FILE_NOT_FOUND', message: 'Physical file not found on server' },
+      });
+    }
+
+    res.set('Content-Type', report.mimeType);
+
+    if (download === 'true') {
+      res.download(report.filePath, report.originalName);
+    } else {
+      res.sendFile(path.resolve(report.filePath));
+    }
   } catch (error) {
     next(error);
   }
@@ -310,7 +347,7 @@ const getAllPatients = async (req, res, next) => {
         limit,
         totalPages,
         hasNextPage: page < totalPages,
-        hasPrevPage: page > 1
+        hasPrevPage: page > 1,
       },
       data: patients,
     });
@@ -366,7 +403,7 @@ const addPrescription = async (req, res, next) => {
 
     patient.prescriptions.push({
       doctorName,
-      doctorId: req.user.userId, // Link to the doctor's user ID from the token
+      doctorId: req.user.userId,
       diagnosis: diagnosis || '',
       medication,
       instructions,
@@ -543,6 +580,7 @@ module.exports = {
   getPatientReports,
   getPatientReportsById,
   deletePatientReport,
+  downloadReport,
   getAllPatients,
   getPrescriptions,
   addPrescription,

@@ -112,6 +112,46 @@ export default function DoctorReports() {
 
   const totalReports = patientList.reduce((acc) => acc, 0)
 
+  const handleView = async (reportId) => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const res = await axios.get(`${gatewayBaseUrl}/api/patients/reports/${reportId}/file`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      })
+      const contentType = res.headers['content-type']
+      const file = new Blob([res.data], { type: contentType })
+      const fileURL = URL.createObjectURL(file)
+      window.open(fileURL, '_blank')
+    } catch (err) {
+      console.error('View failed', err)
+      alert('Unable to open the file. Please try downloading it instead.')
+    }
+  }
+
+  const handleDownload = async (reportId, filename) => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const res = await axios.get(`${gatewayBaseUrl}/api/patients/reports/${reportId}/file?download=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      })
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download failed', err)
+      alert('Download failed. Please try again.')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-6xl px-6 py-10 lg:px-8">
@@ -239,6 +279,21 @@ export default function DoctorReports() {
                               </p>
                               <p className="mt-0.5 text-xs text-slate-400">{report.mimeType}</p>
                             </div>
+                            </div>
+                            
+                          <div className="flex shrink-0 items-center gap-2">
+                            <button
+                              onClick={() => handleView(report._id)}
+                              className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={() => handleDownload(report._id, report.originalName)}
+                              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                            >
+                              Download
+                            </button>
                           </div>
                         </div>
                       </div>
