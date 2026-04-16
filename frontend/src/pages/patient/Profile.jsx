@@ -14,6 +14,7 @@ const emptyForm = {
   dateOfBirth: '',
   gender: '',
   address: '',
+  city: '',
   emergencyContact: '',
   medicalHistorySummary: '',
 }
@@ -53,6 +54,7 @@ export default function Profile() {
           dateOfBirth: p.dateOfBirth ? p.dateOfBirth.slice(0, 10) : '',
           gender: p.gender || '',
           address: p.address || '',
+          city: p.city || '',
           emergencyContact: p.emergencyContact || '',
           medicalHistorySummary: p.medicalHistorySummary || '',
         })
@@ -91,6 +93,7 @@ export default function Profile() {
           dateOfBirth: formData.dateOfBirth,
           gender: formData.gender,
           address: formData.address,
+          city: formData.city,
           emergencyContact: formData.emergencyContact,
           medicalHistorySummary: formData.medicalHistorySummary,
         },
@@ -115,6 +118,7 @@ export default function Profile() {
     { label: 'Phone', name: 'phone', type: 'tel' },
     { label: 'Date of birth', name: 'dateOfBirth', type: 'date' },
     { label: 'Address', name: 'address', type: 'text', span: true },
+    { label: 'City', name: 'city', type: 'text' },
     { label: 'Emergency contact', name: 'emergencyContact', type: 'tel' },
   ]
 
