@@ -25,6 +25,73 @@ export default function DoctorPatientProfile() {
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState('overview') // overview, medical-history, reports, prescriptions
 
+  const parseFilenameFromDisposition = (contentDisposition, fallbackName) => {
+    const fallback = fallbackName || 'report'
+    if (!contentDisposition) return fallback
+
+    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+    if (utf8Match?.[1]) {
+      return decodeURIComponent(utf8Match[1])
+    }
+
+    const quotedMatch = contentDisposition.match(/filename="?([^";]+)"?/i)
+    if (quotedMatch?.[1]) {
+      return quotedMatch[1]
+    }
+
+    return fallback
+  }
+
+  const handleReportFileAction = async (report, action = 'view') => {
+    const token = getToken()
+    if (!token) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      setError('')
+
+      const response = await axios.get(
+        `${gatewayBaseUrl}/api/patients/reports/${report._id}/file${action === 'download' ? '?download=true' : ''}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      )
+
+      const blobUrl = URL.createObjectURL(response.data)
+
+      if (action === 'view') {
+        window.open(blobUrl, '_blank', 'noopener,noreferrer')
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60 * 1000)
+        return
+      }
+
+      const filename = parseFilenameFromDisposition(
+        response.headers['content-disposition'],
+        report.originalName || report.title
+      )
+
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(blobUrl)
+    } catch (requestError) {
+      if (handleTokenError(requestError)) {
+        return
+      }
+
+      setError(
+        requestError?.response?.data?.error?.message ||
+          'Unable to open report file. Please try again.'
+      )
+    }
+  }
+
   useEffect(() => {
     const token = getToken()
     if (!token) {
@@ -39,11 +106,18 @@ export default function DoctorPatientProfile() {
       setError('')
 
       try {
-        const [patientRes, reportsRes, prescriptionsRes] = await Promise.all([
-          axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            signal: controller.signal,
-          }),
+        const patientRes = await axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        })
+
+        if (!patientRes.data?.success || !patientRes.data?.data) {
+          throw new Error('Patient profile not found')
+        }
+
+        setPatient(patientRes.data.data)
+
+        const [reportsResult, prescriptionsResult] = await Promise.allSettled([
           axios.get(`${gatewayBaseUrl}/api/patients/${patientId}/reports`, {
             headers: { Authorization: `Bearer ${token}` },
             signal: controller.signal,
@@ -54,14 +128,18 @@ export default function DoctorPatientProfile() {
           }),
         ])
 
-        if (patientRes.data?.success) {
-          setPatient(patientRes.data.data)
+        if (reportsResult.status === 'fulfilled' && reportsResult.value.data?.success) {
+          setReports(Array.isArray(reportsResult.value.data.data) ? reportsResult.value.data.data : [])
+        } else {
+          setReports([])
         }
-        if (reportsRes.data?.success) {
-          setReports(Array.isArray(reportsRes.data.data) ? reportsRes.data.data : [])
-        }
-        if (prescriptionsRes.data?.success) {
-          setPrescriptions(Array.isArray(prescriptionsRes.data.data) ? prescriptionsRes.data.data : [])
+
+        if (prescriptionsResult.status === 'fulfilled' && prescriptionsResult.value.data?.success) {
+          setPrescriptions(
+            Array.isArray(prescriptionsResult.value.data.data) ? prescriptionsResult.value.data.data : []
+          )
+        } else {
+          setPrescriptions([])
         }
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {
@@ -245,12 +323,22 @@ export default function DoctorPatientProfile() {
                         <p className="font-medium text-gray-900">{report.title || report.originalName}</p>
                         <p className="text-sm text-gray-600">{report.mimeType}</p>
                       </div>
-                      <a
-                        href={`${gatewayBaseUrl}/api/patients/reports/${report._id}/download`}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                      >
-                        Download
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleReportFileAction(report, 'view')}
+                          className="px-4 py-2 border border-blue-300 text-blue-700 bg-white rounded-lg hover:bg-blue-50 text-sm font-medium"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleReportFileAction(report, 'download')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                        >
+                          Download
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

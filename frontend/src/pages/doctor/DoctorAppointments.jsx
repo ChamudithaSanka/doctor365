@@ -42,6 +42,16 @@ const getStatusOptionsForAppointment = (status) => {
   return []
 }
 
+const getAppointmentPatientId = (appointment) => {
+  const patientId = appointment?.patientId
+  if (!patientId) return ''
+  if (typeof patientId === 'string') return patientId
+  if (typeof patientId === 'object') {
+    return patientId.userId || patientId._id || patientId.id || ''
+  }
+  return ''
+}
+
 export default function DoctorAppointments() {
   const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
@@ -451,6 +461,10 @@ export default function DoctorAppointments() {
           </div>
         ) : filteredAppointments.length > 0 ? (
           filteredAppointments.map((appointment) => (
+            (() => {
+              const appointmentPatientId = getAppointmentPatientId(appointment)
+
+              return (
             <div
               key={appointment._id}
               className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6"
@@ -503,12 +517,22 @@ export default function DoctorAppointments() {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-2 sm:min-w-fit">
-                  <Link
-                    to={`/doctor/patient/${appointment.patientId}`}
-                    className="rounded-2xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition text-center"
-                  >
-                    📋 Patient Profile
-                  </Link>
+                  {appointmentPatientId ? (
+                    <Link
+                      to={`/doctor/patient/${appointmentPatientId}`}
+                      className="rounded-2xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition text-center"
+                    >
+                      📋 Patient Profile
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="rounded-2xl bg-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 cursor-not-allowed"
+                    >
+                      Patient Profile Unavailable
+                    </button>
+                  )}
 
                   {appointment.status === 'pending' && (
                     <>
@@ -593,6 +617,8 @@ export default function DoctorAppointments() {
                 </div>
               </div>
             </div>
+              )
+            })()
           ))
         ) : (
           <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
