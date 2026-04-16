@@ -89,27 +89,28 @@ export default function DoctorPatientProfile() {
     return () => controller.abort()
   }, [patientId, navigate])
 
-  const handleDownload = async (reportId, filename) => {
+  const handleViewReport = async (reportId, filename) => {
     const token = getToken()
     if (!token) return
     try {
       const res = await axios.get(
-        `${gatewayBaseUrl}/api/patients/reports/${reportId}/file?download=true`,
+        `${gatewayBaseUrl}/api/patients/reports/${reportId}/file`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: 'blob',
         }
       )
-      const url = window.URL.createObjectURL(new Blob([res.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', filename)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      
+      // Create a blob URL and open it in a new tab
+      const blob = new Blob([res.data], { type: res.headers['content-type'] || 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      
+      // Cleanup the URL object after a short delay to ensure the browser has loaded it
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     } catch (err) {
-      console.error('Download failed', err)
+      console.error('Failed to view report', err)
+      alert('Unable to open the report. Please try again.')
     }
   }
 
@@ -278,11 +279,11 @@ export default function DoctorPatientProfile() {
                         <p className="text-sm text-gray-600">{report.mimeType}</p>
                       </div>
                       <button
-                      onClick={() => handleDownload(report._id, report.originalName)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                    >
-                      Download
-                    </button>
+                        onClick={() => handleViewReport(report._id, report.originalName)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                      >
+                        View
+                      </button>
                     </div>
                   ))}
                 </div>
