@@ -279,6 +279,8 @@ export default function DoctorReports() {
                               </p>
                               <p className="mt-0.5 text-xs text-slate-400">{report.mimeType}</p>
                             </div>
+                            </div>
+                            
                           <div className="flex shrink-0 items-center gap-2">
                             <button
                               onClick={() => handleView(report._id)}
