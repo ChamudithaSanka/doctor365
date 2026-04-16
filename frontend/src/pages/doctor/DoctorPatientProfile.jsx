@@ -39,30 +39,37 @@ export default function DoctorPatientProfile() {
       setError('')
 
       try {
-        const [patientRes, reportsRes, prescriptionsRes] = await Promise.all([
-          axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            signal: controller.signal,
-          }),
-          axios.get(`${gatewayBaseUrl}/api/patients/${patientId}/reports`, {
-            headers: { Authorization: `Bearer ${token}` },
-            signal: controller.signal,
-          }),
-          axios.get(`${gatewayBaseUrl}/api/patients/${patientId}/prescriptions`, {
-            headers: { Authorization: `Bearer ${token}` },
-            signal: controller.signal,
-          }),
-        ])
+        const [patientRes, reportsRes, prescriptionsRes] = await Promise.allSettled([
+        axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        }),
+        axios.get(`${gatewayBaseUrl}/api/patients/${patientId}/reports`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        }),
+        axios.get(`${gatewayBaseUrl}/api/patients/${patientId}/prescriptions`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        }),
+      ])
 
-        if (patientRes.data?.success) {
-          setPatient(patientRes.data.data)
+      if (patientRes.status === 'fulfilled' && patientRes.value.data?.success) {
+        setPatient(patientRes.value.data.data)
+      } else if (patientRes.status === 'rejected') {
+        if (patientRes.reason?.name !== 'CanceledError') {
+          if (handleTokenError(patientRes.reason)) return
+          setError('Unable to load patient information. Please try again.')
         }
-        if (reportsRes.data?.success) {
-          setReports(Array.isArray(reportsRes.data.data) ? reportsRes.data.data : [])
-        }
-        if (prescriptionsRes.data?.success) {
-          setPrescriptions(Array.isArray(prescriptionsRes.data.data) ? prescriptionsRes.data.data : [])
-        }
+      }
+
+      if (reportsRes.status === 'fulfilled' && reportsRes.value.data?.success) {
+        setReports(Array.isArray(reportsRes.value.data.data) ? reportsRes.value.data.data : [])
+      }
+
+      if (prescriptionsRes.status === 'fulfilled' && prescriptionsRes.value.data?.success) {
+        setPrescriptions(Array.isArray(prescriptionsRes.value.data.data) ? prescriptionsRes.value.data.data : [])
+      }
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {
           if (handleTokenError(requestError)) {
@@ -81,6 +88,31 @@ export default function DoctorPatientProfile() {
     loadPatientData()
     return () => controller.abort()
   }, [patientId, navigate])
+
+  const handleDownload = async (reportId, filename) => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const res = await axios.get(
+        `${gatewayBaseUrl}/api/patients/reports/${reportId}/file?download=true`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      )
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download failed', err)
+    }
+  }
+
 
   if (loading) {
     return (
@@ -245,12 +277,12 @@ export default function DoctorPatientProfile() {
                         <p className="font-medium text-gray-900">{report.title || report.originalName}</p>
                         <p className="text-sm text-gray-600">{report.mimeType}</p>
                       </div>
-                      <a
-                        href={`${gatewayBaseUrl}/api/patients/reports/${report._id}/download`}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                      >
-                        Download
-                      </a>
+                      <button
+                      onClick={() => handleDownload(report._id, report.originalName)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    >
+                      Download
+                    </button>
                     </div>
                   ))}
                 </div>
