@@ -9,7 +9,7 @@ const {
   updatePaymentStatus,
   refundPayment,
 } = require('../controllers/paymentController');
-const { verifyToken, restrictTo, checkAccountActive } = require('../middleware/authMiddleware');
+const { verifyToken, restrictTo } = require('../middleware/authMiddleware');
 const { verifyInternalToken } = require('../middleware/internalTokenMiddleware');
 
 const router = express.Router();
@@ -22,7 +22,6 @@ router.post('/refund', verifyInternalToken, refundPayment);
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);
-router.use(checkAccountActive);
 
 // Initialize checkout for PayHere (patient only)
 router.post('/checkout/payhere', restrictTo('patient'), initiatePayHereCheckout);
