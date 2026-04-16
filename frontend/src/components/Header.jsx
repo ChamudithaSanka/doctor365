@@ -57,8 +57,7 @@ export default function Header() {
     <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
         <Link to="/" className="group">
-          <p className="text-lg font-semibold tracking-tight text-blue-700 transition group-hover:text-blue-800">Doctor365</p>
-          <p className="text-sm text-slate-500">Smart healthcare appointments and telemedicine</p>
+          <img src="/logo.png" alt="Doctor365" className="h-12 w-auto transition group-hover:opacity-80" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">

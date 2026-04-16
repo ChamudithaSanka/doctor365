@@ -2,15 +2,15 @@
 
 ## Overview
 
-The Telemedicine Service manages secure online consultation sessions between doctors and patients using **Zoom Cloud Meetings**. It handles session creation, lifecycle management (scheduled → active → ended), and integration with the appointment service.
+The Telemedicine Service manages secure online consultation sessions between doctors and patients using **Agora RTC (Real-Time Communication)**. It handles session creation, lifecycle management (scheduled → active → ended), and integration with the appointment service.
 
 ## Features
 
-✅ **Real Zoom Integration** - OAuth 2.0 Server-to-Server authentication
-✅ **Secure Meeting Links** - Auto-generated with password protection
+✅ **Agora RTC Integration** - Token-based authentication with 1-hour expiration
+✅ **Secure Video Channels** - Channel-based architecture with role-based access
 ✅ **Doctor Notes & Prescriptions** - Save consultation details
 ✅ **Patient Feedback** - 1-5 star ratings post-consultation
-✅ **Recording Support** - Auto-fetch Zoom cloud recordings
+✅ **Session Analytics** - Track participation timing and detailed session metrics
 ✅ **Role-Based Access** - Doctor, Patient, Admin controls
 ✅ **Cross-Service Integration** - Validates appointment/doctor/patient data
 ✅ **Full Session Lifecycle** - Track participation timing and status
@@ -25,12 +25,13 @@ npm run dev                   # Start in development mode
 
 ## Key Features
 
-✅ **Jitsi Meet Integration** - Secure video consultations  
+✅ **Agora RTC Integration** - Real-time video consultations with token-based authentication
 ✅ **JWT Authentication** - Token-based authorization  
 ✅ **Role-Based Access** - Doctor-only session management  
-✅ **Session Lifecycle** - Scheduled → Active → Ended  
-✅ **Doctor Notes** - Consultation notes with prescription support  
-✅ **Session Tracking** - Duration, timestamps, and status  
+✅ **Session Lifecycle** - Scheduled → Active → Ended → Cancelled  
+✅ **Doctor Notes & Prescriptions** - Consultation notes with prescription support  
+✅ **Patient Feedback** - 1-5 star ratings and comments  
+✅ **Session Analytics** - Duration, timestamps, participation tracking  
 
 ## API Routes
 
@@ -55,10 +56,14 @@ Response:
 {
   "success": true,
   "data": {
-    "sessionId": "67a8b9c0def12345678",
+    "_id": "67a8b9c0def12345678",
     "appointmentId": "apt-001",
-    "meetingLink": "https://meet.jitsi/doctor365-apt-001-doc-pat/",
-    "meetingRoomId": "doctor365-apt-001-doc-pat",
+    "agoraChannelName": "appointment-apt-001",
+    "doctorToken": "007eJxTYGiRDl2n3no...",
+    "patientToken": "007eJxTYDh0vVzXbZ...",
+    "doctorUid": 1,
+    "patientUid": 2,
+    "appId": "088f132e19a24596849c9ff989fa049e",
     "status": "scheduled",
     "createdAt": "2026-04-08T10:00:00Z"
   },
@@ -82,7 +87,10 @@ Response:
     "appointmentId": "apt-001",
     "doctorId": "doc-001",
     "patientId": "pat-001",
-    "meetingLink": "https://meet.jitsi/...",
+    "agoraChannelName": "appointment-apt-001",
+    "doctorToken": "007eJxTYGiRDl2n3no...",
+    "patientToken": "007eJxTYDh0vVzXbZ...",
+    "appId": "088f132e19a24596849c9ff989fa049e",
     "status": "scheduled",
     "startedAt": null,
     "endedAt": null,
@@ -140,10 +148,13 @@ Response:
 {
   "success": true,
   "data": {
-    "sessionId": "67a8b9c0def12345678",
+    "_id": "67a8b9c0def12345678",
     "status": "active",
-    "startedAt": "2026-04-08T10:30:00Z",
-    "meetingLink": "https://meet.jitsi/doctor365-apt-001-doc-pat/"
+    "agoraChannelName": "appointment-apt-001",
+    "doctorToken": "007eJxTYGiRDl2n3no...",
+    "patientToken": "007eJxTYDh0vVzXbZ...",
+    "appId": "088f132e19a24596849c9ff989fa049e",
+    "startedAt": "2026-04-08T10:30:00Z"
   },
   "message": "Session started successfully"
 }
@@ -181,11 +192,11 @@ Response:
 ```
 scheduled
     ↓
-[Doctor joins Jitsi room]
+[Doctor starts session with Agora RTC channel]
     ↓
 active (PATCH /start)
     ↓
-[Consultation happens]
+[Video consultation happens over Agora RTC]
     ↓
 ended (PATCH /end)
 ```
@@ -215,33 +226,22 @@ ended (PATCH /end)
 ```env
 # Required (shared with other services)
 JWT_SECRET=your-super-secret-key
+NODE_ENV=development
+PORT=5005
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/doctor365
+MONGODB_URI=mongodb://localhost:27017/telemedicine_db
 
-# Jitsi Meet
-JITSI_MODE=public                    # public or private
-JITSI_DOMAIN=meet.jitsi              # Jitsi server domain
-JITSI_JWT_ENABLE=false               # Set true for self-hosted
-JITSI_APP_ID=optional                # If JWT enabled
-JITSI_APP_SECRET=optional            # If JWT enabled
+# Agora RTC Configuration
+# Get these from https://console.agora.io/
+AGORA_APP_ID=your-agora-app-id
+AGORA_APP_CERTIFICATE=your-agora-app-certificate
+
+# Service URLs (for cross-service communication)
+DOCTOR_SERVICE_URL=http://localhost:5003
+PATIENT_SERVICE_URL=http://localhost:5002
+APPOINTMENT_SERVICE_URL=http://localhost:5004
 ```
-
-## Jitsi Meet Options
-
-### Free Public (Default)
-- Uses `meet.jitsi` domain
-- No setup required
-- JWT not needed
-- Meeting links: `https://meet.jitsi/doctor365-apt-001-...`
-
-### Self-Hosted (Recommended for Production)
-- Deploy your own Jitsi server
-- Secure with JWT authentication
-- Full control over data
-- Better privacy
-
-See `SETUP.md` for detailed Jitsi configuration.
 
 ## Error Responses
 
@@ -280,12 +280,17 @@ Schema fields:
 - `appointmentId` - Link to appointment
 - `doctorId` - Attending doctor
 - `patientId` - Consulting patient
-- `meetingLink` - Jitsi meeting URL
-- `status` - Session state
+- `agoraChannelName` - Agora RTC channel identifier
+- `doctorToken` - Doctor's Agora RTC access token
+- `patientToken` - Patient's Agora RTC access token
+- `doctorUid` - Doctor's user ID in Agora (1)
+- `patientUid` - Patient's user ID in Agora (2)
+- `tokenExpiration` - Token expiration timestamp
+- `status` - Session state (scheduled, active, ended, cancelled)
 - `startedAt` - Consultation start time
 - `endedAt` - Consultation end time
-- `duration` - Session duration in minutes
-- `notes` - Doctor's consultation notes
+- `doctorNotes` - Doctor's consultation notes
+- `patientFeedback` - Patient's feedback and rating
 
 ---
 

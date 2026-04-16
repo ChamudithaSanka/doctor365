@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Doctor365 - Telemedicine Service (Complete)",
-    "description": "Complete telemedicine workflow with real database integration and Zoom meetings. All variables configured. No mock data.",
+    "description": "Complete telemedicine workflow with real database integration and Agora RTC video calls. All variables configured. No mock data.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -332,13 +332,12 @@
                   "if (pm.response.code === 201) {",
                   "    const body = pm.response.json();",
                   "    pm.environment.set('session_id', body.data._id);",
-                  "    pm.environment.set('zoom_meeting_id', body.data.zoomMeetingId);",
-                  "    pm.environment.set('meeting_link', body.data.meetingLink);",
-                  "    pm.environment.set('doctor_join_url', body.data.doctorJoinUrl);",
-                  "    pm.environment.set('patient_join_url', body.data.patientJoinUrl);",
+                  "    pm.environment.set('agora_channel_name', body.data.agoraChannelName);",
+                  "    pm.environment.set('doctor_agora_token', body.data.doctorToken);",
+                  "    pm.environment.set('patient_agora_token', body.data.patientToken);",
                   "    console.log('Session created:', body.data._id);",
-                  "    console.log('Zoom Meeting ID:', body.data.zoomMeetingId);",
-                  "    console.log('Meeting Link:', body.data.meetingLink);",
+                  "    console.log('Agora Channel:', body.data.agoraChannelName);",
+                  "    console.log('App ID:', body.data.appId);",
                   "} else {",
                   "    console.log('Creation failed:', pm.response.code);",
                   "    console.log(pm.response.json());",
