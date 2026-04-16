@@ -538,7 +538,6 @@ const refundPayment = async (req, res, next) => {
 
     const payment = await Payment.findOne({
       orderId: paymentOrderId,
-      appointmentId,
       patientId,
     });
 
@@ -551,6 +550,8 @@ const refundPayment = async (req, res, next) => {
         },
       });
     }
+
+    const hasAppointmentIdMismatch = payment.appointmentId !== appointmentId;
 
     const previousStatus = payment.status;
 
@@ -573,6 +574,14 @@ const refundPayment = async (req, res, next) => {
         reason: reason || 'appointment_cancelled',
         previousStatus,
       },
+      ...(hasAppointmentIdMismatch
+        ? {
+            refundContext: {
+              requestedAppointmentId: appointmentId,
+              paymentAppointmentId: payment.appointmentId,
+            },
+          }
+        : {}),
     };
 
     await payment.save();

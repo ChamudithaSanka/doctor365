@@ -554,7 +554,7 @@ exports.updateAppointment = async (req, res, next) => {
   }
 };
 
-// @desc    Delete appointment (patient can delete only their pending appointments)
+// @desc    Cancel appointment (soft delete; patient can cancel only their pending appointments)
 // @route   DELETE /api/appointments/:id
 // @access  Private (patient)
 exports.deleteAppointment = async (req, res, next) => {
@@ -586,7 +586,16 @@ exports.deleteAppointment = async (req, res, next) => {
       });
     }
 
-    await Appointment.findByIdAndDelete(req.params.id);
+    if (appointment.paymentOrderId) {
+      await refundPaymentForAppointment(
+        appointment._id,
+        appointment.patientId,
+        appointment.paymentOrderId
+      );
+    }
+
+    appointment.status = 'cancelled';
+    await appointment.save();
 
     const doctor = await fetchDoctorProfile(appointment.doctorId);
     const doctorDisplayName = buildDoctorDisplayName(doctor);
@@ -637,7 +646,8 @@ exports.deleteAppointment = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Appointment deleted successfully',
+      data: appointment,
+      message: 'Appointment cancelled successfully',
     });
   } catch (error) {
     next(error);

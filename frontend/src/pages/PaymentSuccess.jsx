@@ -8,7 +8,6 @@ const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:500
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('order_id')
-  const paymentId = searchParams.get('payment_id')
   const [creating, setCreating] = useState(true)
   const [appointmentId, setAppointmentId] = useState('')
   const [error, setError] = useState('')
@@ -121,9 +120,6 @@ export default function PaymentSuccess() {
         <div className="mt-6 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
           <p>
             <span className="font-semibold text-slate-900">Order ID:</span> {orderId || 'N/A'}
-          </p>
-          <p>
-            <span className="font-semibold text-slate-900">Payment ID:</span> {paymentId || 'N/A'}
           </p>
         </div>
 
