@@ -108,6 +108,51 @@ export default function DoctorAppointments() {
     return () => controller.abort()
   }, [navigate])
 
+  useEffect(() => {
+    const token = getToken()
+    if (!token || appointments.length === 0) return
+
+    const controller = new AbortController()
+
+    const loadTelemedicineSessions = async () => {
+      const confirmedAppointments = appointments.filter((apt) => apt.status === 'confirmed')
+
+      if (confirmedAppointments.length === 0) return
+
+      try {
+        const responses = await Promise.allSettled(
+          confirmedAppointments.map((appointment) =>
+            axios.get(`${gatewayBaseUrl}/api/telemedicine/appointment/${appointment._id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: controller.signal,
+            })
+          )
+        )
+
+        const nextSessions = {}
+        responses.forEach((response, index) => {
+          if (response.status === 'fulfilled' && response.value.data?.success && response.value.data?.data) {
+            nextSessions[confirmedAppointments[index]._id] = response.value.data.data
+          }
+        })
+
+        if (Object.keys(nextSessions).length > 0) {
+          setTelemedicineSessions((prev) => ({
+            ...prev,
+            ...nextSessions,
+          }))
+        }
+      } catch (requestError) {
+        if (requestError.name !== 'CanceledError') {
+          console.warn('Unable to preload telemedicine sessions')
+        }
+      }
+    }
+
+    loadTelemedicineSessions()
+    return () => controller.abort()
+  }, [appointments])
+
   const filteredAppointments = useMemo(() => {
     const now = new Date()
 
