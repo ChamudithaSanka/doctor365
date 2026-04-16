@@ -58,7 +58,7 @@ const patientValidation = [
 
 router.route('/me')
   .get(restrictTo('patient', 'admin'), checkPatientActive, getMe)
-  .put(restrictTo('patient', 'admin'), checkPatientActive, patientValidation, updateMe);
+  .put(restrictTo('patient', 'admin'), patientValidation, updateMe);
 
 router.route('/me/reports')
   .get(restrictTo('patient', 'doctor', 'admin'), checkPatientActive, getPatientReports)
