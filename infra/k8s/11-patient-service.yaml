@@ -35,6 +35,11 @@ spec:
                 secretKeyRef:
                   name: common-secret
                   key: JWT_SECRET
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: INTERNAL_SERVICE_TOKEN
           livenessProbe:
             httpGet:
               path: /api/patients/health

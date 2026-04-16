@@ -8,7 +8,7 @@ router.get('/', doctorController.getDoctors);
 
 // Protected routes — apply auth per-route so public routes remain public
 router.get('/me', verifyToken, restrictTo('doctor'), checkDoctorActive, doctorController.getMe);
-router.put('/me', verifyToken, restrictTo('doctor'), checkDoctorActive, doctorController.updateMe);
+router.put('/me', verifyToken, restrictTo('doctor'), doctorController.updateMe);
 
 // Admin only
 router.patch('/:id/verify', verifyToken, restrictTo('admin'), doctorController.verifyDoctor);

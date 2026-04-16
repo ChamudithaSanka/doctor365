@@ -25,5 +25,6 @@ router.post('/login', authController.login);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/logout', verifyToken, authController.logout);
 router.get('/internal/users/:id', verifyInternalToken, authController.getUserById);
+router.delete('/internal/users/:id', verifyInternalToken, authController.deleteUserById);
 
 module.exports = router;

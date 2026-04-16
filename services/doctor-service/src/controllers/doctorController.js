@@ -1,5 +1,35 @@
 const Doctor = require('../models/Doctor');
 
+const DEFAULT_AUTH_SERVICE_URL = 'http://auth-service:5001';
+
+const deleteAuthUser = async (userId, role) => {
+  const authServiceUrl = process.env.AUTH_SERVICE_URL || DEFAULT_AUTH_SERVICE_URL;
+  const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+
+  if (!internalToken) {
+    const error = new Error('INTERNAL_SERVICE_TOKEN is not configured');
+    error.status = 500;
+    throw error;
+  }
+
+  const response = await fetch(
+    `${authServiceUrl}/auth/internal/users/${userId}?role=${encodeURIComponent(role)}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'x-internal-token': internalToken,
+      },
+    }
+  );
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(payload?.error?.message || 'Failed to delete auth user');
+    error.status = response.status;
+    throw error;
+  }
+};
+
 // @desc    Get all doctors (Public)
 // @route   GET /api/doctors
 // @access  Public
@@ -194,13 +224,12 @@ const toggleDoctorStatus = async (req, res, next) => {
 const deleteDoctor = async (req, res, next) => {
   try {
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
-    
-    let doctor;
-    if (isObjectId) {
-      doctor = await Doctor.findByIdAndDelete(req.params.id);
-    } else {
-      doctor = await Doctor.findOneAndDelete({ userId: req.params.id });
-    }
+
+    const query = isObjectId
+      ? { $or: [{ _id: req.params.id }, { userId: req.params.id }] }
+      : { userId: req.params.id };
+
+    const doctor = await Doctor.findOne(query);
 
     if (!doctor) {
       return res.status(404).json({
@@ -208,6 +237,9 @@ const deleteDoctor = async (req, res, next) => {
         error: { code: 'NOT_FOUND', message: 'Doctor not found' }
       });
     }
+
+    await deleteAuthUser(doctor.userId, 'doctor');
+    await Doctor.findByIdAndDelete(doctor._id);
 
     res.status(200).json({
       success: true,

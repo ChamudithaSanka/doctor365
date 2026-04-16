@@ -565,3 +565,44 @@ exports.getUserById = async (req, res) => {
     });
   }
 };
+
+exports.deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const expectedRole = typeof req.query.role === 'string' ? req.query.role.trim().toLowerCase() : '';
+
+    const query = { _id: id };
+    if (expectedRole) {
+      query.role = expectedRole;
+    }
+
+    const user = await User.findOneAndDelete(query).select('email firstName lastName role');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: expectedRole
+            ? `User with role ${expectedRole} not found`
+            : 'User not found',
+        },
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+      message: 'User deleted successfully',
+    });
+  } catch (error) {
+    console.error('Delete user by id error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Error deleting user',
+      },
+    });
+  }
+};

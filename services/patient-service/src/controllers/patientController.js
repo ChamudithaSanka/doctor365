@@ -2,6 +2,36 @@ const Patient = require('../models/Patient');
 const fs = require('fs');
 const path = require('path');
 
+const DEFAULT_AUTH_SERVICE_URL = 'http://auth-service:5001';
+
+const deleteAuthUser = async (userId, role) => {
+  const authServiceUrl = process.env.AUTH_SERVICE_URL || DEFAULT_AUTH_SERVICE_URL;
+  const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+
+  if (!internalToken) {
+    const error = new Error('INTERNAL_SERVICE_TOKEN is not configured');
+    error.status = 500;
+    throw error;
+  }
+
+  const response = await fetch(
+    `${authServiceUrl}/auth/internal/users/${userId}?role=${encodeURIComponent(role)}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'x-internal-token': internalToken,
+      },
+    }
+  );
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(payload?.error?.message || 'Failed to delete auth user');
+    error.status = response.status;
+    throw error;
+  }
+};
+
 // @desc    Get current patient profile
 // @route   GET /me
 // @access  Private (Patient, Admin)
@@ -607,14 +637,12 @@ const addMedicalHistory = async (req, res, next) => {
 const deletePatient = async (req, res, next) => {
   try {
     const patientId = req.params.id;
+    const isObjectId = patientId.match(/^[0-9a-fA-F]{24}$/);
+    const query = isObjectId
+      ? { $or: [{ _id: patientId }, { userId: patientId }] }
+      : { userId: patientId };
 
-    let patient;
-    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
-      patient = await Patient.findByIdAndDelete(patientId);
-    }
-    if (!patient) {
-      patient = await Patient.findOneAndDelete({ userId: patientId });
-    }
+    const patient = await Patient.findOne(query);
 
     if (!patient) {
       return res.status(404).json({
@@ -622,6 +650,9 @@ const deletePatient = async (req, res, next) => {
         error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
       });
     }
+
+    await deleteAuthUser(patient.userId, 'patient');
+    await Patient.findByIdAndDelete(patient._id);
 
     res.status(200).json({
       success: true,
