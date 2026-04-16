@@ -183,13 +183,13 @@ export default function MyAppointments() {
     }
   }
 
-  const openPatientJoinUrl = async (appointmentId) => {
+  const openVideoCall = async (appointmentId) => {
     try {
-      console.log('Opening video call for appointment:', appointmentId)
+      console.log('Opening Agora video call for appointment:', appointmentId)
       
       // Check if we already have the session cached
       if (telemedicineSessions[appointmentId]) {
-        console.log('Using cached session, showing video component')
+        console.log('Using cached session, showing Agora video component')
         setActiveSessionData(telemedicineSessions[appointmentId])
         setShowVideoCall(true)
         return
@@ -200,12 +200,12 @@ export default function MyAppointments() {
       const session = await fetchTelemedicineSession(appointmentId)
       
       if (session) {
-        console.log('✅ Fetched session, showing video component')
+        console.log('✅ Fetched session, showing Agora video component')
         setActiveSessionData(session)
         setShowVideoCall(true)
       } else {
         console.error('❌ No session found:', session)
-        setError('Unable to join meeting. Please try again.')
+        setError('Unable to join video call. Please try again.')
       }
     } catch (error) {
       console.error('❌ Error opening video call:', error)
@@ -370,7 +370,7 @@ export default function MyAppointments() {
                         <button
                           onClick={(e) => {
                             e.preventDefault()
-                            openPatientJoinUrl(appointment._id)
+                            openVideoCall(appointment._id)
                           }}
                           disabled={loadingSession === appointment._id}
                           className="whitespace-nowrap rounded-2xl bg-purple-600 px-3 py-1 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"

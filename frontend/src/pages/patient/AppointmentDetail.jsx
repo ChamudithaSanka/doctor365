@@ -158,20 +158,21 @@ export default function AppointmentDetail() {
     }
   }
 
-  const openPatientJoinUrl = async () => {
+  const openVideoCall = async () => {
     try {
-      console.log('Opening patient join URL')
+      console.log('Opening Agora video call')
       
-      if (telemedicineSession?.patientJoinUrl) {
-        console.log('Opening URL:', telemedicineSession.patientJoinUrl)
-        window.open(telemedicineSession.patientJoinUrl, '_blank', 'noopener,noreferrer')
+      if (telemedicineSession && telemedicineSession._id) {
+        console.log('Opening Agora video component for session:', telemedicineSession._id)
+        setActiveSessionData(telemedicineSession)
+        setShowVideoCall(true)
       } else {
-        console.error('❌ No patient join URL found in session:', telemedicineSession)
-        setError('Unable to get meeting URL. Please try again.')
+        console.error('❌ No telemedicine session found:', telemedicineSession)
+        setError('Unable to get video call session. Please try again.')
       }
     } catch (error) {
-      console.error('❌ Error opening patient join URL:', error)
-      setError('Failed to open meeting.')
+      console.error('❌ Error opening video call:', error)
+      setError('Failed to open video call.')
     }
   }
 
@@ -387,7 +388,7 @@ export default function AppointmentDetail() {
                 </button>
               ) : (
                 <button
-                  onClick={openPatientJoinUrl}
+                  onClick={openVideoCall}
                   disabled={loadingSession}
                   className="w-full rounded-2xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >

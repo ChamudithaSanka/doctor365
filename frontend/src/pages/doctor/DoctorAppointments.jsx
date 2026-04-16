@@ -276,16 +276,16 @@ export default function DoctorAppointments() {
     }
   }
 
-  const openDoctorJoinUrl = async (appointmentId) => {
+  const openVideoCall = async (appointmentId) => {
     try {
-      console.log('Opening video call for appointment:', appointmentId)
+      console.log('Opening Agora video call for appointment:', appointmentId)
       
       // First, start the session (change status to active)
       await startTelemedicineSession(appointmentId)
       
       // Check if we already have the session cached
       if (telemedicineSessions[appointmentId]) {
-        console.log('Using cached session, showing video component')
+        console.log('Using cached session, showing Agora video component')
         setActiveSessionData(telemedicineSessions[appointmentId])
         setShowVideoCall(true)
         return
@@ -296,16 +296,16 @@ export default function DoctorAppointments() {
       const session = await fetchTelemedicineSession(appointmentId)
       
       if (session) {
-        console.log('✅ Fetched session, showing video component')
+        console.log('✅ Fetched session, showing Agora video component')
         setActiveSessionData(session)
         setShowVideoCall(true)
       } else {
         console.error('❌ No session found:', session)
-        setError('Unable to join meeting. Please try again.')
+        setError('Unable to join video call. Please try again.')
       }
     } catch (error) {
       console.error('❌ Error opening video call:', error)
-      setError('Failed to open meeting.')
+      setError('Failed to open video call.')
     }
   }
 
@@ -554,13 +554,6 @@ export default function DoctorAppointments() {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-2 sm:min-w-fit">
-                  <Link
-                    to={`/doctor/patient/${appointment.patientId}`}
-                    className="rounded-2xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition text-center"
-                  >
-                    📋 Patient Profile
-                  </Link>
-
                   {appointment.status === 'pending' && (
                     <>
                       <button
@@ -606,7 +599,7 @@ export default function DoctorAppointments() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => openDoctorJoinUrl(appointment._id)}
+                          onClick={() => openVideoCall(appointment._id)}
                           disabled={loadingSession === appointment._id || creatingSession === appointment._id}
                           className="rounded-2xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >

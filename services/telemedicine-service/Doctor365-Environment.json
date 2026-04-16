@@ -81,25 +81,25 @@
       "enabled": true
     },
     {
-      "key": "zoom_meeting_id",
+      "key": "agora_channel_name",
       "value": "",
       "type": "string",
       "enabled": true
     },
     {
-      "key": "meeting_link",
+      "key": "agora_app_id",
+      "value": "088f132e19a24596849c9ff989fa049e",
+      "type": "string",
+      "enabled": true
+    },
+    {
+      "key": "doctor_agora_token",
       "value": "",
       "type": "string",
       "enabled": true
     },
     {
-      "key": "doctor_join_url",
-      "value": "",
-      "type": "string",
-      "enabled": true
-    },
-    {
-      "key": "patient_join_url",
+      "key": "patient_agora_token",
       "value": "",
       "type": "string",
       "enabled": true

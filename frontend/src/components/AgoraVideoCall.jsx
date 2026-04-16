@@ -26,7 +26,8 @@ const AgoraVideoCall = ({ sessionData, userRole, onLeave }) => {
   const joinedRef = useRef(false);
   const joiningRef = useRef(false);
   const listenersSetupRef = useRef(false);
-  const localTracksRef = useRef([]);
+  const audioTrackRef = useRef(null);
+  const videoTrackRef = useRef(null);
   const localContainerRef = useRef(null);
   const remoteContainersRef = useRef({});
 
@@ -116,7 +117,8 @@ const AgoraVideoCall = ({ sessionData, userRole, onLeave }) => {
 
       // Create audio and video tracks
       const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-      localTracksRef.current = [audioTrack, videoTrack];
+      audioTrackRef.current = audioTrack;
+      videoTrackRef.current = videoTrack;
 
       // Set local user info
       setLocalUserInfo({
@@ -219,11 +221,14 @@ const AgoraVideoCall = ({ sessionData, userRole, onLeave }) => {
       setIsLoading(true);
 
       // Stop and close local tracks
-      localTracksRef.current.forEach(track => {
-        track?.stop();
-        track?.close();
-      });
-      localTracksRef.current = [];
+      if (audioTrackRef.current) {
+        audioTrackRef.current.stop();
+        audioTrackRef.current.close();
+      }
+      if (videoTrackRef.current) {
+        videoTrackRef.current.stop();
+        videoTrackRef.current.close();
+      }
 
       // Leave channel
       const client = clientRef.current;
@@ -259,33 +264,39 @@ const AgoraVideoCall = ({ sessionData, userRole, onLeave }) => {
   };
 
   /**
-   * Toggle audio mute
+   * Toggle audio mute - Properly disables audio transmission
    */
   const toggleMute = async () => {
     try {
-      if (localTracksRef.current[0]) {
-        await localTracksRef.current[0].setEnabled(!isMuted);
-        setIsMuted(!isMuted);
-        console.log(`🎤 Audio ${!isMuted ? 'enabled' : 'muted'}`);
+      if (audioTrackRef.current) {
+        const newMuteState = !isMuted;
+        await audioTrackRef.current.setEnabled(!newMuteState);
+        setIsMuted(newMuteState);
+        console.log(`🎤 Audio ${newMuteState ? 'muted' : 'unmuted'}`);
+      } else {
+        console.warn('⚠️ Audio track not available');
       }
     } catch (err) {
-      console.error('Error toggling audio:', err);
+      console.error('❌ Error toggling audio:', err);
       setError(`Error toggling audio: ${err.message}`);
     }
   };
 
   /**
-   * Toggle video on/off
+   * Toggle video on/off - Properly disables video transmission
    */
   const toggleVideo = async () => {
     try {
-      if (localTracksRef.current[1]) {
-        await localTracksRef.current[1].setEnabled(isVideoOff);
-        setIsVideoOff(!isVideoOff);
-        console.log(`📹 Video ${isVideoOff ? 'enabled' : 'disabled'}`);
+      if (videoTrackRef.current) {
+        const newVideoState = !isVideoOff;
+        await videoTrackRef.current.setEnabled(!newVideoState);
+        setIsVideoOff(newVideoState);
+        console.log(`📹 Video ${newVideoState ? 'off' : 'enabled'}`);
+      } else {
+        console.warn('⚠️ Video track not available');
       }
     } catch (err) {
-      console.error('Error toggling video:', err);
+      console.error('❌ Error toggling video:', err);
       setError(`Error toggling video: ${err.message}`);
     }
   };
@@ -354,9 +365,9 @@ const AgoraVideoCall = ({ sessionData, userRole, onLeave }) => {
                 id={`remote-user-${user.uid}`}
                 className="video-frame remote"
               >
-                <div className="placeholder">
-                  {user.videoTrack ? 'Video loading...' : 'No video'}
-                </div>
+                {!user.videoTrack && (
+                  <div className="placeholder">No video</div>
+                )}
               </div>
               <div className="video-label">
                 {userRole === 'doctor' ? 'Patient' : 'Doctor'} ({user.uid})

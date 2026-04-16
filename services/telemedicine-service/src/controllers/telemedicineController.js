@@ -50,7 +50,7 @@ const fetchAppointment = async (appointmentId, token) => {
   }
 };
 
-// @desc    Create telemedicine session (doctor creates with Zoom meeting)
+// @desc    Create telemedicine session (doctor creates with Agora RTC channel)
 // @route   POST /api/telemedicine/sessions
 // @access  Private (doctor)
 exports.createSession = async (req, res, next) => {
@@ -147,8 +147,6 @@ exports.createSession = async (req, res, next) => {
       doctorUid: agoraMeetingData.doctorUid,
       patientUid: agoraMeetingData.patientUid,
       tokenExpiration: new Date(agoraMeetingData.tokenExpiration * 1000),
-      doctorJoinUrl: agoraMeetingData.doctorJoinUrl,
-      patientJoinUrl: agoraMeetingData.patientJoinUrl,
       status: 'scheduled',
     });
 

@@ -51,18 +51,6 @@ const telemedicineSessionSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    meetingLink: {
-      type: String,
-      default: null,
-    },
-    doctorJoinUrl: {
-      type: String,
-      default: null,
-    },
-    patientJoinUrl: {
-      type: String,
-      default: null,
-    },
     status: {
       type: String,
       enum: {

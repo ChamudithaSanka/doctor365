@@ -134,9 +134,16 @@ Model fields (minimum):
 - appointmentId
 - doctorId
 - patientId
-- meetingProvider
-- meetingLink
-- status (scheduled, active, ended)
+- meetingProvider (enum: 'agora')
+- agoraChannelName
+- doctorToken
+- patientToken
+- doctorUid
+- patientUid
+- tokenExpiration
+- status (scheduled, active, ended, cancelled)
+- startedAt
+- endedAt
 - startedAt
 - endedAt
 
