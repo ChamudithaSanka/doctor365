@@ -348,8 +348,8 @@ export default function AppShell() {
       <aside className="hidden min-h-screen w-72 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
         <div className="border-b border-slate-200 px-6 py-6">
           <Link to="/" className="block">
-            <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-            <p className="text-sm text-slate-500">
+            <img src="/logo.png" alt="Doctor365" className="h-10 w-auto transition hover:opacity-80" />
+            <p className="text-xs text-slate-500 mt-2">
               {role === 'doctor'
                 ? doctorVerified
                   ? 'Doctor workspace'
@@ -443,8 +443,8 @@ export default function AppShell() {
           <div className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <Link to="/" className="block" onClick={() => setMobileOpen(false)}>
-                <p className="text-lg font-semibold tracking-tight text-blue-700">Doctor365</p>
-                <p className="text-xs text-slate-500">
+                <img src="/logo.png" alt="Doctor365" className="h-8 w-auto transition hover:opacity-80" />
+                <p className="text-xs text-slate-500 mt-1">
                   {role === 'doctor'
                     ? doctorVerified
                       ? 'Doctor workspace'
