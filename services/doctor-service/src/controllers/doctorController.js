@@ -135,7 +135,10 @@ const verifyDoctor = async (req, res, next) => {
 
     const doctor = await Doctor.findOneAndUpdate(
       query,
-      { isVerified },
+      { 
+        isVerified,
+        verificationStatus: isVerified ? 'approved' : 'rejected'
+      },
       { new: true }
     );
 

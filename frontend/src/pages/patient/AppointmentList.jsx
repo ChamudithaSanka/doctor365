@@ -119,16 +119,8 @@ export default function MyAppointments() {
 
     let filtered = appointments
 
-    if (filter === 'upcoming') {
-      filtered = appointments.filter((apt) => {
-        const aptDate = new Date(apt.appointmentDate)
-        return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
-      })
-    } else if (filter === 'completed') {
-      filtered = appointments.filter((apt) => {
-        const aptDate = new Date(apt.appointmentDate)
-        return !Number.isNaN(aptDate.getTime()) && aptDate < now
-      })
+    if (filter === 'completed') {
+      filtered = appointments.filter((apt) => apt.status === 'completed')
     } else if (filter === 'cancelled') {
       filtered = appointments.filter((apt) => apt.status === 'cancelled')
     }
@@ -215,11 +207,6 @@ export default function MyAppointments() {
 
   const stats = {
     total: appointments.length,
-    upcoming: appointments.filter((apt) => {
-      const now = new Date()
-      const aptDate = new Date(apt.appointmentDate)
-      return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
-    }).length,
     completed: appointments.filter((apt) => {
       const now = new Date()
       const aptDate = new Date(apt.appointmentDate)
@@ -271,7 +258,6 @@ export default function MyAppointments() {
       <section className="grid gap-4 md:grid-cols-4">
         {[
           { label: 'Total', value: stats.total },
-          { label: 'Upcoming', value: stats.upcoming },
           { label: 'Completed', value: stats.completed },
           { label: 'Cancelled', value: stats.cancelled },
         ].map((stat) => (
@@ -287,7 +273,6 @@ export default function MyAppointments() {
         <div className="flex flex-wrap gap-2">
           {[
             { value: 'all', label: 'All appointments' },
-            { value: 'upcoming', label: 'Upcoming' },
             { value: 'completed', label: 'Completed' },
             { value: 'cancelled', label: 'Cancelled' },
           ].map((btn) => (
@@ -357,33 +342,12 @@ export default function MyAppointments() {
                     {appointment.status || 'unknown'}
                   </span>
 
-                  {appointment.status === 'confirmed' && (
-                    <>
-                      {telemedicineSessions[appointment._id]?.status === 'ended' ? (
-                        <button
-                          disabled={true}
-                          className="whitespace-nowrap rounded-2xl bg-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 cursor-not-allowed"
-                        >
-                          ✅ Meeting Ended
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            openVideoCall(appointment._id)
-                          }}
-                          disabled={loadingSession === appointment._id}
-                          className="whitespace-nowrap rounded-2xl bg-purple-600 px-3 py-1 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {loadingSession === appointment._id ? 'Loading...' : '🎥 Join Meeting'}
-                        </button>
-                      )}
-                    </>
-                  )}
-
-                  <div className="hidden sm:block text-right">
-                    <p className="text-xs text-slate-500">Click to view details</p>
-                  </div>
+                  <Link
+                    to={`/appointments/${appointment._id}`}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-2xl border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    View Details
+                  </Link>
                 </div>
               </div>
             </Link>

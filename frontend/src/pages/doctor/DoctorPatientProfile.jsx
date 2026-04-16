@@ -39,7 +39,7 @@ export default function DoctorPatientProfile() {
       setError('')
 
       try {
-        const [patientRes, reportsRes, prescriptionsRes] = await Promise.all([
+        const [patientRes, reportsRes, prescriptionsRes] = await Promise.allSettled([
           axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
             headers: { Authorization: `Bearer ${token}` },
             signal: controller.signal,
@@ -54,14 +54,16 @@ export default function DoctorPatientProfile() {
           }),
         ])
 
-        if (patientRes.data?.success) {
-          setPatient(patientRes.data.data)
+        if (patientRes.status === 'fulfilled' && patientRes.value.data?.success) {
+          setPatient(patientRes.value.data.data)
         }
-        if (reportsRes.data?.success) {
-          setReports(Array.isArray(reportsRes.data.data) ? reportsRes.data.data : [])
+        if (reportsRes.status === 'fulfilled' && reportsRes.value.data?.success) {
+          setReports(Array.isArray(reportsRes.value.data.data) ? reportsRes.value.data.data : [])
         }
-        if (prescriptionsRes.data?.success) {
-          setPrescriptions(Array.isArray(prescriptionsRes.data.data) ? prescriptionsRes.data.data : [])
+        if (prescriptionsRes.status === 'fulfilled' && prescriptionsRes.value.data?.success) {
+          setPrescriptions(Array.isArray(prescriptionsRes.value.data.data) ? prescriptionsRes.value.data.data : [])
+        } else if (prescriptionsRes.status === 'rejected' && prescriptionsRes.reason?.name !== 'CanceledError') {
+          console.warn('Unable to load prescriptions:', prescriptionsRes.reason?.message)
         }
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {

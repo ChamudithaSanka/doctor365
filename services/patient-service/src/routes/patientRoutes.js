@@ -11,6 +11,7 @@ const {
   downloadReport,
   getAllPatients,
   getPrescriptions,
+  getPatientPrescriptionsById,
   addPrescription,
   togglePatientStatus,
   getMedicalHistory,
@@ -92,6 +93,7 @@ const prescriptionValidation = [
 ];
 
 router.route('/:id/prescriptions')
+  .get(restrictTo('doctor', 'admin'), getPatientPrescriptionsById)
   .post(restrictTo('doctor', 'admin'), prescriptionValidation, addPrescription);
 
 // Admin routes for managing patient status and deletion

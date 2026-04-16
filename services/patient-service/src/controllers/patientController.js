@@ -378,6 +378,37 @@ const getPrescriptions = async (req, res, next) => {
   }
 };
 
+// @desc    Get prescriptions for a specific patient
+// @route   GET /:id/prescriptions
+// @access  Private (Doctor, Admin)
+const getPatientPrescriptionsById = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: patient.prescriptions || [],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Add a prescription to a patient
 // @route   POST /:id/prescriptions
 // @access  Private (Doctor, Admin)
@@ -649,6 +680,7 @@ module.exports = {
   downloadReport,
   getAllPatients,
   getPrescriptions,
+  getPatientPrescriptionsById,
   addPrescription,
   togglePatientStatus,
   deletePatient,
