@@ -15,14 +15,14 @@ const formatDateTime = (value) => {
   }).format(date)
 }
 
-const formatCurrency = (amount, currency) => {
+const formatCurrency = (amount) => {
   try {
     return new Intl.NumberFormat('en-LK', {
       style: 'currency',
-      currency: currency || 'USD',
+      currency: 'LKR',
     }).format(amount)
   } catch {
-    return `${currency || 'USD'} ${amount}`
+    return `LKR ${amount}`
   }
 }
 
@@ -236,7 +236,7 @@ export default function PatientPayments() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-900">
-                          {formatCurrency(payment.amount, payment.currency)}
+                          {formatCurrency(payment.amount)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
