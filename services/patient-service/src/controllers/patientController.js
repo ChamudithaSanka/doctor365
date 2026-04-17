@@ -75,7 +75,6 @@ const updateMe = async (req, res, next) => {
       city,
       country,
       emergencyContact,
-      medicalHistorySummary,
     } = req.body;
 
     const profileData = {
@@ -90,7 +89,6 @@ const updateMe = async (req, res, next) => {
       city,
       country,
       emergencyContact,
-      medicalHistorySummary,
     };
 
     const patient = await Patient.findOneAndUpdate(
@@ -586,7 +584,7 @@ const updateMedicalHistory = async (req, res, next) => {
 const addMedicalHistory = async (req, res, next) => {
   try {
     const patientId = req.params.id;
-    const { date, condition, treatment } = req.body;
+    const { date, condition, treatment, notes } = req.body;
 
     if (!date || !condition || !treatment) {
       return res.status(400).json({
@@ -614,6 +612,7 @@ const addMedicalHistory = async (req, res, next) => {
       date: new Date(date),
       condition,
       treatment,
+      notes: String(notes || '').trim(),
       doctorName: req.body.doctorName || 'Unknown Doctor',
     };
 
@@ -624,6 +623,102 @@ const addMedicalHistory = async (req, res, next) => {
       success: true,
       message: 'Medical history added successfully',
       data: patient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update a medical history entry for a patient (doctor/admin)
+// @route   PUT /:id/medical-history/:entryId
+// @access  Private (Doctor, Admin)
+const updateMedicalHistoryEntry = async (req, res, next) => {
+  try {
+    const { id: patientId, entryId } = req.params;
+    const { date, condition, treatment, notes } = req.body;
+
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    const existingEntry = patient.medicalHistory.id(entryId);
+    if (!existingEntry) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Medical history entry not found' },
+      });
+    }
+
+    if (date !== undefined) {
+      existingEntry.date = new Date(date);
+    }
+    if (condition !== undefined) {
+      existingEntry.condition = condition;
+    }
+    if (treatment !== undefined) {
+      existingEntry.treatment = treatment;
+    }
+    if (notes !== undefined) {
+      existingEntry.notes = String(notes || '').trim();
+    }
+
+    await patient.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Medical history entry updated successfully',
+      data: patient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update patient medical history summary text (doctor/admin)
+// @route   PATCH /:id/medical-history/summary
+// @access  Private (Doctor, Admin)
+const updatePatientMedicalHistorySummary = async (req, res, next) => {
+  try {
+    const patientId = req.params.id;
+    const medicalHistorySummary = String(req.body?.medicalHistorySummary || '').trim();
+
+    let patient;
+    if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      patient = await Patient.findOne({ userId: patientId });
+    }
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Patient profile not found' },
+      });
+    }
+
+    patient.medicalHistorySummary = medicalHistorySummary;
+    await patient.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Medical history summary updated successfully',
+      data: {
+        patientId: patient._id,
+        userId: patient.userId,
+        medicalHistorySummary: patient.medicalHistorySummary || '',
+      },
     });
   } catch (error) {
     next(error);
@@ -718,5 +813,7 @@ module.exports = {
   getMedicalHistory,
   updateMedicalHistory,
   addMedicalHistory,
+  updateMedicalHistoryEntry,
+  updatePatientMedicalHistorySummary,
   getPatientMedicalHistory,
 };

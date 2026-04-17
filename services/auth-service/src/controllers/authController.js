@@ -33,7 +33,6 @@ const normalizePatientPayload = (payload, email) => ({
   city: String(payload.city || '').trim(),
   country: String(payload.country || 'Sri Lanka').trim(),
   emergencyContact: normalizePhone(payload.emergencyContact),
-  medicalHistorySummary: String(payload.medicalHistorySummary || '').trim(),
 });
 
 const validateDoctorRegistration = (payload) => {
@@ -121,7 +120,6 @@ exports.register = async (req, res) => {
        city,
        country,
       emergencyContact,
-      medicalHistorySummary,
       specialization,
       licenseNumber,
       yearsOfExperience,
@@ -217,7 +215,6 @@ exports.register = async (req, res) => {
           city,
            country,
           emergencyContact,
-          medicalHistorySummary,
         }, email));
       }
 

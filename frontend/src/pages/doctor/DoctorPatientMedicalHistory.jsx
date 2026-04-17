@@ -26,11 +26,15 @@ const formatDateTime = (value) => {
 export default function DoctorPatientMedicalHistory({ patientId, patientName, onClose }) {
   const [medicalHistory, setMedicalHistory] = useState([])
   const [summary, setSummary] = useState('')
+  const [editSummary, setEditSummary] = useState(false)
+  const [editSummaryText, setEditSummaryText] = useState('')
+  const [summarySubmitting, setSummarySubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [editingEntryId, setEditingEntryId] = useState('')
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     condition: '',
@@ -60,6 +64,7 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
         if (response.data?.success) {
           setMedicalHistory(response.data.data?.medicalHistory || [])
           setSummary(response.data.data?.medicalHistorySummary || '')
+          setEditSummaryText(response.data.data?.medicalHistorySummary || '')
         }
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {
@@ -101,18 +106,28 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
     setError('')
 
     try {
-      const response = await axios.post(
-        `${gatewayBaseUrl}/api/patients/${patientId}/medical-history`,
-        {
-          date: new Date(formData.date),
-          condition: formData.condition,
-          treatment: formData.treatment,
-          notes: formData.notes,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
+      const requestBody = {
+        date: new Date(formData.date),
+        condition: formData.condition,
+        treatment: formData.treatment,
+        notes: formData.notes,
+      }
+
+      const response = editingEntryId
+        ? await axios.put(
+            `${gatewayBaseUrl}/api/patients/${patientId}/medical-history/${editingEntryId}`,
+            requestBody,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
+        : await axios.post(
+            `${gatewayBaseUrl}/api/patients/${patientId}/medical-history`,
+            requestBody,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
 
       if (response.data?.success) {
         setMedicalHistory(response.data.data?.medicalHistory || [])
@@ -122,8 +137,13 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
           treatment: '',
           notes: '',
         })
+        setEditingEntryId('')
         setShowForm(false)
-        setSuccessMessage('Medical history record added successfully')
+        setSuccessMessage(
+          editingEntryId
+            ? 'Medical history record updated successfully'
+            : 'Medical history record added successfully'
+        )
         setTimeout(() => setSuccessMessage(''), 3000)
       }
     } catch (requestError) {
@@ -137,6 +157,56 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleSaveSummary = async () => {
+    const token = getToken()
+    if (!token) return
+
+    setSummarySubmitting(true)
+    setError('')
+
+    try {
+      const response = await axios.patch(
+        `${gatewayBaseUrl}/api/patients/${patientId}/medical-history/summary`,
+        {
+          medicalHistorySummary: editSummaryText,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      if (response.data?.success) {
+        setSummary(response.data.data?.medicalHistorySummary || '')
+        setEditSummaryText(response.data.data?.medicalHistorySummary || '')
+        setEditSummary(false)
+        setSuccessMessage('Medical summary updated successfully')
+        setTimeout(() => setSuccessMessage(''), 3000)
+      }
+    } catch (requestError) {
+      if (handleTokenError(requestError)) {
+        return
+      }
+      setError(
+        requestError?.response?.data?.error?.message ||
+          'Unable to update medical summary. Please try again.'
+      )
+    } finally {
+      setSummarySubmitting(false)
+    }
+  }
+
+  const handleStartEditRecord = (entry) => {
+    setShowForm(true)
+    setEditingEntryId(entry._id || '')
+    setFormData({
+      date: entry?.date ? new Date(entry.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      condition: entry?.condition || '',
+      treatment: entry?.treatment || '',
+      notes: entry?.notes || '',
+    })
+    setError('')
   }
 
   return (
@@ -175,10 +245,54 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
         {/* Medical Summary Section */}
         {!loading && (
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="font-semibold text-blue-900 mb-2">Patient Medical Summary</h3>
-            <p className="text-blue-800 text-sm whitespace-pre-wrap">
-              {summary || 'No medical summary on file.'}
-            </p>
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <h3 className="font-semibold text-blue-900">Patient Medical Summary</h3>
+              {!editSummary && (
+                <button
+                  type="button"
+                  onClick={() => setEditSummary(true)}
+                  className="text-blue-700 hover:text-blue-800 text-xs font-semibold"
+                >
+                  Edit Summary
+                </button>
+              )}
+            </div>
+
+            {editSummary ? (
+              <div className="space-y-3">
+                <textarea
+                  value={editSummaryText}
+                  onChange={(e) => setEditSummaryText(e.target.value)}
+                  rows="4"
+                  placeholder="Write a concise clinical summary for this patient..."
+                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={summarySubmitting}
+                    onClick={handleSaveSummary}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
+                  >
+                    {summarySubmitting ? 'Saving...' : 'Save Summary'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditSummary(false)
+                      setEditSummaryText(summary)
+                    }}
+                    className="px-3 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-blue-800 text-sm whitespace-pre-wrap">
+                {summary || 'No medical summary on file.'}
+              </p>
+            )}
           </div>
         )}
 
@@ -188,7 +302,16 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
             <h3 className="text-lg font-semibold text-gray-900">Medical Records</h3>
             {!showForm && (
               <button
-                onClick={() => setShowForm(true)}
+                onClick={() => {
+                  setShowForm(true)
+                  setEditingEntryId('')
+                  setFormData({
+                    date: new Date().toISOString().split('T')[0],
+                    condition: '',
+                    treatment: '',
+                    notes: '',
+                  })
+                }}
                 className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
               >
                 + Add Record
@@ -264,12 +387,13 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   disabled={submitting}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Saving...' : 'Save Record'}
+                  {submitting ? 'Saving...' : editingEntryId ? 'Update Record' : 'Save Record'}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setShowForm(false)
+                    setEditingEntryId('')
                     setFormData({
                       date: new Date().toISOString().split('T')[0],
                       condition: '',
@@ -341,6 +465,15 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                           )}
                         </div>
                       </div>
+                      {entry?._id && (
+                        <button
+                          type="button"
+                          onClick={() => handleStartEditRecord(entry)}
+                          className="text-xs font-semibold text-blue-700 hover:text-blue-800"
+                        >
+                          Edit
+                        </button>
+                      )}
                     </div>
                     <h4 className="font-semibold text-gray-900 text-sm mb-1">
                       {entry.condition}

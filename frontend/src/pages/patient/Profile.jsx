@@ -95,7 +95,6 @@ export default function Profile() {
           address: formData.address,
           city: formData.city,
           emergencyContact: formData.emergencyContact,
-          medicalHistorySummary: formData.medicalHistorySummary,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -230,20 +229,9 @@ export default function Profile() {
                 <label htmlFor="medicalHistorySummary" className="block text-sm font-medium text-slate-700">
                   Medical history summary
                 </label>
-                {editMode ? (
-                  <textarea
-                    id="medicalHistorySummary"
-                    name="medicalHistorySummary"
-                    rows={3}
-                    value={formData.medicalHistorySummary}
-                    onChange={handleChange}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
-                ) : (
-                  <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                    {loading ? '…' : formData.medicalHistorySummary || '—'}
-                  </p>
-                )}
+                <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 whitespace-pre-wrap">
+                  {loading ? '…' : formData.medicalHistorySummary || '—'}
+                </p>
               </div>
             </div>
 

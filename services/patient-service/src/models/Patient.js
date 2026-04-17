@@ -70,6 +70,10 @@ const patientSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        notes: {
+          type: String,
+          default: '',
+        },
         doctorName: String,
       },
     ],

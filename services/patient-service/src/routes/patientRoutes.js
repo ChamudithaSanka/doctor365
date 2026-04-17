@@ -17,6 +17,8 @@ const {
   getMedicalHistory,
   updateMedicalHistory,
   addMedicalHistory,
+  updateMedicalHistoryEntry,
+  updatePatientMedicalHistorySummary,
   getPatientMedicalHistory,
   deletePatient,
 } = require('../controllers/patientController');
@@ -106,5 +108,11 @@ router.route('/:id')
 router.route('/:id/medical-history')
   .get(restrictTo('doctor', 'admin'), getPatientMedicalHistory)
   .post(restrictTo('doctor', 'admin'), addMedicalHistory);
+
+router.route('/:id/medical-history/summary')
+  .patch(restrictTo('doctor', 'admin'), updatePatientMedicalHistorySummary);
+
+router.route('/:id/medical-history/:entryId')
+  .put(restrictTo('doctor', 'admin'), updateMedicalHistoryEntry);
 
 module.exports = router;
