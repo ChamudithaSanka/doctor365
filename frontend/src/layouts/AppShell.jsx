@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import SymptomChecker from '../pages/patient/SymptomChecker'
+import SymptomAnalyzerButton from '../components/SymptomAnalyzerButton'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
@@ -63,7 +63,6 @@ export default function AppShell() {
   const [doctorVerified, setDoctorVerified] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
   const [expandedSubmenu, setExpandedSubmenu] = useState(null)
-  const [isSymptomCheckerOpen, setIsSymptomCheckerOpen] = useState(false)
 
   const role = user?.role || 'patient'
   const navigation = useMemo(() => {
@@ -595,50 +594,7 @@ export default function AppShell() {
         </main>
 
         {/* Floating AI Bot Button - Only for patients */}
-        {role === 'patient' && (
-          <>
-            {/* Floating Bot Button */}
-            <button
-              onClick={() => setIsSymptomCheckerOpen(true)}
-              className="fixed bottom-6 right-6 z-40 h-16 w-16 rounded-full bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-110 flex items-center justify-center"
-              aria-label="Open AI Symptom Checker"
-              title="AI Health Assistant"
-            >
-              <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
-              </svg>
-            </button>
-
-            {/* Modal Overlay */}
-            {isSymptomCheckerOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-                  {/* Modal Header */}
-                  <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4 rounded-t-3xl shrink-0">
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">AI Health Assistant</h2>
-                      <p className="text-xs text-slate-500 mt-1">Symptom Analysis & Doctor Recommendations</p>
-                    </div>
-                    <button
-                      onClick={() => setIsSymptomCheckerOpen(false)}
-                      className="rounded-full p-2 hover:bg-slate-100 transition text-slate-600"
-                      aria-label="Close"
-                    >
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Modal Content - Import SymptomChecker */}
-                  <div className="overflow-y-auto flex-1 p-6">
-                    <SymptomChecker />
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+        {role === 'patient' && <SymptomAnalyzerButton />}
       </div>
     </div>
   )
