@@ -70,6 +70,7 @@ data:
   SERVICE_NAME: payment-service
   NODE_ENV: production
   PATIENT_SERVICE_URL: http://patient-service:5002
+  APPOINTMENT_SERVICE_URL: http://appointment-service:5004
   NOTIFICATION_SERVICE_URL: http://notification-service:5007
 ---
 apiVersion: v1
