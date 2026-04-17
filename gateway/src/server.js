@@ -19,6 +19,7 @@ const services = {
   telemedicine: process.env.TELEMEDICINE_SERVICE_URL || "http://localhost:5005",
   payment: process.env.PAYMENT_SERVICE_URL || "http://localhost:5006",
   notification: process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5007",
+  symptomChecker: process.env.SYMPTOM_CHECKER_SERVICE_URL || "http://localhost:5008",
 };
 
 app.get("/health", (req, res) => {
@@ -98,6 +99,15 @@ app.use(
   "/api/notifications",
   createProxyMiddleware({
     target: `${services.notification}/notifications`,
+    changeOrigin: true,
+    onProxyReq: proxyConfig.onProxyReq,
+  })
+);
+
+app.use(
+  "/api/symptoms",
+  createProxyMiddleware({
+    target: `${services.symptomChecker}/symptoms`,
     changeOrigin: true,
     onProxyReq: proxyConfig.onProxyReq,
   })
