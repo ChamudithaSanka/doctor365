@@ -26,6 +26,22 @@ const statusStyles = {
   queued: 'bg-amber-50 text-amber-700 ring-amber-200',
   partial: 'bg-orange-50 text-orange-700 ring-orange-200',
   failed: 'bg-rose-50 text-rose-700 ring-rose-200',
+  'payment.paid': 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  'payment.failed': 'bg-rose-50 text-rose-700 ring-rose-200',
+  'appointment.reminder': 'bg-blue-50 text-blue-700 ring-blue-200',
+  'appointment.booked': 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+}
+
+const statusLabels = {
+  read: 'Read',
+  sent: 'Delivered',
+  queued: 'Pending',
+  partial: 'Partially sent',
+  failed: 'Failed',
+  'payment.paid': 'Payment received',
+  'payment.failed': 'Payment failed',
+  'appointment.reminder': 'Appointment reminder',
+  'appointment.booked': 'Appointment confirmed',
 }
 
 export default function Notifications() {
@@ -284,7 +300,7 @@ export default function Notifications() {
                         statusStyles[item.status] || 'bg-slate-100 text-slate-700 ring-slate-200',
                       ].join(' ')}
                     >
-                      {item.status || 'unknown'}
+                      {statusLabels[item.status] || item.status?.replace(/[._-]+/g, ' ') || 'Update'}
                     </span>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                       {item.type || 'general'}
@@ -292,7 +308,7 @@ export default function Notifications() {
                   </div>
 
                   <h2 className="text-lg font-semibold text-slate-900">{item.title || 'Untitled notification'}</h2>
-                  <p className="text-sm leading-6 text-slate-600">{item.message || 'No message available.'}</p>
+                  <p className="text-sm leading-6 text-slate-600">{item.message?.replace(/\b[a-f0-9]{24}\b/gi, '').replace(/\s{2,}/g, ' ').trim() || 'No message available.'}</p>
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                     <p>Created: {formatDateTime(item.createdAt)}</p>
