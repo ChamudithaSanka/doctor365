@@ -5,7 +5,6 @@ resources:
   - 00-namespace.yaml
   - 01-configmaps.yaml
   - 02-secrets.yaml
-  - 03-mongodb.yaml
   - 10-auth-service.yaml
   - 11-patient-service.yaml
   - 12-doctor-service.yaml
