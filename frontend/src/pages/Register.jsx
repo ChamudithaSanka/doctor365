@@ -135,17 +135,17 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 text-slate-100">
       <div className="grid min-h-screen lg:grid-cols-2">
-        <section className="relative hidden overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.14),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.18),_transparent_35%)] lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10">
+        <section className="relative hidden overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10 border-r border-purple-500/20">
           <div>
-            <Link to="/" className="text-lg font-semibold tracking-tight text-blue-700">
+            <Link to="/" className="text-lg font-semibold tracking-tight text-purple-400">
               Doctor365
             </Link>
-            <h1 className="mt-16 max-w-xl text-5xl font-bold tracking-tight text-slate-950">
+            <h1 className="mt-16 max-w-xl text-5xl font-bold tracking-tight text-slate-100">
               Create your account and start managing care online.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-8 text-slate-600">
+            <p className="mt-6 max-w-lg text-lg leading-8 text-slate-400">
               Register as a patient or doctor, then continue to your role workspace.
             </p>
           </div>
@@ -156,27 +156,27 @@ export default function Register() {
               { value: 'Role-based', label: 'Patient and doctor' },
               { value: 'Secure', label: 'JWT auth' },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p className="text-xl font-bold text-blue-700">{item.value}</p>
-                <p className="mt-1 text-sm text-slate-500">{item.label}</p>
+              <div key={item.label} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 shadow-sm backdrop-blur-md">
+                <p className="text-xl font-bold text-purple-300">{item.value}</p>
+                <p className="mt-1 text-sm text-slate-400">{item.label}</p>
               </div>
             ))}
           </div>
         </section>
 
         <section className="flex items-center justify-center px-6 py-12 lg:px-12">
-          <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
+          <div className="w-full max-w-md rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 shadow-lg backdrop-blur-md">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-green-700">Get started</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">Create your Doctor365 account</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Get started</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-100">Create your Doctor365 account</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
                 Choose your role and fill in the required details.
               </p>
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="role" className="block text-sm font-medium text-slate-300">
                   Register as
                 </label>
                 <select
@@ -184,7 +184,8 @@ export default function Register() {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
+                  style={{ colorScheme: 'dark' }}
                 >
                   <option value="patient">Patient</option>
                   <option value="doctor">Doctor</option>
@@ -193,7 +194,7 @@ export default function Register() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-slate-300">
                     First name
                   </label>
                   <input
@@ -205,12 +206,12 @@ export default function Register() {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-slate-300">
                     Last name
                   </label>
                   <input
@@ -222,13 +223,13 @@ export default function Register() {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                   Email address
                 </label>
                 <input
@@ -240,12 +241,12 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-300">
                   Password
                 </label>
                 <input
@@ -257,7 +258,7 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                 />
               </div>
 
@@ -265,7 +266,7 @@ export default function Register() {
                 <>
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="dateOfBirth" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="dateOfBirth" className="block text-sm font-medium text-slate-300">
                         Date of birth
                       </label>
                       <input
@@ -275,12 +276,12 @@ export default function Register() {
                         value={formData.dateOfBirth}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="gender" className="block text-sm font-medium text-slate-300">
                         Gender
                       </label>
                       <select
@@ -289,7 +290,8 @@ export default function Register() {
                         value={formData.gender}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
+                        style={{ colorScheme: 'dark' }}
                       >
                         <option value="">Select gender</option>
                         <option value="male">Male</option>
@@ -300,7 +302,7 @@ export default function Register() {
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="phone" className="block text-sm font-medium text-slate-300">
                         Phone
                       </label>
                       <input
@@ -313,12 +315,12 @@ export default function Register() {
                         value={formData.phone}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="emergencyContact" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="emergencyContact" className="block text-sm font-medium text-slate-300">
                         Emergency contact
                       </label>
                       <input
@@ -331,13 +333,13 @@ export default function Register() {
                         value={formData.emergencyContact}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="address" className="block text-sm font-medium text-slate-300">
                       Address
                     </label>
                     <input
@@ -348,12 +350,12 @@ export default function Register() {
                       value={formData.address}
                       onChange={handleChange}
                       required
-                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="city" className="block text-sm font-medium text-slate-300">
                       City
                     </label>
                     <input
@@ -364,7 +366,7 @@ export default function Register() {
                       value={formData.city}
                       onChange={handleChange}
                       required
-                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                     />
                   </div>
 
@@ -372,7 +374,7 @@ export default function Register() {
               ) : (
                 <>
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="phone" className="block text-sm font-medium text-slate-300">
                       Phone
                     </label>
                     <input
@@ -385,13 +387,13 @@ export default function Register() {
                       value={formData.phone}
                       onChange={handleChange}
                       required
-                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                     />
                   </div>
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="specialization" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="specialization" className="block text-sm font-medium text-slate-300">
                         Specialization
                       </label>
                       <input
@@ -401,12 +403,12 @@ export default function Register() {
                         value={formData.specialization}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="licenseNumber" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="licenseNumber" className="block text-sm font-medium text-slate-300">
                         License number
                       </label>
                       <input
@@ -416,14 +418,14 @@ export default function Register() {
                         value={formData.licenseNumber}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
                   </div>
 
                   <div className="grid gap-5 sm:grid-cols-3">
                     <div>
-                      <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-slate-300">
                         Experience (years)
                       </label>
                       <input
@@ -434,12 +436,12 @@ export default function Register() {
                         value={formData.yearsOfExperience}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="consultationFee" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="consultationFee" className="block text-sm font-medium text-slate-300">
                         Consultation fee
                       </label>
                       <input
@@ -450,13 +452,13 @@ export default function Register() {
                         value={formData.consultationFee}
                         onChange={handleChange}
                         required
-                        className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="hospitalOrClinic" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="hospitalOrClinic" className="block text-sm font-medium text-slate-300">
                       Hospital / Clinic
                     </label>
                     <input
@@ -465,11 +467,11 @@ export default function Register() {
                       type="text"
                       value={formData.hospitalOrClinic}
                       onChange={handleChange}
-                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
                     />
                   </div>
 
-                  <div className="rounded-2xl bg-blue-50 p-4 text-sm text-blue-800 ring-1 ring-blue-100">
+                  <div className="rounded-lg bg-purple-600/10 p-4 text-sm text-slate-300 ring-1 ring-purple-500/20 border border-purple-500/20 backdrop-blur-md">
                     Availability is configured after admin verification with default schedule: MON-FRI, 08:00-18:00, 30-minute slots.
                   </div>
                 </>
@@ -478,25 +480,25 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-70"
+                className="w-full rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-orange-700 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
 
             {error ? (
-              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <div className="mt-5 rounded-lg border border-rose-600/30 bg-rose-600/10 p-4 text-sm text-rose-300 backdrop-blur-md">
                 {error}
               </div>
             ) : null}
 
-            <div className="mt-6 rounded-2xl bg-green-50 p-4 text-sm text-green-800 ring-1 ring-green-100">
+            <div className="mt-6 rounded-lg bg-purple-600/10 p-4 text-sm text-slate-300 ring-1 ring-purple-500/20 border border-purple-500/20 backdrop-blur-md">
               Your account will be registered through the auth service endpoint.
             </div>
 
-            <p className="mt-6 text-center text-sm text-slate-600">
+            <p className="mt-6 text-center text-sm text-slate-400">
               Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-blue-700 transition hover:text-blue-800">
+              <Link to="/login" className="font-semibold text-purple-400 transition hover:text-purple-300">
                 Sign in instead
               </Link>
             </p>

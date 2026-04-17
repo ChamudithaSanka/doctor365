@@ -212,6 +212,7 @@ export default function Profile() {
                     value={formData.gender}
                     onChange={handleChange}
                     className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-md"
+                    style={{ colorScheme: 'dark' }}
                   >
                     <option value="">Select gender</option>
                     <option value="male">Male</option>

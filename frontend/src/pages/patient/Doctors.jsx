@@ -158,6 +158,7 @@ export default function Doctors() {
               value={specialty}
               onChange={(event) => setSpecialty(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
+              style={{ colorScheme: 'dark' }}
             >
               <option value="all">All specialties</option>
               {specialties.map((item) => (

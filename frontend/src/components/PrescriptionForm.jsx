@@ -231,14 +231,14 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-xl sm:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-purple-600/10 border border-purple-500/20 p-6 shadow-2xl backdrop-blur-md sm:p-8">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">Issue Prescription</h1>
+          <h1 className="text-2xl font-bold text-slate-100">Issue Prescription</h1>
           <button
             onClick={onClose}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-purple-500/20 text-slate-400 transition"
           >
             ✕
           </button>
@@ -246,14 +246,14 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-4 rounded-lg border border-rose-600/30 bg-rose-600/10 p-4 text-sm text-rose-300 backdrop-blur-md">
             {error}
           </div>
         )}
 
         {/* Success Alert */}
         {successMessage && (
-          <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+          <div className="mb-4 rounded-lg border border-emerald-600/30 bg-emerald-600/10 p-4 text-sm text-emerald-300 backdrop-blur-md">
             ✓ {successMessage}
           </div>
         )}
@@ -261,16 +261,16 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Appointment Selection */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Select Appointment
             </label>
             {loadingAppointments ? (
-              <div className="text-sm text-slate-500">Loading appointments...</div>
+              <div className="text-sm text-slate-400">Loading appointments...</div>
             ) : (
               <select
                 value={selectedAppointment}
                 onChange={(e) => setSelectedAppointment(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
               >
                 <option value="">Select a confirmed appointment</option>
                 {appointments.map((apt) => (
@@ -285,22 +285,22 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
 
           {/* Patient Info Display */}
           {selectedAppointment && loadingPatient ? (
-            <div className="text-sm text-slate-500">Loading patient information...</div>
+            <div className="text-sm text-slate-400">Loading patient information...</div>
           ) : selectedAppointment && patientInfo ? (
-            <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-blue-700">Patient Information</p>
+            <div className="rounded-lg bg-purple-600/20 border border-purple-500/20 p-4 backdrop-blur-md">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-purple-300">Patient Information</p>
               <div className="mt-3 grid gap-2 text-sm">
-                <p className="text-slate-900">
-                  <span className="font-medium">Name:</span> {patientInfo.firstName} {patientInfo.lastName}
+                <p className="text-slate-200">
+                  <span className="font-medium text-slate-300">Name:</span> {patientInfo.firstName} {patientInfo.lastName}
                 </p>
-                <p className="text-slate-900">
-                  <span className="font-medium">ID:</span> {patientInfo.userId}
+                <p className="text-slate-200">
+                  <span className="font-medium text-slate-300">ID:</span> {patientInfo.userId}
                 </p>
-                <p className="text-slate-600">
-                  <span className="font-medium">Email:</span> {patientInfo.email}
+                <p className="text-slate-400">
+                  <span className="font-medium text-slate-300">Email:</span> {patientInfo.email}
                 </p>
-                <p className="text-slate-600">
-                  <span className="font-medium">Phone:</span> {patientInfo.phone}
+                <p className="text-slate-400">
+                  <span className="font-medium text-slate-300">Phone:</span> {patientInfo.phone}
                 </p>
               </div>
             </div>
@@ -308,7 +308,7 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
 
           {/* Diagnosis */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Diagnosis
             </label>
             <textarea
@@ -316,32 +316,32 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
               onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
               placeholder="Enter patient diagnosis..."
               rows="3"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+              className="w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
             />
           </div>
 
           {/* Medications */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-3">
+            <label className="block text-sm font-semibold text-slate-300 mb-3">
               Medications
             </label>
             <div className="space-y-3">
               {formData.medications.map((med, index) => (
-                <div key={index} className="rounded-2xl border border-slate-200 p-4 space-y-3">
+                <div key={index} className="rounded-lg border border-slate-600/30 bg-slate-800/20 p-4 space-y-3 backdrop-blur-sm">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <input
                       type="text"
                       value={med.name}
                       onChange={(e) => handleMedicationChange(index, 'name', e.target.value)}
                       placeholder="Medication name"
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className="rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
                     />
                     <input
                       type="text"
                       value={med.dosage}
                       onChange={(e) => handleMedicationChange(index, 'dosage', e.target.value)}
                       placeholder="Dosage (e.g., 500mg)"
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className="rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
                     />
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -350,21 +350,21 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
                       value={med.frequency}
                       onChange={(e) => handleMedicationChange(index, 'frequency', e.target.value)}
                       placeholder="Frequency (e.g., 3 times daily)"
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className="rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
                     />
                     <input
                       type="text"
                       value={med.duration}
                       onChange={(e) => handleMedicationChange(index, 'duration', e.target.value)}
                       placeholder="Duration (e.g., 7 days)"
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className="rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
                     />
                   </div>
                   {formData.medications.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeMedication(index)}
-                      className="text-xs font-semibold text-red-600 hover:text-red-700"
+                      className="text-xs font-semibold text-rose-400 hover:text-rose-300 transition"
                     >
                       Remove medication
                     </button>
@@ -375,7 +375,7 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
             <button
               type="button"
               onClick={addMedication}
-              className="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+              className="mt-3 rounded-lg border border-dashed border-slate-600/30 bg-slate-800/20 px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-300 hover:border-slate-600/50 transition backdrop-blur-sm"
             >
               + Add medication
             </button>
@@ -383,7 +383,7 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
 
           {/* Instructions */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Additional Instructions (Optional)
             </label>
             <textarea
@@ -391,7 +391,7 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
               onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
               placeholder="Enter any additional instructions or notes..."
               rows="2"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+              className="w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-sm"
             />
           </div>
 
@@ -401,14 +401,14 @@ export default function PrescriptionForm({ appointmentId, onClose, onSuccess }) 
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="rounded-2xl border border-slate-300 bg-white px-6 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg border border-slate-600/30 bg-slate-800/20 px-6 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800/40 transition disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !selectedAppointment}
-              className="rounded-2xl bg-purple-600 px-6 py-2 text-sm font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-2 text-sm font-semibold text-white hover:from-orange-700 hover:to-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Issuing...' : 'Issue Prescription'}
             </button>

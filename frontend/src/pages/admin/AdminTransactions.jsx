@@ -234,6 +234,7 @@ export default function AdminTransactions() {
                 value={statusFilter}
                 onChange={handleStatusChange}
                 className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                style={{ colorScheme: 'dark' }}
               >
                 <option value="all">All Statuses</option>
                 <option value="paid">Success</option>

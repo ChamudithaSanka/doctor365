@@ -373,6 +373,7 @@ export default function BookAppointment() {
               disabled={!appointmentDate}
               required
               className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20 disabled:bg-slate-800/50 disabled:text-slate-500"
+              style={{ colorScheme: 'dark' }}
             >
               <option value="">Choose a time</option>
               {availableSlots.map((slot) => (
