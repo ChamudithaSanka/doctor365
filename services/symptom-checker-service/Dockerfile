@@ -1,12 +1,12 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app/services/symptom-checker-service
 
-COPY package*.json ./
+COPY services/symptom-checker-service/package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY services/symptom-checker-service/src ./src
 
 EXPOSE 5008
 
