@@ -1,6 +1,7 @@
 const Payment = require('../models/Payment');
 const { getPatientPhone } = require('../utils/contactLookup');
 const { sendInternalNotification } = require('../utils/notificationClient');
+const { markAppointmentAsPaid } = require('../utils/appointmentClient');
 const {
   formatAmount,
   generateCheckoutHash,
@@ -277,6 +278,14 @@ const handlePayHereNotify = async (req, res, next) => {
 
     await payment.save();
 
+    if (payment.status === 'paid') {
+      await markAppointmentAsPaid({
+        appointmentId: payment.appointmentId,
+        patientId: payment.patientId,
+        paymentOrderId: payment.orderId,
+      });
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -504,6 +513,14 @@ const updatePaymentStatus = async (req, res, next) => {
     }
 
     await payment.save();
+
+    if (status === 'paid') {
+      await markAppointmentAsPaid({
+        appointmentId: payment.appointmentId,
+        patientId: payment.patientId,
+        paymentOrderId: payment.orderId,
+      });
+    }
 
     if (status === 'paid' || status === 'failed') {
       await notifyPaymentResult({ payment, status });

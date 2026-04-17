@@ -1,8 +1,8 @@
 const isDeliveryDisabledForTesting = () => {
-  // const value = process.env.DISABLE_OUTBOUND_NOTIFICATIONS || true;
-  const value = true;
+  const value = process.env.DISABLE_OUTBOUND_NOTIFICATIONS;
 
-  return typeof value === 'string' && value.toLowerCase() === 'true';
+  if (value == null) return true;
+  return String(value).toLowerCase() === 'true';
 };
 
 module.exports = {

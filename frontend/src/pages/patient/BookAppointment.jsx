@@ -165,7 +165,7 @@ export default function BookAppointment() {
 
   const minDate = new Date().toISOString().split('T')[0]
 
-  const handleProceedToPayment = async (e) => {
+  const handleCreateAppointment = async (e) => {
     e.preventDefault()
     if (!selectedDoctor || !appointmentDate || !appointmentTime || !reason) {
       setError('Please fill in all required fields')
@@ -195,59 +195,15 @@ export default function BookAppointment() {
         return
       }
 
-      // Fetch current patient details
-      const patientResponse = await axios.get(`${gatewayBaseUrl}/api/patients/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const patient = patientResponse.data?.data
-
-      if (!patient) {
-        setError('Unable to fetch patient details. Please try again.')
-        return
-      }
-
-      // Validate required patient fields for checkout
-      const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city']
-      const missingFields = requiredFields.filter(field => !patient[field])
-
-      if (missingFields.length > 0) {
-        setError(
-          `Please complete your profile first. Missing: ${missingFields.join(', ')}. ` +
-          'Visit your profile settings to update this information.'
-        )
-        return
-      }
-
-      // Prepare checkout request payload
-      const checkoutPayload = {
-        appointmentId: `APT-${Date.now()}`, // Temporary ID, will be created in appointment service
-        amount: selectedDoctor.consultationFee,
-        currency: 'LKR',
-        items: `Consultation with Dr. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
-        firstName: patient.firstName,
-        lastName: patient.lastName,
-        email: patient.email,
-        phone: patient.phone,
-        address: patient.address,
-        city: patient.city,
-        country: patient.country || 'Sri Lanka',
-        metadata: {
+      await axios.post(
+        `${gatewayBaseUrl}/api/appointments`,
+        {
           doctorId: selectedDoctor.userId,
-          doctorName: `Dr. ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
           appointmentDate,
           appointmentTime,
           reason,
           notes: notes || '',
-          specialization: selectedDoctor.specialization,
         },
-      }
-
-      // Call payment service to initiate PayHere checkout
-      const paymentResponse = await axios.post(
-        `${gatewayBaseUrl}/api/payments/checkout/payhere`,
-        checkoutPayload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -255,48 +211,12 @@ export default function BookAppointment() {
         }
       )
 
-      const paymentData = paymentResponse.data?.data
-
-      if (!paymentData?.actionUrl || !paymentData?.fields) {
-        setError('Failed to initiate payment. Please try again.')
-        return
-      }
-
-      sessionStorage.setItem(
-        'pendingAppointmentAfterPayment',
-        JSON.stringify({
-          orderId: paymentData.fields.order_id,
-          doctorId: selectedDoctor.userId,
-          appointmentDate,
-          appointmentTime,
-          reason,
-          notes: notes || '',
-        })
-      )
-
-      // Create hidden form and submit to PayHere
-      const form = document.createElement('form')
-      form.method = 'POST'
-      form.action = paymentData.actionUrl
-      form.style.display = 'none'
-
-      // Add all form fields
-      Object.entries(paymentData.fields).forEach(([key, value]) => {
-        const input = document.createElement('input')
-        input.type = 'hidden'
-        input.name = key
-        input.value = value
-        form.appendChild(input)
-      })
-
-      document.body.appendChild(form)
-      form.submit()
-      document.body.removeChild(form)
+      navigate('/appointments')
     } catch (error) {
-      console.error('Error initiating PayHere checkout:', error)
+      console.error('Error creating appointment:', error)
       handleTokenError(error)
       setError(
-        error?.response?.data?.error?.message || 'Failed to proceed to payment. Please try again.'
+        error?.response?.data?.error?.message || 'Failed to create appointment. Please try again.'
       )
     } finally {
       setSubmitting(false)
@@ -421,7 +341,7 @@ export default function BookAppointment() {
           </section>
 
         {/* Booking Form */}
-        <form onSubmit={handleProceedToPayment} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        <form onSubmit={handleCreateAppointment} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">Appointment details</h2>
 
           <div>
@@ -502,7 +422,7 @@ export default function BookAppointment() {
             disabled={!appointmentDate || !appointmentTime || !reason || submitting}
             className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
           >
-            {submitting ? 'Preparing...' : 'Proceed to payment'}
+            {submitting ? 'Creating...' : 'Create appointment'}
           </button>
         </form>
         </div>

@@ -35,6 +35,15 @@ const getEmailTheme = (type) => {
     };
   }
 
+  if (type === 'appointment.completed') {
+    return {
+      headerLabel: 'Appointment completed',
+      banner: '#0f766e',
+      accent: '#f0fdfa',
+      border: '#99f6e4',
+    };
+  }
+
   return {
     headerLabel: 'Appointment booked',
     banner: '#2563eb',
@@ -56,6 +65,12 @@ const getSummaryLine = ({ type, recipientRole, doctorName, patientName }) => {
       : `You have an appointment coming up soon with ${doctorName}.`;
   }
 
+  if (type === 'appointment.completed') {
+    return recipientRole === 'doctor'
+      ? `You marked ${patientName}'s appointment as completed.`
+      : `Your consultation with ${doctorName} has been marked as completed.`;
+  }
+
   return recipientRole === 'doctor'
     ? `${patientName} booked an appointment with you.`
     : `Your appointment with ${doctorName} has been booked successfully.`;
@@ -68,6 +83,10 @@ const getIntroText = ({ type, message }) => {
 
   if (type === 'appointment.reminder') {
     return message || 'This is a reminder for your upcoming appointment.';
+  }
+
+  if (type === 'appointment.completed') {
+    return message || 'This consultation has been completed successfully.';
   }
 
   return message || 'Your appointment has been confirmed.';
@@ -154,9 +173,11 @@ const buildAppointmentEmailHtml = ({ type = 'appointment.booked', metadata = {},
 const buildAppointmentBookedEmailHtml = (args) => buildAppointmentEmailHtml({ ...args, type: 'appointment.booked' });
 const buildAppointmentCancelledEmailHtml = (args) => buildAppointmentEmailHtml({ ...args, type: 'appointment.cancelled' });
 const buildAppointmentReminderEmailHtml = (args) => buildAppointmentEmailHtml({ ...args, type: 'appointment.reminder' });
+const buildAppointmentCompletedEmailHtml = (args) => buildAppointmentEmailHtml({ ...args, type: 'appointment.completed' });
 
 module.exports = {
   buildAppointmentBookedEmailHtml,
   buildAppointmentCancelledEmailHtml,
   buildAppointmentReminderEmailHtml,
+  buildAppointmentCompletedEmailHtml,
 };

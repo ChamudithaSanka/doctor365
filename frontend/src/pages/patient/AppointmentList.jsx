@@ -17,6 +17,7 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
+  awaiting_payment: 'bg-orange-50 text-orange-700 ring-orange-200',
   pending: 'bg-amber-50 text-amber-700 ring-amber-200',
   confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
@@ -29,11 +30,12 @@ export default function MyAppointments() {
   const [doctorProfiles, setDoctorProfiles] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState('all') // all, completed, cancelled
+  const [filter, setFilter] = useState('all') // all, awaiting_payment, completed, cancelled
   const [telemedicineSessions, setTelemedicineSessions] = useState({})
   const [loadingSession, setLoadingSession] = useState(null)
   const [showVideoCall, setShowVideoCall] = useState(false)
   const [activeSessionData, setActiveSessionData] = useState(null)
+  const [payingAppointmentId, setPayingAppointmentId] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -207,7 +209,9 @@ export default function MyAppointments() {
 
     let filtered = appointments
 
-    if (filter === 'completed') {
+    if (filter === 'awaiting_payment') {
+      filtered = appointments.filter((apt) => apt.status === 'awaiting_payment')
+    } else if (filter === 'completed') {
       filtered = appointments.filter((apt) => apt.status === 'completed')
     } else if (filter === 'cancelled') {
       filtered = appointments.filter((apt) => apt.status === 'cancelled')
@@ -295,6 +299,7 @@ export default function MyAppointments() {
 
   const stats = {
     total: appointments.length,
+    awaitingPayment: appointments.filter((apt) => apt.status === 'awaiting_payment').length,
     completed: appointments.filter((apt) => {
       return apt.status === 'completed'
     }).length,
@@ -318,6 +323,109 @@ export default function MyAppointments() {
   const handleVideoCallLeave = () => {
     setShowVideoCall(false)
     setActiveSessionData(null)
+  }
+
+  const handlePayNow = async (appointment) => {
+    const token = getToken()
+    if (!token) {
+      navigate('/login')
+      return
+    }
+
+    const doctorProfile = doctorProfiles[appointment.doctorId]
+    const consultationFee = Number(doctorProfile?.consultationFee)
+
+    if (Number.isNaN(consultationFee) || consultationFee <= 0) {
+      setError('Unable to determine consultation fee for this doctor. Please refresh and try again.')
+      return
+    }
+
+    setPayingAppointmentId(appointment._id)
+    setError('')
+
+    try {
+      const patientResponse = await axios.get(`${gatewayBaseUrl}/api/patients/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const patient = patientResponse.data?.data
+      if (!patient) {
+        setError('Unable to fetch patient details. Please try again.')
+        return
+      }
+
+      const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city']
+      const missingFields = requiredFields.filter((field) => !patient[field])
+
+      if (missingFields.length > 0) {
+        setError(
+          `Please complete your profile first. Missing: ${missingFields.join(', ')}. ` +
+          'Visit your profile settings to update this information.'
+        )
+        return
+      }
+
+      const paymentResponse = await axios.post(
+        `${gatewayBaseUrl}/api/payments/checkout/payhere`,
+        {
+          appointmentId: appointment._id,
+          amount: consultationFee,
+          currency: 'LKR',
+          items: `Consultation for appointment ${appointment._id}`,
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          email: patient.email,
+          phone: patient.phone,
+          address: patient.address,
+          city: patient.city,
+          country: patient.country || 'Sri Lanka',
+          metadata: {
+            doctorId: appointment.doctorId,
+            appointmentDate: appointment.appointmentDate,
+            appointmentTime: appointment.appointmentTime,
+            reason: appointment.reason,
+            notes: appointment.notes || '',
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const paymentData = paymentResponse.data?.data
+      if (!paymentData?.actionUrl || !paymentData?.fields) {
+        setError('Failed to initiate payment. Please try again.')
+        return
+      }
+
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = paymentData.actionUrl
+      form.style.display = 'none'
+
+      Object.entries(paymentData.fields).forEach(([key, value]) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = key
+        input.value = value
+        form.appendChild(input)
+      })
+
+      document.body.appendChild(form)
+      form.submit()
+      document.body.removeChild(form)
+    } catch (requestError) {
+      handleTokenError(requestError)
+      setError(
+        requestError?.response?.data?.error?.message || 'Failed to proceed to payment. Please try again.'
+      )
+    } finally {
+      setPayingAppointmentId(null)
+    }
   }
 
   return (
@@ -358,6 +466,7 @@ export default function MyAppointments() {
       <section className="grid gap-4 md:grid-cols-4">
         {[
           { label: 'Total', value: stats.total },
+          { label: 'Awaiting Payment', value: stats.awaitingPayment },
           { label: 'Completed', value: stats.completed },
           { label: 'Cancelled', value: stats.cancelled },
         ].map((stat) => (
@@ -373,6 +482,7 @@ export default function MyAppointments() {
         <div className="flex flex-wrap gap-2">
           {[
             { value: 'all', label: 'All appointments' },
+            { value: 'awaiting_payment', label: 'Awaiting payment' },
             { value: 'completed', label: 'Completed' },
             { value: 'cancelled', label: 'Cancelled' },
           ].map((btn) => (
@@ -464,6 +574,19 @@ export default function MyAppointments() {
                         </button>
                       )}
                     </>
+                  )}
+
+                  {appointment.status === 'awaiting_payment' && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handlePayNow(appointment)
+                      }}
+                      disabled={payingAppointmentId === appointment._id}
+                      className="whitespace-nowrap rounded-2xl bg-orange-600 px-3 py-1 text-xs font-semibold text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {payingAppointmentId === appointment._id ? 'Preparing...' : 'Pay Now'}
+                    </button>
                   )}
 
                   <Link

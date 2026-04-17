@@ -202,7 +202,7 @@ exports.createAppointment = async (req, res, next) => {
       appointmentTime,
       reason,
       notes: notes || '',
-      status: 'pending',
+      status: 'awaiting_payment',
     });
 
     const [patientPhone, doctorContact] = await Promise.all([
@@ -419,6 +419,7 @@ exports.updateAppointmentStatus = async (req, res, next) => {
 
     if (req.user.role === 'doctor') {
       const allowedTransitions = {
+        awaiting_payment: [],
         pending: ['confirmed', 'cancelled'],
         confirmed: ['completed', 'cancelled'],
         cancelled: [],
@@ -479,6 +480,59 @@ exports.updateAppointmentStatus = async (req, res, next) => {
       }
     }
 
+    if (status === 'completed' && previousStatus !== 'completed') {
+      const doctor = await fetchDoctorProfile(appointment.doctorId);
+      const doctorDisplayName = buildDoctorDisplayName(doctor);
+
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.completed',
+        title: 'Appointment completed',
+        message: `Your consultation on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been marked as completed.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+          status,
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.appointmentTime,
+          reason: appointment.reason,
+          doctorName: doctorDisplayName,
+          recipientRole: 'patient',
+        },
+      });
+
+      await sendInternalNotification({
+        userId: appointment.doctorId,
+        type: 'appointment.completed',
+        title: 'Appointment completed',
+        message: `You marked the consultation on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} as completed.`,
+        recipientEmail: appointment.doctorEmail || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.doctorEmail),
+          sms: false,
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId,
+          status,
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.appointmentTime,
+          reason: appointment.reason,
+          doctorName: doctorDisplayName,
+          patientName: appointment.patientEmail || 'Patient',
+          recipientRole: 'doctor',
+        },
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: appointment,
@@ -512,13 +566,13 @@ exports.updateAppointment = async (req, res, next) => {
     if (
       req.user.role === 'patient' &&
       (appointment.patientId !== req.user.userId ||
-        appointment.status !== 'pending')
+        !['pending', 'awaiting_payment'].includes(appointment.status))
     ) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'You can only update your own pending appointments',
+          message: 'You can only update your own pending or awaiting payment appointments',
         },
       });
     }
@@ -575,13 +629,13 @@ exports.deleteAppointment = async (req, res, next) => {
     if (
       req.user.role === 'patient' &&
       (appointment.patientId !== req.user.userId ||
-        appointment.status !== 'pending')
+        !['pending', 'awaiting_payment'].includes(appointment.status))
     ) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'You can only delete your own pending appointments',
+          message: 'You can only delete your own pending or awaiting payment appointments',
         },
       });
     }
@@ -648,6 +702,78 @@ exports.deleteAppointment = async (req, res, next) => {
       success: true,
       data: appointment,
       message: 'Appointment cancelled successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Mark appointment as paid (internal service)
+// @route   POST /api/appointments/internal/mark-paid
+// @access  Internal token only
+exports.markAppointmentPaidInternal = async (req, res, next) => {
+  try {
+    const { appointmentId, patientId, paymentOrderId } = req.body;
+
+    if (!appointmentId || !patientId || !paymentOrderId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Please provide appointmentId, patientId, and paymentOrderId',
+        },
+      });
+    }
+
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      patientId,
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found for payment confirmation',
+        },
+      });
+    }
+
+    if (appointment.status === 'cancelled') {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'INVALID_STATUS',
+          message: 'Cannot confirm payment for a cancelled appointment',
+        },
+      });
+    }
+
+    if (appointment.paymentOrderId && appointment.paymentOrderId !== paymentOrderId) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_ORDER_MISMATCH',
+          message: 'Appointment already has a different payment order',
+        },
+      });
+    }
+
+    if (!appointment.paymentOrderId) {
+      appointment.paymentOrderId = paymentOrderId;
+    }
+
+    if (appointment.status === 'awaiting_payment') {
+      appointment.status = 'pending';
+    }
+
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      data: appointment,
+      message: 'Appointment payment confirmed successfully',
     });
   } catch (error) {
     next(error);
