@@ -5,6 +5,7 @@ const {
   buildAppointmentBookedEmailHtml,
   buildAppointmentCancelledEmailHtml,
   buildAppointmentReminderEmailHtml,
+  buildAppointmentCompletedEmailHtml,
 } = require('../utils/appointmentEmailTemplate');
 const { buildPaymentEmailHtml } = require('../utils/paymentEmailTemplate');
 
@@ -69,6 +70,13 @@ const buildEmailMetadata = ({ type, metadata, title, message }) => {
     return {
       ...metadata,
       emailHtml: buildAppointmentReminderEmailHtml({ metadata, title, message }),
+    };
+  }
+
+  if (type === 'appointment.completed') {
+    return {
+      ...metadata,
+      emailHtml: buildAppointmentCompletedEmailHtml({ metadata, title, message }),
     };
   }
 

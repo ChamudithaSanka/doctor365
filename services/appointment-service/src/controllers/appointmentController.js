@@ -480,6 +480,59 @@ exports.updateAppointmentStatus = async (req, res, next) => {
       }
     }
 
+    if (status === 'completed' && previousStatus !== 'completed') {
+      const doctor = await fetchDoctorProfile(appointment.doctorId);
+      const doctorDisplayName = buildDoctorDisplayName(doctor);
+
+      await sendInternalNotification({
+        userId: appointment.patientId,
+        type: 'appointment.completed',
+        title: 'Appointment completed',
+        message: `Your consultation on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} has been marked as completed.`,
+        recipientEmail: appointment.patientEmail || undefined,
+        recipientPhone: appointment.patientPhone || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.patientEmail),
+          sms: Boolean(appointment.patientPhone),
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          doctorId: appointment.doctorId,
+          status,
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.appointmentTime,
+          reason: appointment.reason,
+          doctorName: doctorDisplayName,
+          recipientRole: 'patient',
+        },
+      });
+
+      await sendInternalNotification({
+        userId: appointment.doctorId,
+        type: 'appointment.completed',
+        title: 'Appointment completed',
+        message: `You marked the consultation on ${appointment.appointmentDate.toDateString()} at ${appointment.appointmentTime} as completed.`,
+        recipientEmail: appointment.doctorEmail || undefined,
+        channels: {
+          inApp: true,
+          email: Boolean(appointment.doctorEmail),
+          sms: false,
+        },
+        metadata: {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId,
+          status,
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.appointmentTime,
+          reason: appointment.reason,
+          doctorName: doctorDisplayName,
+          patientName: appointment.patientEmail || 'Patient',
+          recipientRole: 'doctor',
+        },
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: appointment,
