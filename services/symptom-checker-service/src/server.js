@@ -26,8 +26,13 @@ async function startServer() {
   try {
     await connectDB();
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`${process.env.SERVICE_NAME || "symptom-checker-service"} running on port ${PORT}`);
+    });
+
+    server.on('error', (error) => {
+      console.error("Server error:", error.message);
+      process.exit(1);
     });
   } catch (error) {
     console.error("Service startup failed:", error.message);
