@@ -70,7 +70,7 @@ export default function AdminDoctorVerification() {
       )
 
       setDoctors((current) =>
-        current.map((item) => (item._id === doctor._id ? { ...item, isVerified } : item))
+        current.map((item) => (item._id === doctor._id ? { ...item, isVerified, verificationStatus: isVerified ? 'approved' : 'rejected' } : item))
       )
       setSuccess(`Doctor ${isVerified ? 'approved' : 'rejected'} successfully.`)
     } catch (requestError) {
@@ -132,30 +132,42 @@ export default function AdminDoctorVerification() {
                     <span
                       className={[
                         'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold',
-                        doctor.isVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
+                        doctor.verificationStatus === 'approved' || doctor.isVerified
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : doctor.verificationStatus === 'rejected'
+                            ? 'bg-rose-100 text-rose-700'
+                            : 'bg-amber-100 text-amber-700',
                       ].join(' ')}
                     >
-                      {doctor.isVerified ? 'Approved' : 'Pending/Rejected'}
+                      {doctor.verificationStatus === 'approved' || doctor.isVerified
+                        ? 'Approved'
+                        : doctor.verificationStatus === 'rejected'
+                          ? 'Rejected'
+                          : 'Pending'}
                     </span>
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => updateVerification(doctor, true)}
-                      className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {busy ? 'Updating...' : 'Approve'}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => updateVerification(doctor, false)}
-                      className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {busy ? 'Updating...' : 'Reject'}
-                    </button>
+                    {(!doctor.verificationStatus || doctor.verificationStatus === 'pending') && !doctor.isVerified && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => updateVerification(doctor, true)}
+                          className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {busy ? 'Updating...' : 'Approve'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => updateVerification(doctor, false)}
+                          className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {busy ? 'Updating...' : 'Reject'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </article>
               )

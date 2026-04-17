@@ -5,6 +5,11 @@ const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:500
 
 const getToken = () => localStorage.getItem('doctor365_accessToken')
 
+const getPatientName = (patient) => {
+  if (patient.patientName) return patient.patientName
+  return 'Unknown Patient'
+}
+
 const formatDate = (value) => {
   if (!value) return '—'
   const d = new Date(value)
@@ -64,10 +69,34 @@ export default function DoctorReports() {
               patientId: apt.patientId,
               patientEmail: apt.patientEmail || null,
               patientPhone: apt.patientPhone || null,
+              patientName: null, // Will be filled by fetch
             })
           }
         }
         setPatientList(unique)
+
+        // Fetch patient details to get patient names
+        for (const patient of unique) {
+          const patientId = typeof patient.patientId === 'string' ? patient.patientId : patient.patientId?._id
+          if (!patientId) continue
+
+          try {
+            const patientRes = await axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: controller.signal,
+            })
+
+            const patientData = patientRes.data?.data
+            if (patientData?.firstName) {
+              const fullName = `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim()
+              setPatientList((prev) =>
+                prev.map((p) => (p.patientId === patient.patientId ? { ...p, patientName: fullName } : p))
+              )
+            }
+          } catch (error) {
+            console.log('Could not fetch patient details for:', patientId)
+          }
+        }
       } catch (err) {
         if (err.name !== 'CanceledError') {
           setPatientsError(err?.response?.data?.error?.message || 'Unable to load patient list.')
@@ -202,7 +231,8 @@ export default function DoctorReports() {
               </div>
             ) : (
               patientList.map((p) => {
-                const initials = p.patientId.slice(0, 2).toUpperCase()
+                const displayName = getPatientName(p)
+                const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase() || p.patientId.slice(0, 2).toUpperCase()
                 return (
                   <button
                     key={p.patientId}
@@ -219,7 +249,7 @@ export default function DoctorReports() {
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-900">
-                          {p.patientEmail || `Patient ${p.patientId.slice(-6)}`}
+                          {displayName}
                         </p>
                         <p className="text-xs text-slate-500">
                           ID: <span className="font-mono">{p.patientId.slice(-8)}</span>

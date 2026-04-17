@@ -15,6 +15,14 @@ const formatDateTime = (value) => {
 
 const getToken = () => localStorage.getItem('doctor365_accessToken')
 
+const getAppointmentPatientName = (appointment) => {
+  if (appointment.patientName) return appointment.patientName
+  const patientId = appointment?.patientId
+  if (typeof patientId === 'object' && patientId?.name) return patientId.name
+  if (typeof patientId === 'object' && patientId?.fullName) return patientId.fullName
+  return 'Unknown Patient'
+}
+
 const statusStyles = {
   pending: 'bg-amber-50 text-amber-700 ring-amber-200',
   confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
@@ -58,6 +66,42 @@ export default function DoctorDashboard() {
     loadDashboard()
     return () => controller.abort()
   }, [])
+
+  // Fetch patient details to get patient names
+  useEffect(() => {
+    const fetchPatientDetails = async () => {
+      const token = getToken()
+      if (!token || appointments.length === 0) return
+
+      for (const appointment of appointments) {
+        // Skip if already has patient name
+        if (appointment.patientName) continue
+
+        const patientId = typeof appointment.patientId === 'string' ? appointment.patientId : appointment.patientId?._id
+        if (!patientId) continue
+
+        try {
+          const response = await axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+
+          const patientData = response.data?.data
+          if (patientData?.firstName) {
+            const fullName = `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim()
+            setAppointments((prev) =>
+              prev.map((apt) =>
+                apt._id === appointment._id ? { ...apt, patientName: fullName } : apt
+              )
+            )
+          }
+        } catch (error) {
+          console.log('Could not fetch patient details for:', patientId)
+        }
+      }
+    }
+
+    fetchPatientDetails()
+  }, [appointments.length])
 
   const now = new Date()
 
@@ -138,8 +182,7 @@ export default function DoctorDashboard() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-semibold text-slate-900">
-                      {apt.appointmentTime || '—'} &mdash; Patient ID:{' '}
-                      <span className="font-mono text-sm">{String(apt.patientId || '').slice(0, 10)}…</span>
+                      {apt.appointmentTime || '—'} &mdash; {getAppointmentPatientName(apt)}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
                       Reason: {apt.reason || 'Not provided'}

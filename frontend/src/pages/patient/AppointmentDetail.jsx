@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { getToken, handleTokenError } from '../../utils/tokenManager'
+import AgoraVideoCall from '../../components/AgoraVideoCall'
 
 const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
@@ -34,6 +35,8 @@ export default function AppointmentDetail() {
   const [cancelling, setCancelling] = useState(false)
   const [telemedicineSession, setTelemedicineSession] = useState(null)
   const [loadingSession, setLoadingSession] = useState(false)
+  const [showVideoCall, setShowVideoCall] = useState(false)
+  const [activeSessionData, setActiveSessionData] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -158,14 +161,45 @@ export default function AppointmentDetail() {
     }
   }
 
+  const startTelemedicineSession = async (sessionId) => {
+    const token = getToken()
+    if (!token) {
+      setError('You must be logged in')
+      return
+    }
+
+    try {
+      const response = await axios.patch(
+        `${gatewayBaseUrl}/api/telemedicine/${sessionId}/start`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      if (response.data.success) {
+        setTelemedicineSession(response.data.data)
+      }
+    } catch (error) {
+      if (error.response?.status !== 400) {
+        setError('Failed to start session')
+      }
+    }
+  }
+
   const openVideoCall = async () => {
     try {
       console.log('Opening Agora video call')
+      setError('') // Clear any previous errors
       
       if (telemedicineSession && telemedicineSession._id) {
+        // Start the session first
+        await startTelemedicineSession(telemedicineSession._id)
+        
         console.log('Opening Agora video component for session:', telemedicineSession._id)
         setActiveSessionData(telemedicineSession)
         setShowVideoCall(true)
+        setError('') // Clear error once video call opens
       } else {
         console.error('❌ No telemedicine session found:', telemedicineSession)
         setError('Unable to get video call session. Please try again.')
@@ -174,6 +208,11 @@ export default function AppointmentDetail() {
       console.error('❌ Error opening video call:', error)
       setError('Failed to open video call.')
     }
+  }
+
+  const handleVideoCallLeave = () => {
+    setShowVideoCall(false)
+    setActiveSessionData(null)
   }
 
   const handleCancel = async () => {
@@ -257,7 +296,19 @@ export default function AppointmentDetail() {
   const isPast = appointmentDate < new Date()
 
   return (
-    <div className="space-y-6">
+    <>
+      {/* Video Call Component - Full Screen */}
+      {showVideoCall && activeSessionData && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+          <AgoraVideoCall 
+            sessionData={activeSessionData}
+            userRole="patient"
+            onLeave={handleVideoCallLeave}
+          />
+        </div>
+      )}
+
+      <div className="space-y-6">
       <section className="rounded-[2rem] bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Appointment</p>
         <div className="mt-2 flex flex-col gap-2 sm:items-baseline sm:justify-between sm:flex-row">
@@ -398,7 +449,7 @@ export default function AppointmentDetail() {
             </>
           )}
 
-          {isUpcoming && appointment.status !== 'cancelled' && (
+          {isUpcoming && appointment.status !== 'cancelled' && appointment.status !== 'confirmed' && (
             <>
               {!cancelConfirm ? (
                 <button
@@ -453,5 +504,6 @@ export default function AppointmentDetail() {
         </section>
       </div>
     </div>
+    </>
   )
 }

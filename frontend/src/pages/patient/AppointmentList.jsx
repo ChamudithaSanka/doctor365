@@ -29,7 +29,7 @@ export default function MyAppointments() {
   const [doctorProfiles, setDoctorProfiles] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState('all') // all, upcoming, completed, cancelled
+  const [filter, setFilter] = useState('all') // all, completed, cancelled
   const [telemedicineSessions, setTelemedicineSessions] = useState({})
   const [loadingSession, setLoadingSession] = useState(null)
   const [showVideoCall, setShowVideoCall] = useState(false)
@@ -207,12 +207,7 @@ export default function MyAppointments() {
 
     let filtered = appointments
 
-    if (filter === 'upcoming') {
-      filtered = appointments.filter((apt) => {
-        const aptDate = new Date(apt.appointmentDate)
-        return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
-      })
-    } else if (filter === 'completed') {
+    if (filter === 'completed') {
       filtered = appointments.filter((apt) => apt.status === 'completed')
     } else if (filter === 'cancelled') {
       filtered = appointments.filter((apt) => apt.status === 'cancelled')
@@ -300,11 +295,6 @@ export default function MyAppointments() {
 
   const stats = {
     total: appointments.length,
-    upcoming: appointments.filter((apt) => {
-      const now = new Date()
-      const aptDate = new Date(apt.appointmentDate)
-      return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
-    }).length,
     completed: appointments.filter((apt) => {
       return apt.status === 'completed'
     }).length,
@@ -368,7 +358,6 @@ export default function MyAppointments() {
       <section className="grid gap-4 md:grid-cols-4">
         {[
           { label: 'Total', value: stats.total },
-          { label: 'Upcoming', value: stats.upcoming },
           { label: 'Completed', value: stats.completed },
           { label: 'Cancelled', value: stats.cancelled },
         ].map((stat) => (
@@ -384,7 +373,6 @@ export default function MyAppointments() {
         <div className="flex flex-wrap gap-2">
           {[
             { value: 'all', label: 'All appointments' },
-            { value: 'upcoming', label: 'Upcoming' },
             { value: 'completed', label: 'Completed' },
             { value: 'cancelled', label: 'Cancelled' },
           ].map((btn) => (
