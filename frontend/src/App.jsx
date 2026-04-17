@@ -29,6 +29,7 @@ import NotFound from './pages/shared/NotFound'
 import DoctorReports from './pages/doctor/DoctorReports'
 import DoctorProfile from './pages/doctor/DoctorProfile'
 import DoctorPatientProfile from './pages/doctor/DoctorPatientProfile'
+import DoctorConsultation from './pages/doctor/DoctorConsultation'
 
 // Patient pages
 import Profile from './pages/patient/Profile'
@@ -70,10 +71,7 @@ function App() {
           <Route path="/doctor/patient/:patientId" element={<DoctorPatientProfile />} />
           <Route path="/doctor/reports" element={<DoctorReports />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
-          <Route
-            path="/consultation"
-            element={<ComingSoon title="Consultations" description="Start or manage telemedicine sessions here." />}
-          />
+          <Route path="/consultation" element={<DoctorConsultation />} />
           <Route path="/admin/dashboard" element={<Navigate to="/admin/doctor-verification" replace />} />
           <Route path="/admin/doctor-verification" element={<AdminDoctorVerification />} />
           <Route path="/admin/appointments" element={<AdminAppointments />} />
