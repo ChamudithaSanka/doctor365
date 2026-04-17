@@ -138,6 +138,7 @@ export default function DoctorProfile() {
       const payload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        email: formData.email,
         specialization: formData.specialty,
         hospitalOrClinic: formData.hospital,
         consultationFee: Number(formData.consultationFee) || 0,
