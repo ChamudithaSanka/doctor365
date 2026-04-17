@@ -414,12 +414,11 @@ const getPrescriptions = async (req, res, next) => {
 const getPatientPrescriptionsById = async (req, res, next) => {
   try {
     const patientId = req.params.id;
-    let patient;
 
+    let patient;
     if (patientId.match(/^[0-9a-fA-F]{24}$/)) {
       patient = await Patient.findById(patientId);
     }
-
     if (!patient) {
       patient = await Patient.findOne({ userId: patientId });
     }
