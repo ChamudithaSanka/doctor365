@@ -85,6 +85,16 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: symptom-checker-config
+  namespace: doctor365
+data:
+  PORT: "5008"
+  SERVICE_NAME: symptom-checker-service
+  NODE_ENV: production
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: gateway-config
   namespace: doctor365
 data:
@@ -96,6 +106,7 @@ data:
   TELEMEDICINE_SERVICE_URL: http://telemedicine-service:5005
   PAYMENT_SERVICE_URL: http://payment-service:5006
   NOTIFICATION_SERVICE_URL: http://notification-service:5007
+  SYMPTOM_CHECKER_SERVICE_URL: http://symptom-checker-service:5008
 ---
 apiVersion: v1
 kind: ConfigMap

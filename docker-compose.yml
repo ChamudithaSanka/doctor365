@@ -99,6 +99,19 @@ services:
     # depends_on:
     #   - mongo
 
+  symptom-checker-service:
+    build:
+      context: .
+      dockerfile: ./services/symptom-checker-service/Dockerfile
+    container_name: doctor365-symptom-checker-service
+    restart: unless-stopped
+    env_file:
+      - ./services/symptom-checker-service/.env
+    ports:
+      - "5008:5008"
+    # depends_on:
+    #   - mongo
+
   gateway:
     build: ./gateway
     container_name: doctor365-gateway
@@ -113,6 +126,7 @@ services:
       TELEMEDICINE_SERVICE_URL: http://telemedicine-service:5005
       PAYMENT_SERVICE_URL: http://payment-service:5006
       NOTIFICATION_SERVICE_URL: http://notification-service:5007
+      SYMPTOM_CHECKER_SERVICE_URL: http://symptom-checker-service:5008
     ports:
       - "5000:5000"
     depends_on:
@@ -123,6 +137,7 @@ services:
       - telemedicine-service
       - payment-service
       - notification-service
+      - symptom-checker-service
 
   frontend:
     build:
