@@ -174,7 +174,7 @@ export default function DoctorDetails() {
 
   if (loading) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+      <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 text-sm text-slate-400 backdrop-blur-md">
         Loading doctor details...
       </div>
     )
@@ -183,8 +183,8 @@ export default function DoctorDetails() {
   if (error) {
     return (
       <div className="space-y-4">
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
-        <Link to="/doctors" className="inline-flex rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+        <div className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">{error}</div>
+        <Link to="/doctors" className="inline-flex rounded-lg border border-purple-500/30 bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700/50">
           Back to doctors
         </Link>
       </div>
@@ -194,10 +194,10 @@ export default function DoctorDetails() {
   if (!doctor) {
     return (
       <div className="space-y-4">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 text-sm text-slate-400 backdrop-blur-md">
           Doctor profile not found.
         </div>
-        <Link to="/doctors" className="inline-flex rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+        <Link to="/doctors" className="inline-flex rounded-lg border border-purple-500/30 bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700/50">
           Back to doctors
         </Link>
       </div>
@@ -206,47 +206,47 @@ export default function DoctorDetails() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-700 to-cyan-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Doctor profile</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{fullName}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Doctor profile</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl">{fullName}</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
           Review profile details, consultation fee, and availability before booking.
         </p>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md shadow-sm">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            <span className="rounded-full bg-orange-600/30 border border-orange-500/20 px-3 py-1 text-xs font-semibold text-orange-300">
               {doctor.specialization || 'Specialty not listed'}
             </span>
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${doctor.isVerified ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${doctor.isVerified ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/20' : 'bg-amber-600/30 text-amber-300 border border-amber-500/20'}`}>
               {doctor.isVerified ? 'Verified doctor' : 'Pending verification'}
             </span>
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Consultation fee</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{formatCurrency(doctor.consultationFee)}</p>
+            <div className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 backdrop-blur-sm">
+              <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Consultation fee</p>
+              <p className="mt-1 text-lg font-semibold text-slate-100">{formatCurrency(doctor.consultationFee)}</p>
             </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Experience</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{doctor.yearsOfExperience ?? 'N/A'} years</p>
+            <div className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 backdrop-blur-sm">
+              <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Experience</p>
+              <p className="mt-1 text-lg font-semibold text-slate-100">{doctor.yearsOfExperience ?? 'N/A'} years</p>
             </div>
-            <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
-              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Hospital / Clinic</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{doctor.hospitalOrClinic || 'Online'}</p>
+            <div className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 backdrop-blur-sm sm:col-span-2">
+              <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Hospital / Clinic</p>
+              <p className="mt-1 text-lg font-semibold text-slate-100">{doctor.hospitalOrClinic || 'Online'}</p>
             </div>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Weekly schedule</h2>
+          <div className="mt-6 rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 backdrop-blur-sm">
+            <h2 className="text-lg font-semibold text-slate-100">Weekly schedule</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {weeklySchedule.map((item) => (
-                <div key={item.day} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{item.day}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">{item.schedule}</p>
+                <div key={item.day} className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 backdrop-blur-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{item.day}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-100">{item.schedule}</p>
                 </div>
               ))}
             </div>
@@ -254,33 +254,33 @@ export default function DoctorDetails() {
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Availability</h2>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md shadow-sm">
+            <h2 className="text-xl font-semibold text-slate-100">Availability</h2>
+            <p className="mt-2 text-sm text-slate-300">
               {doctor.availabilityStartTime && doctor.availabilityEndTime
                 ? `${doctor.availabilityStartTime} – ${doctor.availabilityEndTime}`
                 : 'No availability set'}
             </p>
-            <p className="mt-1 text-sm text-slate-500">Slot duration: {doctor.slotMinutes || 30} minutes</p>
-            <p className="mt-1 text-sm text-slate-500">Working days: {formatWorkingDays(doctor.workingDays)}</p>
-            <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            <p className="mt-1 text-sm text-slate-400">Slot duration: {doctor.slotMinutes || 30} minutes</p>
+            <p className="mt-1 text-sm text-slate-400">Working days: {formatWorkingDays(doctor.workingDays)}</p>
+            <p className="mt-3 rounded-lg bg-emerald-600/30 border border-emerald-500/20 px-4 py-3 text-sm font-semibold text-emerald-300">
               {nextSlot ? `Next available slot: ${nextSlot.date} at ${nextSlot.time}` : 'Next slot not available'}
             </p>
           </div>
 
-          <div className="rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
-            <h2 className="text-xl font-semibold">Ready to book?</h2>
+          <div className="rounded-lg border border-orange-500/20 bg-orange-600/10 p-6 backdrop-blur-md shadow-sm">
+            <h2 className="text-xl font-semibold text-slate-100">Ready to book?</h2>
             <p className="mt-2 text-sm text-slate-300">Continue to booking with this doctor pre-selected.</p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link
                 to={`/appointments/book?doctorId=${doctor._id || doctor.userId}`}
-                className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
+                className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:from-orange-700 hover:to-orange-600"
               >
                 Book appointment
               </Link>
               <Link
                 to="/doctors"
-                className="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+                className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-slate-700/50"
               >
                 Back to doctors
               </Link>

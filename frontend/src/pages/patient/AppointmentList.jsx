@@ -17,11 +17,11 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
-  awaiting_payment: 'bg-orange-50 text-orange-700 ring-orange-200',
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  completed: 'bg-blue-50 text-blue-700 ring-blue-200',
+  awaiting_payment: 'bg-orange-600/30 text-orange-300 ring-orange-600/50',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  confirmed: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  cancelled: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  completed: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 export default function MyAppointments() {
@@ -443,19 +443,19 @@ export default function MyAppointments() {
 
       {/* Main Content */}
       <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-green-600 to-teal-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Your appointments</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Manage your consultations</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Your appointments</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl">Manage your consultations</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
           View all your appointments, filter by status, and manage your bookings.
         </p>
       </section>
 
       {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p>{error}</p>
-            <Link to="/login" className="font-semibold text-red-800 underline-offset-4 hover:underline">
+            <Link to="/login" className="font-semibold text-red-400 underline-offset-4 hover:underline">
               Sign in
             </Link>
           </div>
@@ -470,15 +470,15 @@ export default function MyAppointments() {
           { label: 'Completed', value: stats.completed },
           { label: 'Cancelled', value: stats.cancelled },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">{stat.label}</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{loading ? '—' : stat.value}</p>
+          <div key={stat.label} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 shadow-sm backdrop-blur-md">
+            <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
+            <p className="mt-2 text-2xl font-bold text-slate-100">{loading ? '—' : stat.value}</p>
           </div>
         ))}
       </section>
 
       {/* Filter */}
-      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 shadow-sm backdrop-blur-md">
         <div className="flex flex-wrap gap-2">
           {[
             { value: 'all', label: 'All appointments' },
@@ -489,10 +489,10 @@ export default function MyAppointments() {
             <button
               key={btn.value}
               onClick={() => setFilter(btn.value)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                 filter === btn.value
-                  ? 'bg-green-600 text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white'
+                  : 'bg-slate-700/30 text-slate-300 hover:bg-slate-700/50 border border-slate-600/30'
               }`}
             >
               {btn.label}
@@ -504,7 +504,7 @@ export default function MyAppointments() {
       {/* Appointments List */}
       <section className="space-y-3">
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
             Loading your appointments...
           </div>
         ) : filteredAppointments.length > 0 ? (
@@ -514,28 +514,28 @@ export default function MyAppointments() {
             return (
             <article
               key={appointment._id}
-              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-slate-300 sm:p-6"
+              className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm transition hover:shadow-md hover:border-purple-500/40 backdrop-blur-md sm:p-6"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1">
                   <div className="flex items-start gap-3 sm:items-center">
                     <div>
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-slate-100">
                         {doctorSummary.name}
                       </p>
-                      <p className="text-sm text-slate-500 mt-1">{doctorSummary.specialization}</p>
-                      <p className="text-sm text-slate-500 mt-1">
+                      <p className="text-sm text-slate-400 mt-1">{doctorSummary.specialization}</p>
+                      <p className="text-sm text-slate-400 mt-1">
                         {formatDateTime(appointment.appointmentDate)} • {appointment.appointmentTime || 'Time not set'}
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-3 space-y-1">
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-300">
                       <span className="font-medium">Reason:</span> {appointment.reason || 'Not provided'}
                     </p>
                     {appointment.notes && (
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-300">
                         <span className="font-medium">Notes:</span> {appointment.notes}
                       </p>
                     )}
@@ -546,7 +546,7 @@ export default function MyAppointments() {
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
                       statusStyles[appointment.status] ||
-                      'bg-slate-100 text-slate-700 ring-slate-200'
+                      'bg-slate-700/30 text-slate-300 ring-slate-600/50'
                     }`}
                   >
                     {appointment.status || 'unknown'}
@@ -559,7 +559,7 @@ export default function MyAppointments() {
                         handlePayNow(appointment)
                       }}
                       disabled={payingAppointmentId === appointment._id}
-                      className="whitespace-nowrap rounded-2xl bg-orange-600 px-3 py-1 text-xs font-semibold text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="whitespace-nowrap rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-3 py-1 text-xs font-semibold text-white hover:from-orange-700 hover:to-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {payingAppointmentId === appointment._id ? 'Preparing...' : 'Pay Now'}
                     </button>
@@ -567,7 +567,7 @@ export default function MyAppointments() {
 
                   <Link
                     to={`/appointments/${appointment._id}`}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-2xl border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-purple-500/30 bg-slate-700/30 px-3 py-1 text-xs font-semibold text-slate-300 hover:bg-slate-700/50 transition"
                   >
                     View Details
                   </Link>
@@ -576,15 +576,15 @@ export default function MyAppointments() {
             </article>
           )})
         ) : (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-            <p className="text-slate-500">
+          <div className="rounded-lg border border-dashed border-purple-500/20 bg-purple-600/10 p-8 text-center backdrop-blur-md">
+            <p className="text-slate-400">
               {filter === 'all'
                 ? 'You have no appointments yet. Start by booking one!'
                 : `No ${filter} appointments.`}
             </p>
             <Link
               to="/doctors"
-              className="mt-4 inline-block rounded-2xl bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-700 transition"
+              className="mt-4 inline-block rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-2 text-sm font-semibold text-white hover:from-orange-700 hover:to-orange-600 transition"
             >
               Book an appointment
             </Link>

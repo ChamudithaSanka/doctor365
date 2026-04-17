@@ -27,10 +27,10 @@ const formatCurrency = (amount) => {
 }
 
 const statusStyles = {
-  paid: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  failed: 'bg-red-50 text-red-700 ring-red-200',
-  refunded: 'bg-blue-50 text-blue-700 ring-blue-200',
+  paid: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  failed: 'bg-red-600/30 text-red-300 ring-red-600/50',
+  refunded: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 const statusLabels = {
@@ -111,159 +111,157 @@ export default function PatientPayments() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Payments</h1>
-          <p className="text-gray-600 mt-2">Track all your appointment payments</p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-gray-600 text-sm mb-1">Total Payments</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-gray-600 text-sm mb-1">Successful</p>
-            <p className="text-2xl font-bold text-emerald-600">{stats.paid}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-gray-600 text-sm mb-1">Pending</p>
-            <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-gray-600 text-sm mb-1">Refunded</p>
-            <p className="text-2xl font-bold text-blue-600">{stats.refunded}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-gray-600 text-sm mb-1">Total Paid</p>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalAmount)}</p>
-          </div>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6 overflow-x-auto">
-          <div className="flex border-b">
-            {['all', 'paid', 'pending', 'refunded', 'failed'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setFilter(tab)}
-                className={`flex-1 py-4 px-4 font-medium text-center ${
-                  filter === tab
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
-                } transition-colors`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <div className="inline-block">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-            <p className="text-gray-600 mt-4">Loading your payments...</p>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && filteredPayments.length === 0 && (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No payments found</h3>
-            <p className="text-gray-600 mt-2">
-              {filter === 'all'
-                ? "You haven't made any payments yet."
-                : `No ${filter} payments yet.`}
-            </p>
-          </div>
-        )}
-
-        {/* Payments Table */}
-        {!loading && filteredPayments.length > 0 && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Order ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Amount
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Payment Method
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredPayments.map((payment) => (
-                    <tr key={payment._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-mono text-gray-900">{payment.orderId}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900">
-                          {formatCurrency(payment.amount)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600 capitalize">
-                          {payment.paymentMethod?.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ring-1 ring-inset ${
-                            statusStyles[payment.status] || 'bg-gray-50 text-gray-700 ring-gray-200'
-                          }`}
-                        >
-                          {statusLabels[payment.status] || payment.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {formatDateTime(payment.createdAt)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-purple-600/30 to-indigo-600/30 px-6 py-10 text-slate-100 backdrop-blur-md">
+        <h1 className="text-3xl font-bold">My Payments</h1>
+        <p className="text-slate-300 mt-2">Track all your appointment payments</p>
       </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 backdrop-blur-md">
+          <p className="text-slate-400 text-sm mb-1">Total Payments</p>
+          <p className="text-2xl font-bold text-slate-100">{stats.total}</p>
+        </div>
+        <div className="rounded-lg border border-green-500/20 bg-green-600/10 p-4 backdrop-blur-md">
+          <p className="text-slate-400 text-sm mb-1">Successful</p>
+          <p className="text-2xl font-bold text-green-300">{stats.paid}</p>
+        </div>
+        <div className="rounded-lg border border-amber-500/20 bg-amber-600/10 p-4 backdrop-blur-md">
+          <p className="text-slate-400 text-sm mb-1">Pending</p>
+          <p className="text-2xl font-bold text-amber-300">{stats.pending}</p>
+        </div>
+        <div className="rounded-lg border border-indigo-500/20 bg-indigo-600/10 p-4 backdrop-blur-md">
+          <p className="text-slate-400 text-sm mb-1">Refunded</p>
+          <p className="text-2xl font-bold text-indigo-300">{stats.refunded}</p>
+        </div>
+        <div className="rounded-lg border border-slate-500/20 bg-slate-700/20 p-4 backdrop-blur-md">
+          <p className="text-slate-400 text-sm mb-1">Total Paid</p>
+          <p className="text-2xl font-bold text-slate-100">{formatCurrency(stats.totalAmount)}</p>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 backdrop-blur-md overflow-x-auto">
+        <div className="flex border-b border-purple-500/20">
+          {['all', 'paid', 'pending', 'refunded', 'failed'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${
+                filter === tab
+                  ? 'text-purple-300 border-b-2 border-purple-500 bg-purple-600/20'
+                  : 'text-slate-400 hover:text-slate-300'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-lg border border-red-500/30 bg-red-600/10 text-red-300 px-4 py-3 backdrop-blur-md">
+          {error}
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center backdrop-blur-md">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          </div>
+          <p className="text-slate-300 mt-4">Loading your payments...</p>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && filteredPayments.length === 0 && (
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center backdrop-blur-md">
+          <svg
+            className="mx-auto h-12 w-12 text-purple-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium text-slate-100">No payments found</h3>
+          <p className="text-slate-400 mt-2">
+            {filter === 'all'
+              ? "You haven't made any payments yet."
+              : `No ${filter} payments yet.`}
+          </p>
+        </div>
+      )}
+
+      {/* Payments Table */}
+      {!loading && filteredPayments.length > 0 && (
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 backdrop-blur-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-purple-500/20">
+              <thead className="bg-purple-600/20 border-b border-purple-500/20">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">
+                    Order ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">
+                    Payment Method
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-purple-500/20">
+                {filteredPayments.map((payment) => (
+                  <tr key={payment._id} className="hover:bg-purple-600/20 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-mono text-slate-200">{payment.orderId}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-slate-100">
+                        {formatCurrency(payment.amount)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-slate-300 capitalize">
+                        {payment.paymentMethod?.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ring-1 ring-inset ${
+                          statusStyles[payment.status] || 'bg-slate-700 text-slate-300 ring-slate-600'
+                        }`}
+                      >
+                        {statusLabels[payment.status] || payment.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                      {formatDateTime(payment.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

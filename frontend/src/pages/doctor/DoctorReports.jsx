@@ -182,14 +182,14 @@ export default function DoctorReports() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950">
       <div className="mx-auto max-w-6xl px-6 py-10 lg:px-8">
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Doctor portal</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Patient Reports</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">Doctor portal</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100">Patient Reports</h1>
+          <p className="mt-1 text-sm text-slate-400">
             View uploaded reports from patients who have booked appointments with you.
           </p>
         </div>
@@ -201,15 +201,15 @@ export default function DoctorReports() {
             { label: 'Selected patient reports', value: loadingReports ? '—' : (selectedPatientId ? reports.length : '—') },
             { label: 'Data source', value: 'patient_db' },
           ].map((s) => (
-            <div key={s.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">{s.label}</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{s.value}</p>
+            <div key={s.label} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm backdrop-blur-md">
+              <p className="text-sm font-medium text-slate-400">{s.label}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-100">{s.value}</p>
             </div>
           ))}
         </div>
 
         {patientsError && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-6 rounded-lg border border-rose-600/30 bg-rose-600/10 p-4 text-sm text-rose-300 backdrop-blur-md">
             {patientsError}
           </div>
         )}
@@ -218,15 +218,15 @@ export default function DoctorReports() {
 
           {/* Patient list */}
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400 mb-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2">
               Your patients
             </p>
             {loadingPatients ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+              <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 text-sm text-slate-400 backdrop-blur-md">
                 Loading patients...
               </div>
             ) : patientList.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-purple-500/30 bg-purple-600/10 p-4 text-sm text-slate-400 backdrop-blur-md">
                 No patients with appointments yet.
               </div>
             ) : (
@@ -237,21 +237,21 @@ export default function DoctorReports() {
                   <button
                     key={p.patientId}
                     onClick={() => handleSelectPatient(p.patientId)}
-                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                    className={`w-full rounded-lg border p-4 text-left transition ${
                       selectedPatientId === p.patientId
-                        ? 'border-blue-200 bg-blue-50'
-                        : 'border-slate-200 bg-white hover:border-blue-100'
+                        ? 'border-purple-500/40 bg-purple-600/30 backdrop-blur-md'
+                        : 'border-purple-500/20 bg-purple-600/10 hover:border-purple-500/30 backdrop-blur-md'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-600 text-sm font-bold text-white">
                         {initials}
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">
+                        <p className="truncate text-sm font-semibold text-slate-100">
                           {displayName}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-400">
                           ID: <span className="font-mono">{p.patientId.slice(-8)}</span>
                         </p>
                       </div>
@@ -265,29 +265,29 @@ export default function DoctorReports() {
           {/* Reports panel */}
           <div>
             {!selectedPatientId ? (
-              <div className="flex h-56 items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white text-sm text-slate-500">
+              <div className="flex h-56 items-center justify-center rounded-lg border border-dashed border-purple-500/30 bg-purple-600/10 text-sm text-slate-400 backdrop-blur-md">
                 Select a patient on the left to view their reports.
               </div>
             ) : (
               <>
-                <h2 className="mb-4 text-lg font-semibold text-slate-900">
+                <h2 className="mb-4 text-lg font-semibold text-slate-100">
                   {selectedPatientName
                     ? `${selectedPatientName}'s Reports`
                     : `Patient ${selectedPatientId.slice(-8)} — Reports`}
                 </h2>
 
                 {reportsError && (
-                  <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  <div className="mb-4 rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-sm text-red-300 backdrop-blur-md">
                     {reportsError}
                   </div>
                 )}
 
                 {loadingReports ? (
-                  <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+                  <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-sm text-slate-400 backdrop-blur-md">
                     Loading reports...
                   </div>
                 ) : reports.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+                  <div className="rounded-lg border border-dashed border-purple-500/30 bg-purple-600/10 p-8 text-center text-sm text-slate-400 backdrop-blur-md">
                     This patient has not uploaded any reports yet.
                   </div>
                 ) : (
@@ -295,32 +295,32 @@ export default function DoctorReports() {
                     {reports.map((report) => (
                       <div
                         key={report._id}
-                        className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-200"
+                        className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm transition hover:border-purple-500/40 hover:bg-purple-600/20 backdrop-blur-md"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="flex items-start gap-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-600/30 text-orange-300">
                               {fileIcon}
                             </div>
                             <div>
-                              <p className="font-semibold text-slate-900">{report.title || report.originalName}</p>
-                              <p className="mt-1 text-sm text-slate-500">
+                              <p className="font-semibold text-slate-100">{report.title || report.originalName}</p>
+                              <p className="mt-1 text-sm text-slate-400">
                                 {report.originalName} &middot; Uploaded {formatDate(report.uploadDate)}
                               </p>
-                              <p className="mt-0.5 text-xs text-slate-400">{report.mimeType}</p>
+                              <p className="mt-0.5 text-xs text-slate-500">{report.mimeType}</p>
                             </div>
                             </div>
                             
                           <div className="flex shrink-0 items-center gap-2">
                             <button
                               onClick={() => handleView(report._id)}
-                              className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                              className="rounded-lg border border-purple-500/30 px-4 py-2 text-sm font-semibold text-purple-300 transition hover:bg-purple-600/20"
                             >
                               View
                             </button>
                             <button
                               onClick={() => handleDownload(report._id, report.originalName)}
-                              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                              className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-slate-600/30"
                             >
                               Download
                             </button>

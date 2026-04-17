@@ -17,11 +17,11 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
-  awaiting_payment: 'bg-orange-50 text-orange-700 ring-orange-200',
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  completed: 'bg-blue-50 text-blue-700 ring-blue-200',
+  awaiting_payment: 'bg-orange-600/30 text-orange-300 ring-orange-600/50',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  confirmed: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  cancelled: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  completed: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 export default function AppointmentDetail() {
@@ -347,14 +347,14 @@ export default function AppointmentDetail() {
   if (error && !appointment) {
     return (
       <div className="space-y-4">
-        <section className="rounded-[2rem] bg-gradient-to-r from-red-600 to-pink-600 p-6 text-white shadow-lg sm:p-8">
+        <section className="rounded-lg border border-rose-600/50 bg-gradient-to-r from-rose-600/20 to-pink-600/20 p-6 text-rose-300 shadow-lg backdrop-blur-md sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight">Error</h1>
         </section>
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">
+        <div className="rounded-lg border border-rose-600/30 bg-rose-600/10 p-6 text-rose-300 backdrop-blur-md">
           <p className="mb-4">{error}</p>
           <Link
             to="/appointments"
-            className="inline-block rounded-2xl bg-red-600 px-6 py-2 text-white font-semibold hover:bg-red-700 transition"
+            className="inline-block rounded-lg bg-rose-600 px-6 py-2 text-white font-semibold hover:bg-rose-700 transition"
           >
             Back to appointments
           </Link>
@@ -366,11 +366,11 @@ export default function AppointmentDetail() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <section className="rounded-[2rem] bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Loading...</p>
+        <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-slate-100 shadow-lg backdrop-blur-md sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Loading...</p>
           <h1 className="mt-2 text-3xl font-bold">Appointment details</h1>
         </section>
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
           Loading appointment details...
         </div>
       </div>
@@ -380,12 +380,12 @@ export default function AppointmentDetail() {
   if (!appointment) {
     return (
       <div className="space-y-4">
-        <section className="rounded-[2rem] bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg sm:p-8">
+        <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-slate-100 shadow-lg backdrop-blur-md sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight">Appointment not found</h1>
         </section>
         <Link
           to="/appointments"
-          className="inline-block rounded-2xl bg-blue-600 px-6 py-2 text-white font-semibold hover:bg-blue-700 transition"
+          className="inline-block rounded-lg bg-purple-600 px-6 py-2 text-white font-semibold hover:bg-purple-700 transition"
         >
           Back to appointments
         </Link>
@@ -412,15 +412,15 @@ export default function AppointmentDetail() {
       )}
 
       <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Appointment</p>
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-slate-100 shadow-lg backdrop-blur-md sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Appointment</p>
         <div className="mt-2 flex flex-col gap-2 sm:items-baseline sm:justify-between sm:flex-row">
           <h1 className="text-3xl font-bold tracking-tight">
             {formatDateTime(appointment.appointmentDate)}
           </h1>
           <span
             className={`rounded-full px-4 py-1 text-sm font-semibold ring-1 ${
-              statusStyles[appointment.status] || 'bg-slate-100 text-slate-700 ring-slate-200'
+              statusStyles[appointment.status] || 'bg-slate-700/30 text-slate-300 ring-slate-600/50'
             }`}
           >
             {appointment.status}
@@ -429,25 +429,25 @@ export default function AppointmentDetail() {
       </section>
 
       {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-rose-600/30 bg-rose-600/10 p-4 text-sm text-rose-300 backdrop-blur-md">
           {error}
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2 space-y-6">
+        <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md lg:col-span-2 space-y-6">
           {/* Doctor Info */}
           {doctor ? (
-            <div className="rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">Doctor</p>
+            <div className="rounded-lg bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border border-purple-500/30 p-5 backdrop-blur-md">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Doctor</p>
               <div className="mt-3">
-                <p className="font-semibold text-slate-900">
+                <p className="font-semibold text-slate-100">
                   Dr. {doctor.firstName} {doctor.lastName}
                 </p>
-                <p className="text-sm text-slate-600 mt-1">{doctor.specialization}</p>
+                <p className="text-sm text-slate-400 mt-1">{doctor.specialization}</p>
                 {doctor.hospitalOrClinic && (
-                  <p className="text-sm text-slate-600">{doctor.hospitalOrClinic}</p>
+                  <p className="text-sm text-slate-400">{doctor.hospitalOrClinic}</p>
                 )}
               </div>
             </div>
@@ -455,30 +455,30 @@ export default function AppointmentDetail() {
 
           {/* Appointment Details */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-slate-900">Appointment details</h2>
-            <div className="rounded-2xl bg-slate-50 p-4 space-y-3">
+            <h2 className="text-lg font-semibold text-slate-100">Appointment details</h2>
+            <div className="rounded-lg bg-purple-600/20 p-4 space-y-3 border border-purple-500/20">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Date</p>
-                  <p className="mt-1 font-medium text-slate-900">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Date</p>
+                  <p className="mt-1 font-medium text-slate-100">
                     {new Intl.DateTimeFormat('en-LK', { dateStyle: 'long' }).format(appointmentDate)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Time</p>
-                  <p className="mt-1 font-medium text-slate-900">{appointment.appointmentTime}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Time</p>
+                  <p className="mt-1 font-medium text-slate-100">{appointment.appointmentTime}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Reason for visit</p>
-                <p className="mt-1 text-slate-900">{appointment.reason}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Reason for visit</p>
+                <p className="mt-1 text-slate-300">{appointment.reason}</p>
               </div>
 
               {appointment.notes && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Additional notes</p>
-                  <p className="mt-1 text-slate-900">{appointment.notes}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Additional notes</p>
+                  <p className="mt-1 text-slate-300">{appointment.notes}</p>
                 </div>
               )}
             </div>
@@ -486,16 +486,16 @@ export default function AppointmentDetail() {
 
           {/* Contact Info */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-slate-900">Contact information</h2>
-            <div className="rounded-2xl bg-slate-50 p-4 space-y-2 text-sm">
+            <h2 className="text-lg font-semibold text-slate-100">Contact information</h2>
+            <div className="rounded-lg bg-purple-600/20 p-4 space-y-2 text-sm border border-purple-500/20">
               {appointment.patientEmail && (
                 <p>
-                  <span className="font-medium text-slate-600">Email:</span> {appointment.patientEmail}
+                  <span className="font-medium text-slate-400">Email:</span> <span className="text-slate-300">{appointment.patientEmail}</span>
                 </p>
               )}
               {appointment.patientPhone && (
                 <p>
-                  <span className="font-medium text-slate-600">Phone:</span> {appointment.patientPhone}
+                  <span className="font-medium text-slate-400">Phone:</span> <span className="text-slate-300">{appointment.patientPhone}</span>
                 </p>
               )}
             </div>
@@ -503,23 +503,23 @@ export default function AppointmentDetail() {
 
           {/* Status Timeline */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-slate-900">Status</h2>
-            <div className="rounded-2xl bg-slate-50 p-4">
+            <h2 className="text-lg font-semibold text-slate-100">Status</h2>
+            <div className="rounded-lg bg-purple-600/20 p-4 border border-purple-500/20">
               <div className="flex items-center gap-3">
                 <div
                   className={`h-3 w-3 rounded-full ${
-                    appointment.status === 'pending' ? 'bg-amber-500' : 'bg-slate-300'
+                    appointment.status === 'pending' ? 'bg-amber-500' : 'bg-slate-500'
                   }`}
                 />
                 <div>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-slate-100">
                     {appointment.status === 'awaiting_payment'
                       ? 'Awaiting payment'
                       : appointment.status === 'pending'
                         ? 'Pending doctor approval'
                         : 'Status updated'}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     {new Intl.DateTimeFormat('en-LK', {
                       dateStyle: 'medium',
                       timeStyle: 'short',
@@ -532,15 +532,15 @@ export default function AppointmentDetail() {
         </section>
 
         {/* Sidebar */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-fit space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Actions</h2>
+        <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md h-fit space-y-4">
+          <h2 className="text-lg font-semibold text-slate-100">Actions</h2>
 
           {appointment.status === 'confirmed' && (
             <>
               {telemedicineSession?.status === 'ended' ? (
                 <button
                   disabled={true}
-                  className="w-full rounded-2xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 cursor-not-allowed"
+                  className="w-full rounded-lg bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-400 cursor-not-allowed border border-slate-600/30"
                 >
                   ✅ Meeting Ended
                 </button>
@@ -548,7 +548,7 @@ export default function AppointmentDetail() {
                 <button
                   onClick={openVideoCall}
                   disabled={loadingSession}
-                  className="w-full rounded-2xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loadingSession ? 'Loading...' : '🎥 Join Meeting'}
                 </button>
@@ -560,7 +560,7 @@ export default function AppointmentDetail() {
             <button
               onClick={handlePayNow}
               disabled={paying}
-              className="w-full rounded-2xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {paying ? 'Preparing payment...' : 'Pay now'}
             </button>
@@ -571,24 +571,24 @@ export default function AppointmentDetail() {
               {!cancelConfirm ? (
                 <button
                   onClick={() => setCancelConfirm(true)}
-                  className="w-full rounded-2xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition"
+                  className="w-full rounded-lg border border-rose-600/30 bg-rose-600/10 px-4 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-600/20 transition backdrop-blur-md"
                 >
                   Cancel appointment
                 </button>
               ) : (
-                <div className="rounded-2xl bg-red-50 border border-red-200 p-4 space-y-3">
-                  <p className="text-sm text-red-700 font-medium">Confirm cancellation?</p>
+                <div className="rounded-lg bg-rose-600/10 border border-rose-600/30 p-4 space-y-3 backdrop-blur-md">
+                  <p className="text-sm text-rose-300 font-medium">Confirm cancellation?</p>
                   <div className="flex gap-2">
                     <button
                       onClick={handleCancel}
                       disabled={cancelling}
-                      className="flex-1 rounded-2xl bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition disabled:opacity-50"
+                      className="flex-1 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition disabled:opacity-50"
                     >
                       {cancelling ? 'Cancelling...' : 'Yes, cancel'}
                     </button>
                     <button
                       onClick={() => setCancelConfirm(false)}
-                      className="flex-1 rounded-2xl border border-red-300 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
+                      className="flex-1 rounded-lg border border-rose-600/30 bg-rose-600/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-600/20 transition"
                     >
                       No, keep it
                     </button>
@@ -601,7 +601,7 @@ export default function AppointmentDetail() {
           {isPast && (
             <button
               onClick={() => navigate('/appointments/book')}
-              className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:shadow-lg transition"
+              className="w-full rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2 text-sm font-semibold text-white hover:shadow-lg transition"
             >
               Book another
             </button>
@@ -609,12 +609,12 @@ export default function AppointmentDetail() {
 
           <Link
             to="/appointments"
-            className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 text-center hover:bg-slate-50 transition"
+            className="block w-full rounded-lg border border-purple-500/30 bg-purple-600/10 px-4 py-2 text-sm font-semibold text-slate-300 text-center hover:bg-purple-600/20 transition backdrop-blur-md"
           >
             Back to appointments
           </Link>
 
-          <div className="rounded-2xl bg-slate-50 p-3 text-xs text-slate-600 space-y-2">
+          <div className="rounded-lg bg-purple-600/20 p-3 text-xs text-slate-400 space-y-2 border border-purple-500/20">
             <p className="font-medium">Appointment ID:</p>
             <p className="font-mono break-all">{appointment._id}</p>
           </div>

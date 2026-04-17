@@ -54,15 +54,15 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header className="border-b border-purple-500/20 bg-slate-950/40 backdrop-blur-xl sticky top-0 z-30">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
         <Link to="/" className="group">
-          <img src="/logo.png" alt="Doctor365" className="h-12 w-auto transition group-hover:opacity-80" />
+          <img src="/logo.png" alt="Doctor365" className="h-12 w-auto transition opacity-90 group-hover:opacity-100" />
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+        <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
           {navItems.map((item) => (
-            <a key={item.label} href={item.href} className="transition hover:text-blue-700">
+            <a key={item.label} href={item.href} className="transition hover:text-purple-300">
               {item.label}
             </a>
           ))}
@@ -72,7 +72,7 @@ export default function Header() {
           {isLoggedIn ? (
             <NavLink
               to={dashboardPath}
-              className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+              className="rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-purple-500/50 transition hover:scale-105"
             >
               Dashboard
             </NavLink>
@@ -80,13 +80,13 @@ export default function Header() {
             <>
               <NavLink
                 to="/login"
-                className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50"
+                className="rounded-lg border border-purple-500/40 bg-slate-800/50 px-4 py-2 text-sm font-semibold text-purple-300 transition hover:border-purple-500/60 hover:bg-slate-800/70 backdrop-blur-sm"
               >
                 Login
               </NavLink>
               <NavLink
                 to="/register"
-                className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+                className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-orange-500/50 transition hover:scale-105"
               >
                 Sign up
               </NavLink>

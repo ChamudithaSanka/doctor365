@@ -27,10 +27,10 @@ const formatCurrency = (amount, currency) => {
 }
 
 const statusStyles = {
-  paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  failed: 'bg-red-50 text-red-700 border-red-200',
-  refunded: 'bg-blue-50 text-blue-700 border-blue-200',
+  paid: 'bg-emerald-600/30 text-emerald-300 border-emerald-600/50',
+  pending: 'bg-amber-600/30 text-amber-300 border-amber-600/50',
+  failed: 'bg-red-600/30 text-red-300 border-red-600/50',
+  refunded: 'bg-blue-600/30 text-blue-300 border-blue-600/50',
 }
 
 const statusLabels = {
@@ -101,24 +101,24 @@ export default function AdminPaymentResult() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="text-slate-600">Loading payment details...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950">
+        <div className="text-slate-400">Loading payment details...</div>
       </div>
     )
   }
 
   if (error || !transaction) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6">
         <div className="mx-auto max-w-4xl">
           <button
             onClick={() => navigate('/admin/transactions')}
-            className="mb-6 inline-flex items-center text-blue-600 hover:text-blue-700"
+            className="mb-6 inline-flex items-center text-orange-400 hover:text-orange-300"
           >
             ← Back to Transactions
           </button>
 
-          <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-red-700">
+          <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-6 text-red-300 backdrop-blur-md">
             {error || 'Payment not found'}
           </div>
         </div>
@@ -131,18 +131,18 @@ export default function AdminPaymentResult() {
   const statusIcon = statusIcons[transaction.status] || '•'
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6">
       <div className="mx-auto max-w-4xl">
         {/* Back Button */}
         <button
           onClick={() => navigate('/admin/transactions')}
-          className="mb-6 inline-flex items-center text-blue-600 hover:text-blue-700"
+          className="mb-6 inline-flex items-center text-orange-400 hover:text-orange-300"
         >
           ← Back to Transactions
         </button>
 
         {/* Header with Status */}
-        <div className={`mb-8 rounded-lg border ${statusStyle} p-6`}>
+        <div className={`mb-8 rounded-lg border ${statusStyle} p-6 backdrop-blur-md`}>
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold">Payment Result</h1>
@@ -162,43 +162,43 @@ export default function AdminPaymentResult() {
           {/* Left Column - Payment Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Amount Card */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h2 className="mb-4 text-sm font-semibold text-slate-600 uppercase">Amount</h2>
-              <div className="text-4xl font-bold text-slate-900">
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+              <h2 className="mb-4 text-sm font-semibold text-slate-300 uppercase">Amount</h2>
+              <div className="text-4xl font-bold text-slate-100">
                 {formatCurrency(transaction.amount, transaction.currency)}
               </div>
-              <div className="mt-2 text-sm text-slate-600">
-                Payment Method: <span className="font-medium capitalize">{transaction.paymentMethod}</span>
+              <div className="mt-2 text-sm text-slate-400">
+                Payment Method: <span className="font-medium capitalize text-slate-300">{transaction.paymentMethod}</span>
               </div>
             </div>
 
             {/* Payment Details */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h2 className="mb-4 text-sm font-semibold text-slate-600 uppercase">Payment Details</h2>
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+              <h2 className="mb-4 text-sm font-semibold text-slate-300 uppercase">Payment Details</h2>
               <dl className="space-y-4">
-                <div className="flex justify-between py-2 border-b border-slate-100">
-                  <dt className="text-sm text-slate-600">Payment ID</dt>
-                  <dd className="font-mono text-sm font-medium text-slate-900">{transaction._id}</dd>
+                <div className="flex justify-between py-2 border-b border-purple-500/20">
+                  <dt className="text-sm text-slate-400">Payment ID</dt>
+                  <dd className="font-mono text-sm font-medium text-slate-100">{transaction._id}</dd>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-100">
-                  <dt className="text-sm text-slate-600">Transaction ID</dt>
-                  <dd className="font-mono text-sm font-medium text-slate-900">
+                <div className="flex justify-between py-2 border-b border-purple-500/20">
+                  <dt className="text-sm text-slate-400">Transaction ID</dt>
+                  <dd className="font-mono text-sm font-medium text-slate-100">
                     {transaction.transactionId || transaction.orderId}
                   </dd>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-100">
-                  <dt className="text-sm text-slate-600">Order ID</dt>
-                  <dd className="font-mono text-sm font-medium text-slate-900">{transaction.orderId}</dd>
+                <div className="flex justify-between py-2 border-b border-purple-500/20">
+                  <dt className="text-sm text-slate-400">Order ID</dt>
+                  <dd className="font-mono text-sm font-medium text-slate-100">{transaction.orderId}</dd>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-100">
-                  <dt className="text-sm text-slate-600">Appointment ID</dt>
-                  <dd className="font-mono text-sm font-medium text-slate-900">
+                <div className="flex justify-between py-2 border-b border-purple-500/20">
+                  <dt className="text-sm text-slate-400">Appointment ID</dt>
+                  <dd className="font-mono text-sm font-medium text-slate-100">
                     {transaction.appointmentId}
                   </dd>
                 </div>
                 <div className="flex justify-between py-2">
-                  <dt className="text-sm text-slate-600">Amount</dt>
-                  <dd className="font-medium text-slate-900">
+                  <dt className="text-sm text-slate-400">Amount</dt>
+                  <dd className="font-medium text-slate-100">
                     {formatCurrency(transaction.amount, transaction.currency)}
                   </dd>
                 </div>
@@ -206,18 +206,18 @@ export default function AdminPaymentResult() {
             </div>
 
             {/* Timeline */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h2 className="mb-4 text-sm font-semibold text-slate-600 uppercase">Transaction Timeline</h2>
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+              <h2 className="mb-4 text-sm font-semibold text-slate-300 uppercase">Transaction Timeline</h2>
               <div className="space-y-4">
                 {/* Created */}
                 <div className="flex gap-4">
                   <div className="flex flex-col items-center">
-                    <div className="h-3 w-3 rounded-full bg-blue-600"></div>
-                    <div className="h-8 w-0.5 bg-slate-200"></div>
+                    <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                    <div className="h-8 w-0.5 bg-purple-500/20"></div>
                   </div>
                   <div className="py-1">
-                    <div className="text-sm font-medium text-slate-900">Created</div>
-                    <div className="text-sm text-slate-600">{formatDateTime(transaction.createdAt)}</div>
+                    <div className="text-sm font-medium text-slate-100">Created</div>
+                    <div className="text-sm text-slate-400">{formatDateTime(transaction.createdAt)}</div>
                   </div>
                 </div>
 
@@ -232,10 +232,10 @@ export default function AdminPaymentResult() {
                       ></div>
                     </div>
                     <div className="py-1">
-                      <div className="text-sm font-medium text-slate-900">
+                      <div className="text-sm font-medium text-slate-100">
                         {transaction.paidAt ? 'Payment Successful' : `Payment ${statusLabel}`}
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-slate-400">
                         {transaction.paidAt
                           ? formatDateTime(transaction.paidAt)
                           : formatDateTime(transaction.updatedAt)}
@@ -248,9 +248,9 @@ export default function AdminPaymentResult() {
 
             {/* Metadata */}
             {transaction.metadata && Object.keys(transaction.metadata).length > 0 && (
-              <div className="rounded-lg border border-slate-200 bg-white p-6">
-                <h2 className="mb-4 text-sm font-semibold text-slate-600 uppercase">Additional Info</h2>
-                <pre className="overflow-auto rounded-md bg-slate-50 p-3 text-xs text-slate-700">
+              <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+                <h2 className="mb-4 text-sm font-semibold text-slate-300 uppercase">Additional Info</h2>
+                <pre className="overflow-auto rounded-md bg-slate-800/30 border border-slate-600/30 p-3 text-xs text-slate-300">
                   {JSON.stringify(transaction.metadata, null, 2)}
                 </pre>
               </div>
@@ -260,8 +260,8 @@ export default function AdminPaymentResult() {
           {/* Right Column - Summary */}
           <div className="space-y-6">
             {/* Status Card */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-600 uppercase">Status</h3>
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+              <h3 className="mb-4 text-sm font-semibold text-slate-300 uppercase">Status</h3>
               <div
                 className={`rounded-lg border ${statusStyle} p-4 text-center`}
               >
@@ -271,42 +271,42 @@ export default function AdminPaymentResult() {
             </div>
 
             {/* User Info Card */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-600 uppercase">User Info</h3>
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+              <h3 className="mb-4 text-sm font-semibold text-slate-300 uppercase">User Info</h3>
               <dl className="space-y-3">
                 <div>
-                  <dt className="text-xs font-medium text-slate-600">Patient ID</dt>
-                  <dd className="mt-1 font-mono text-sm text-slate-900">{transaction.patientId}</dd>
+                  <dt className="text-xs font-medium text-slate-400">Patient ID</dt>
+                  <dd className="mt-1 font-mono text-sm text-slate-100">{transaction.patientId}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-medium text-slate-600">Email</dt>
-                  <dd className="mt-1 text-sm text-slate-900 break-all">
+                  <dt className="text-xs font-medium text-slate-400">Email</dt>
+                  <dd className="mt-1 text-sm text-slate-100 break-all">
                     {transaction.customerEmail || 'N/A'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-medium text-slate-600">Phone</dt>
-                  <dd className="mt-1 text-sm text-slate-900">{transaction.customerPhone || 'N/A'}</dd>
+                  <dt className="text-xs font-medium text-slate-400">Phone</dt>
+                  <dd className="mt-1 text-sm text-slate-100">{transaction.customerPhone || 'N/A'}</dd>
                 </div>
               </dl>
             </div>
 
             {/* Dates Card */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-600 uppercase">Dates</h3>
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
+              <h3 className="mb-4 text-sm font-semibold text-slate-300 uppercase">Dates</h3>
               <dl className="space-y-3 text-sm">
                 <div>
-                  <dt className="text-xs font-medium text-slate-600">Created</dt>
-                  <dd className="mt-1 text-slate-900">{formatDateTime(transaction.createdAt)}</dd>
+                  <dt className="text-xs font-medium text-slate-400">Created</dt>
+                  <dd className="mt-1 text-slate-100">{formatDateTime(transaction.createdAt)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-medium text-slate-600">Updated</dt>
-                  <dd className="mt-1 text-slate-900">{formatDateTime(transaction.updatedAt)}</dd>
+                  <dt className="text-xs font-medium text-slate-400">Updated</dt>
+                  <dd className="mt-1 text-slate-100">{formatDateTime(transaction.updatedAt)}</dd>
                 </div>
                 {transaction.paidAt && (
                   <div>
-                    <dt className="text-xs font-medium text-slate-600">Paid</dt>
-                    <dd className="mt-1 text-slate-900">{formatDateTime(transaction.paidAt)}</dd>
+                    <dt className="text-xs font-medium text-slate-400">Paid</dt>
+                    <dd className="mt-1 text-slate-100">{formatDateTime(transaction.paidAt)}</dd>
                   </div>
                 )}
               </dl>

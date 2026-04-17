@@ -210,17 +210,17 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg">
+    <div className="bg-purple-600/10 border border-purple-500/20 rounded-lg shadow-lg backdrop-blur-md">
       {/* Header */}
-      <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-purple-500/20 px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Medical History</h2>
-          <p className="text-sm text-gray-600 mt-1">{patientName}</p>
+          <h2 className="text-2xl font-bold text-slate-100">Medical History</h2>
+          <p className="text-sm text-slate-400 mt-1">{patientName}</p>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl"
+            className="text-slate-400 hover:text-slate-300 text-xl"
           >
             ✕
           </button>
@@ -230,28 +230,28 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
       <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
         {/* Success Message */}
         {successMessage && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg">
+          <div className="bg-emerald-600/30 border border-emerald-600/50 text-emerald-300 px-4 py-3 rounded-lg backdrop-blur-md">
             {successMessage}
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-red-600/30 border border-red-600/50 text-red-300 px-4 py-3 rounded-lg backdrop-blur-md">
             {error}
           </div>
         )}
 
         {/* Medical Summary Section */}
         {!loading && (
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div className="bg-indigo-600/10 rounded-lg p-4 border border-indigo-600/30">
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h3 className="font-semibold text-blue-900">Patient Medical Summary</h3>
+              <h3 className="font-semibold text-indigo-200">Patient Medical Summary</h3>
               {!editSummary && (
                 <button
                   type="button"
                   onClick={() => setEditSummary(true)}
-                  className="text-blue-700 hover:text-blue-800 text-xs font-semibold"
+                  className="text-indigo-300 hover:text-indigo-200 text-xs font-semibold"
                 >
                   Edit Summary
                 </button>
@@ -265,14 +265,14 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   onChange={(e) => setEditSummaryText(e.target.value)}
                   rows="4"
                   placeholder="Write a concise clinical summary for this patient..."
-                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                  className="w-full px-3 py-2 border border-indigo-600/30 rounded-lg focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent text-sm bg-slate-800/30 text-slate-100 placeholder-slate-500"
                 />
                 <div className="flex gap-2">
                   <button
                     type="button"
                     disabled={summarySubmitting}
                     onClick={handleSaveSummary}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
+                    className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium disabled:opacity-50"
                   >
                     {summarySubmitting ? 'Saving...' : 'Save Summary'}
                   </button>
@@ -282,14 +282,14 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                       setEditSummary(false)
                       setEditSummaryText(summary)
                     }}
-                    className="px-3 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                    className="px-3 py-2 border border-indigo-600/30 text-indigo-300 rounded-lg hover:bg-indigo-600/10 transition-colors text-sm font-medium"
                   >
                     Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="text-blue-800 text-sm whitespace-pre-wrap">
+              <p className="text-indigo-200 text-sm whitespace-pre-wrap">
                 {summary || 'No medical summary on file.'}
               </p>
             )}
@@ -299,7 +299,7 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
         {/* Add Medical History Form */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Medical Records</h3>
+            <h3 className="text-lg font-semibold text-slate-100">Medical Records</h3>
             {!showForm && (
               <button
                 onClick={() => {
@@ -312,7 +312,7 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                     notes: '',
                   })
                 }}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
               >
                 + Add Record
               </button>
@@ -322,10 +322,10 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
           {showForm && (
             <form
               onSubmit={handleAddMedicalHistory}
-              className="bg-gray-50 rounded-lg p-4 mb-6 space-y-4 border border-gray-200"
+              className="bg-slate-800/30 border border-slate-600/30 rounded-lg p-4 mb-6 space-y-4 backdrop-blur-sm"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-1">
                   Date
                 </label>
                 <input
@@ -333,13 +333,13 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   name="date"
                   value={formData.date}
                   onChange={handleFormChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-slate-600/30 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-transparent text-sm bg-slate-800/30 text-slate-100 focus:bg-slate-800/50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Condition <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  Condition <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -347,14 +347,14 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   placeholder="e.g., Hypertension, Diabetes, Respiratory infection"
                   value={formData.condition}
                   onChange={handleFormChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-slate-600/30 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-transparent text-sm bg-slate-800/30 text-slate-100 placeholder-slate-500 focus:bg-slate-800/50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Treatment <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  Treatment <span className="text-red-400">*</span>
                 </label>
                 <textarea
                   name="treatment"
@@ -362,13 +362,13 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   value={formData.treatment}
                   onChange={handleFormChange}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-slate-600/30 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-transparent text-sm bg-slate-800/30 text-slate-100 placeholder-slate-500 focus:bg-slate-800/50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-1">
                   Additional Notes
                 </label>
                 <textarea
@@ -377,7 +377,7 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   value={formData.notes}
                   onChange={handleFormChange}
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-slate-600/30 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-transparent text-sm bg-slate-800/30 text-slate-100 placeholder-slate-500 focus:bg-slate-800/50"
                 />
               </div>
 
@@ -385,7 +385,7 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? 'Saving...' : editingEntryId ? 'Update Record' : 'Save Record'}
                 </button>
@@ -402,7 +402,7 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                     })
                     setError('')
                   }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  className="px-4 py-2 border border-slate-600/30 text-slate-300 rounded-lg hover:bg-slate-700/30 transition-colors text-sm font-medium"
                 >
                   Cancel
                 </button>
@@ -412,19 +412,19 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
 
           {/* Loading State */}
           {loading && (
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <div className="bg-slate-800/30 border border-slate-600/30 rounded-lg p-8 text-center backdrop-blur-sm">
               <div className="inline-block">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
               </div>
-              <p className="text-gray-600 mt-3 text-sm">Loading medical history...</p>
+              <p className="text-slate-400 mt-3 text-sm">Loading medical history...</p>
             </div>
           )}
 
           {/* Empty State */}
           {!loading && medicalHistory.length === 0 && !showForm && (
-            <div className="bg-gray-50 rounded-lg p-8 text-center border border-gray-200">
+            <div className="bg-slate-800/30 border border-slate-600/30 rounded-lg p-8 text-center backdrop-blur-sm">
               <svg
-                className="mx-auto h-10 w-10 text-gray-400"
+                className="mx-auto h-10 w-10 text-slate-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -436,8 +436,8 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h4 className="mt-3 text-sm font-medium text-gray-900">No medical records</h4>
-              <p className="text-gray-600 text-xs mt-1">Start documenting patient's medical history</p>
+              <h4 className="mt-3 text-sm font-medium text-slate-100">No medical records</h4>
+              <p className="text-slate-400 text-xs mt-1">Start documenting patient's medical history</p>
             </div>
           )}
 
@@ -450,16 +450,16 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                 .map((entry, index) => (
                   <div
                     key={index}
-                    className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow"
+                    className="border border-purple-500/20 rounded-lg p-4 bg-purple-600/5 hover:shadow-md transition-shadow backdrop-blur-sm"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                          <span className="text-xs font-semibold text-slate-300 bg-slate-800/50 border border-slate-600/30 px-2 py-1 rounded">
                             {formatDate(entry.date)}
                           </span>
                           {entry.doctorName && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
+                            <span className="text-xs bg-indigo-600/30 text-indigo-300 px-2 py-1 rounded font-medium border border-indigo-600/50">
                               Dr. {entry.doctorName}
                             </span>
                           )}
@@ -469,20 +469,20 @@ export default function DoctorPatientMedicalHistory({ patientId, patientName, on
                         <button
                           type="button"
                           onClick={() => handleStartEditRecord(entry)}
-                          className="text-xs font-semibold text-blue-700 hover:text-blue-800"
+                          className="text-xs font-semibold text-orange-400 hover:text-orange-300"
                         >
                           Edit
                         </button>
                       )}
                     </div>
-                    <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                    <h4 className="font-semibold text-slate-100 text-sm mb-1">
                       {entry.condition}
                     </h4>
-                    <p className="text-gray-700 text-sm whitespace-pre-wrap mb-2">
+                    <p className="text-slate-300 text-sm whitespace-pre-wrap mb-2">
                       {entry.treatment}
                     </p>
                     {entry.notes && (
-                      <p className="text-gray-600 text-xs italic border-l-2 border-gray-300 pl-3">
+                      <p className="text-slate-400 text-xs italic border-l-2 border-slate-600/50 pl-3">
                         {entry.notes}
                       </p>
                     )}

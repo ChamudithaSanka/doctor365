@@ -18,10 +18,10 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  completed: 'bg-blue-50 text-blue-700 ring-blue-200',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  confirmed: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  cancelled: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  completed: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 const getAppointmentPatientId = (appointment) => {
@@ -377,23 +377,23 @@ export default function DoctorConsultation() {
 
       <div className="space-y-6">
         {/* Header */}
-        <section className="rounded-[2rem] bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white shadow-lg sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Doctor consultations</p>
+        <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-slate-100 shadow-lg backdrop-blur-md sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Doctor consultations</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Active Consultations</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
             Join video meetings with patients, end consultations, and prescribe medications.
           </p>
         </section>
 
         {/* Messages */}
         {error && (
-          <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-sm text-red-300 backdrop-blur-md">
             {error}
           </div>
         )}
 
         {successMessage && (
-          <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+          <div className="rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 text-sm text-emerald-300 backdrop-blur-md">
             {successMessage}
           </div>
         )}
@@ -401,7 +401,7 @@ export default function DoctorConsultation() {
         {/* Appointments List */}
         <section className="space-y-3">
           {loading ? (
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
               Loading consultations...
             </div>
           ) : appointments.length > 0 ? (
@@ -412,39 +412,39 @@ export default function DoctorConsultation() {
               return (
                 <div
                   key={appointment._id}
-                  className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6"
+                  className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm transition hover:bg-purple-600/20 backdrop-blur-md sm:p-6"
                 >
                   <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
                     {/* Main Content */}
                     <div className="space-y-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                          <p className="font-semibold text-slate-900">
+                          <p className="font-semibold text-slate-100">
                             {getAppointmentPatientName(appointment)}
                           </p>
-                          <p className="text-sm text-slate-500 mt-1">
+                          <p className="text-sm text-slate-400 mt-1">
                             {formatDateTime(appointment.appointmentDate)}
                           </p>
-                          <p className="text-sm text-slate-500">Time: {appointment.appointmentTime || 'Not set'}</p>
+                          <p className="text-sm text-slate-400">Time: {appointment.appointmentTime || 'Not set'}</p>
                         </div>
                       </div>
 
-                      <div className="space-y-1 bg-slate-50 rounded-2xl p-3">
-                        <p className="text-sm text-slate-600">
+                      <div className="space-y-1 bg-purple-600/20 rounded-lg p-3 border border-purple-500/20">
+                        <p className="text-sm text-slate-300">
                           <span className="font-medium">Reason:</span> {appointment.reason || 'Not provided'}
                         </p>
                         {appointment.patientEmail && (
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-slate-300">
                             <span className="font-medium">Email:</span> {appointment.patientEmail}
                           </p>
                         )}
                         {appointment.patientPhone && (
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-slate-300">
                             <span className="font-medium">Phone:</span> {appointment.patientPhone}
                           </p>
                         )}
                         {appointment.notes && (
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-slate-300">
                             <span className="font-medium">Notes:</span> {appointment.notes}
                           </p>
                         )}
@@ -456,7 +456,7 @@ export default function DoctorConsultation() {
                       {appointmentPatientId ? (
                         <Link
                           to={`/doctor/patient/${appointmentPatientId}`}
-                          className="rounded-2xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition text-center"
+                          className="rounded-lg bg-orange-600 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-700 transition text-center"
                         >
                           📋 Patient Profile
                         </Link>
@@ -464,7 +464,7 @@ export default function DoctorConsultation() {
                         <button
                           type="button"
                           disabled
-                          className="rounded-2xl bg-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 cursor-not-allowed"
+                          className="rounded-lg bg-slate-700/30 px-4 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed border border-slate-600/30"
                         >
                           Patient Profile Unavailable
                         </button>
@@ -480,7 +480,7 @@ export default function DoctorConsultation() {
                               <button
                                 onClick={() => handleStatusUpdate(appointment._id, 'completed')}
                                 disabled={updating === appointment._id}
-                                className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {updating === appointment._id ? 'Updating...' : 'Mark Complete'}
                               </button>
@@ -490,7 +490,7 @@ export default function DoctorConsultation() {
                                   setPrescriptionAppointmentId(appointment._id)
                                   setShowPrescriptionForm(true)
                                 }}
-                                className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition"
+                                className="rounded-lg bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 transition"
                               >
                                 💊 Prescribe
                               </button>
@@ -500,7 +500,7 @@ export default function DoctorConsultation() {
                             <button
                               onClick={() => openVideoCall(appointment._id)}
                               disabled={loadingSession === appointment._id || creatingSession === appointment._id}
-                              className="rounded-2xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="rounded-lg bg-orange-600 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {loadingSession === appointment._id ? 'Loading...' : '🎥 Join Meeting'}
                             </button>
@@ -510,7 +510,7 @@ export default function DoctorConsultation() {
 
                       {/* Show completed status when done */}
                       {appointment.status === 'completed' && (
-                        <div className="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 text-center">
+                        <div className="rounded-lg bg-emerald-600/20 px-4 py-2 text-xs font-semibold text-emerald-300 text-center border border-emerald-600/30">
                           ✅ Completed
                         </div>
                       )}
@@ -520,8 +520,8 @@ export default function DoctorConsultation() {
               )
             })
           ) : (
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-              <p className="text-slate-500">No active consultations at the moment.</p>
+            <div className="rounded-lg border border-dashed border-purple-500/30 bg-purple-600/10 p-8 text-center backdrop-blur-md">
+              <p className="text-slate-400">No active consultations at the moment.</p>
             </div>
           )}
         </section>

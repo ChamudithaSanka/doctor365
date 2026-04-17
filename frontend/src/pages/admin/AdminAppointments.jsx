@@ -16,10 +16,10 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  completed: 'bg-blue-50 text-blue-700 ring-blue-200',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  confirmed: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  cancelled: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  completed: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 export default function AdminAppointments() {
@@ -181,8 +181,9 @@ export default function AdminAppointments() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white shadow-lg sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950">
+      <div className="space-y-6 p-6">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-white shadow-lg backdrop-blur-md sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Appointment tracking</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Platform-wide appointment status</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
@@ -191,13 +192,13 @@ export default function AdminAppointments() {
       </section>
 
       {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-sm text-red-300">
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+        <div className="rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 text-sm text-emerald-300">
           ✓ {successMessage}
         </div>
       )}
@@ -214,15 +215,15 @@ export default function AdminAppointments() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className={`rounded-3xl border p-4 shadow-sm ${
+            className={`rounded-lg border p-4 shadow-sm ${
               stat.highlight
-                ? 'border-amber-200 bg-amber-50'
-                : 'border-slate-200 bg-white'
+                ? 'border-amber-600/50 bg-amber-600/30 backdrop-blur-md'
+                : 'border-purple-500/20 bg-purple-600/10 backdrop-blur-md'
             }`}
           >
-            <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">{stat.label}</p>
+            <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">{stat.label}</p>
             <p className={`mt-2 text-2xl font-bold ${
-              stat.highlight ? 'text-amber-900' : 'text-slate-900'
+              stat.highlight ? 'text-amber-300' : 'text-slate-100'
             }`}>
               {loading ? '—' : stat.value}
             </p>
@@ -231,9 +232,9 @@ export default function AdminAppointments() {
       </section>
 
       {/* Search and Filter */}
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm backdrop-blur-md space-y-4">
         <div>
-          <label htmlFor="search" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <label htmlFor="search" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
             Search
           </label>
           <input
@@ -242,7 +243,7 @@ export default function AdminAppointments() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Patient ID, Doctor ID, email, reason..."
-            className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/30"
           />
         </div>
 
@@ -258,10 +259,10 @@ export default function AdminAppointments() {
             <button
               key={btn.value}
               onClick={() => setFilter(btn.value)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                 filter === btn.value
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30 border border-slate-600/30'
               }`}
             >
               {btn.label}
@@ -273,60 +274,60 @@ export default function AdminAppointments() {
       {/* Appointments List */}
       <section className="space-y-3">
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
             Loading appointments...
           </div>
         ) : filteredAppointments.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg border border-purple-500/20 bg-purple-600/10 backdrop-blur-md">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="rounded-tl-2xl px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">
+                <tr className="border-b border-purple-500/20 bg-slate-800/30">
+                  <th className="rounded-tl-lg px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                     Date & Time
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                     Patient
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                     Doctor
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                     Reason
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                     Status
                   </th>
-                  <th className="rounded-tr-2xl px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">
+                  <th className="rounded-tr-lg px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                     Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-purple-500/20">
                 {filteredAppointments.map((appointment) => (
-                  <tr key={appointment._id} className="hover:bg-slate-50 transition">
-                    <td className="px-4 py-4 text-sm text-slate-900">
+                  <tr key={appointment._id} className="hover:bg-slate-700/20 transition">
+                    <td className="px-4 py-4 text-sm text-slate-100">
                       <div>
                         <p className="font-medium">{formatDateTime(appointment.appointmentDate)}</p>
-                        <p className="text-xs text-slate-500">{appointment.appointmentTime}</p>
+                        <p className="text-xs text-slate-400">{appointment.appointmentTime}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-600">
+                    <td className="px-4 py-4 text-sm text-slate-300">
                       <div>
                         <p className="font-mono text-xs">{String(appointment.patientId || '').slice(0, 12)}...</p>
                         {appointment.patientEmail && (
-                          <p className="text-xs text-slate-500">{appointment.patientEmail}</p>
+                          <p className="text-xs text-slate-400">{appointment.patientEmail}</p>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-600">
+                    <td className="px-4 py-4 text-sm text-slate-300">
                       <p className="font-mono text-xs">{String(appointment.doctorId || '').slice(0, 12)}...</p>
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-600">{appointment.reason || '—'}</td>
+                    <td className="px-4 py-4 text-sm text-slate-300">{appointment.reason || '—'}</td>
                     <td className="px-4 py-4">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
+                        className={`rounded-lg px-3 py-1 text-xs font-semibold ring-1 ${
                           statusStyles[appointment.status] ||
-                          'bg-slate-100 text-slate-700 ring-slate-200'
+                          'bg-slate-700/30 text-slate-300 ring-slate-600/50'
                         }`}
                       >
                         {appointment.status}
@@ -338,7 +339,7 @@ export default function AdminAppointments() {
                           <button
                             onClick={() => handleStatusUpdate(appointment._id, 'confirmed')}
                             disabled={updating === appointment._id}
-                            className="rounded-lg bg-green-100 px-2 py-1 text-xs font-semibold text-green-700 hover:bg-green-200 transition disabled:opacity-50"
+                            className="rounded-lg bg-emerald-600/30 px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-600/50 transition disabled:opacity-50 border border-emerald-600/50"
                           >
                             Confirm
                           </button>
@@ -348,7 +349,7 @@ export default function AdminAppointments() {
                           <button
                             onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
                             disabled={updating === appointment._id}
-                            className="rounded-lg bg-red-100 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 transition disabled:opacity-50"
+                            className="rounded-lg bg-red-600/30 px-2 py-1 text-xs font-semibold text-red-300 hover:bg-red-600/50 transition disabled:opacity-50 border border-red-600/50"
                           >
                             Cancel
                           </button>
@@ -358,14 +359,14 @@ export default function AdminAppointments() {
                           <button
                             onClick={() => handleStatusUpdate(appointment._id, 'completed')}
                             disabled={updating === appointment._id}
-                            className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition disabled:opacity-50"
+                            className="rounded-lg bg-blue-600/30 px-2 py-1 text-xs font-semibold text-blue-300 hover:bg-blue-600/50 transition disabled:opacity-50 border border-blue-600/50"
                           >
                             Complete
                           </button>
                         )}
 
                         {updating === appointment._id && (
-                          <span className="text-xs text-slate-500">Updating...</span>
+                          <span className="text-xs text-slate-400">Updating...</span>
                         )}
                       </div>
                     </td>
@@ -375,25 +376,26 @@ export default function AdminAppointments() {
             </table>
           </div>
         ) : (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-            <p className="text-slate-500">
-              {search
-                ? 'No appointments match your search.'
-                : `No ${filter} appointments found.`}
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* Summary Stats */}
-      {filteredAppointments.length > 0 && (
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-slate-600">
-            Showing <span className="font-semibold text-slate-900">{filteredAppointments.length}</span> of{' '}
-            <span className="font-semibold text-slate-900">{appointments.length}</span> total appointments
+          <div className="rounded-lg border border-dashed border-purple-500/30 bg-purple-600/10 p-8 text-center backdrop-blur-md">
+          <p className="text-slate-400">
+            {search
+              ? 'No appointments match your search.'
+              : `No ${filter} appointments found.`}
           </p>
-        </section>
+        </div>
       )}
+    </section>
+
+    {/* Summary Stats */}
+    {filteredAppointments.length > 0 && (
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md">
+        <p className="text-sm font-medium text-slate-300">
+          Showing <span className="font-semibold text-slate-100">{filteredAppointments.length}</span> of{' '}
+          <span className="font-semibold text-slate-100">{appointments.length}</span> total appointments
+        </p>
+      </section>
+    )}
+    </div>
     </div>
   )
 }

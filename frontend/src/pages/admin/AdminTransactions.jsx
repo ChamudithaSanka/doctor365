@@ -27,10 +27,10 @@ const formatCurrency = (amount, currency) => {
 }
 
 const statusStyles = {
-  paid: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  failed: 'bg-red-50 text-red-700 ring-red-200',
-  refunded: 'bg-blue-50 text-blue-700 ring-blue-200',
+  paid: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  failed: 'bg-red-600/30 text-red-300 ring-red-600/50',
+  refunded: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 const statusLabels = {
@@ -166,46 +166,46 @@ export default function AdminTransactions() {
   }, [transactions])
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Transactions & Payments</h1>
-          <p className="mt-2 text-slate-600">Monitor all payment activity across the platform</p>
+          <h1 className="text-3xl font-bold text-slate-100">Transactions & Payments</h1>
+          <p className="mt-2 text-slate-400">Monitor all payment activity across the platform</p>
         </div>
 
         {/* Stats Cards */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-sm font-medium text-slate-600">Total</div>
-            <div className="mt-2 text-2xl font-bold text-slate-900">{statusBreakdown.all}</div>
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-slate-400">Total</div>
+            <div className="mt-2 text-2xl font-bold text-slate-100">{statusBreakdown.all}</div>
           </div>
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-            <div className="text-sm font-medium text-emerald-700">Success</div>
-            <div className="mt-2 text-2xl font-bold text-emerald-900">{statusBreakdown.paid}</div>
+          <div className="rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-emerald-300">Success</div>
+            <div className="mt-2 text-2xl font-bold text-emerald-200">{statusBreakdown.paid}</div>
           </div>
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <div className="text-sm font-medium text-amber-700">Pending</div>
-            <div className="mt-2 text-2xl font-bold text-amber-900">{statusBreakdown.pending}</div>
+          <div className="rounded-lg border border-amber-600/50 bg-amber-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-amber-300">Pending</div>
+            <div className="mt-2 text-2xl font-bold text-amber-200">{statusBreakdown.pending}</div>
           </div>
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <div className="text-sm font-medium text-red-700">Failed</div>
-            <div className="mt-2 text-2xl font-bold text-red-900">{statusBreakdown.failed}</div>
+          <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-red-300">Failed</div>
+            <div className="mt-2 text-2xl font-bold text-red-200">{statusBreakdown.failed}</div>
           </div>
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <div className="text-sm font-medium text-blue-700">Refunded</div>
-            <div className="mt-2 text-2xl font-bold text-blue-900">{statusBreakdown.refunded}</div>
+          <div className="rounded-lg border border-blue-600/50 bg-blue-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-blue-300">Refunded</div>
+            <div className="mt-2 text-2xl font-bold text-blue-200">{statusBreakdown.refunded}</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6">
+        <div className="mb-8 rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
+            <h2 className="text-lg font-semibold text-slate-100">Filters</h2>
             {(searchTerm || statusFilter !== 'all' || dateFrom || dateTo) && (
               <button
                 onClick={handleClearFilters}
-                className="text-sm text-blue-600 hover:text-blue-700"
+                className="text-sm text-orange-400 hover:text-orange-300"
               >
                 Clear all filters
               </button>
@@ -215,7 +215,7 @@ export default function AdminTransactions() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-slate-300">
                 Search by Transaction / Patient ID
               </label>
               <input
@@ -223,17 +223,18 @@ export default function AdminTransactions() {
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={handleSearch}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">Status</label>
+              <label className="block text-sm font-medium text-slate-300">Status</label>
               <select
                 value={statusFilter}
                 onChange={handleStatusChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                style={{ colorScheme: 'dark' }}
               >
                 <option value="all">All Statuses</option>
                 <option value="paid">Success</option>
@@ -245,23 +246,23 @@ export default function AdminTransactions() {
 
             {/* Date From */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">From Date</label>
+              <label className="block text-sm font-medium text-slate-300">From Date</label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={handleDateFromChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 
             {/* Date To */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">To Date</label>
+              <label className="block text-sm font-medium text-slate-300">To Date</label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={handleDateToChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
           </div>
@@ -269,68 +270,68 @@ export default function AdminTransactions() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+          <div className="mb-6 rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-red-300 backdrop-blur-md">
             {error}
           </div>
         )}
 
         {/* Table */}
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 overflow-hidden backdrop-blur-md">
           {loading ? (
             <div className="flex items-center justify-center p-8">
-              <div className="text-slate-600">Loading transactions...</div>
+              <div className="text-slate-400">Loading transactions...</div>
             </div>
           ) : transactions.length === 0 ? (
-            <div className="flex items-center justify-center p-8 text-slate-600">
+            <div className="flex items-center justify-center p-8 text-slate-400">
               No transactions found
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50">
+                  <thead className="border-b border-purple-500/20 bg-purple-600/20">
                     <tr>
-                      <th className="px-6 py-3 text-left font-medium text-slate-700">
+                      <th className="px-6 py-3 text-left font-medium text-slate-300">
                         Transaction ID
                       </th>
-                      <th className="px-6 py-3 text-left font-medium text-slate-700">
+                      <th className="px-6 py-3 text-left font-medium text-slate-300">
                         Patient ID
                       </th>
-                      <th className="px-6 py-3 text-left font-medium text-slate-700">Amount</th>
-                      <th className="px-6 py-3 text-left font-medium text-slate-700">Status</th>
-                      <th className="px-6 py-3 text-left font-medium text-slate-700">Date & Time</th>
-                      <th className="px-6 py-3 text-left font-medium text-slate-700">Method</th>
+                      <th className="px-6 py-3 text-left font-medium text-slate-300">Amount</th>
+                      <th className="px-6 py-3 text-left font-medium text-slate-300">Status</th>
+                      <th className="px-6 py-3 text-left font-medium text-slate-300">Date & Time</th>
+                      <th className="px-6 py-3 text-left font-medium text-slate-300">Method</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-purple-500/20">
                     {transactions.map((transaction) => (
                       <tr
                         key={transaction._id}
                         onClick={() => handleRowClick(transaction._id)}
-                        className="cursor-pointer transition-colors hover:bg-slate-50"
+                        className="cursor-pointer transition-colors hover:bg-purple-600/10"
                       >
-                        <td className="px-6 py-4 font-mono text-sm text-blue-600 hover:underline">
+                        <td className="px-6 py-4 font-mono text-sm text-orange-400 hover:underline">
                           {transaction.transactionId || transaction.orderId}
                         </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
+                        <td className="px-6 py-4 text-sm text-slate-400">
                           {transaction.patientId}
                         </td>
-                        <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                        <td className="px-6 py-4 text-sm font-medium text-slate-100">
                           {formatCurrency(transaction.amount, transaction.currency)}
                         </td>
                         <td className="px-6 py-4 text-sm">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${
+                            className={`inline-flex rounded-lg px-3 py-1 text-xs font-medium ring-1 ring-inset ${
                               statusStyles[transaction.status] || statusStyles.pending
                             }`}
                           >
                             {statusLabels[transaction.status] || transaction.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
+                        <td className="px-6 py-4 text-sm text-slate-400">
                           {formatDateTime(transaction.createdAt)}
                         </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
+                        <td className="px-6 py-4 text-sm text-slate-400">
                           {transaction.paymentMethod || 'N/A'}
                         </td>
                       </tr>
@@ -340,22 +341,22 @@ export default function AdminTransactions() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4">
-                <div className="text-sm text-slate-600">
+              <div className="flex items-center justify-between border-t border-purple-500/20 bg-purple-600/20 px-6 py-4">
+                <div className="text-sm text-slate-400">
                   Page {page} of {totalPages}
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handlePreviousPage}
                     disabled={page === 1}
-                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-600/30 transition disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={handleNextPage}
                     disabled={page >= totalPages}
-                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-600/30 transition disabled:opacity-50"
                   >
                     Next
                   </button>

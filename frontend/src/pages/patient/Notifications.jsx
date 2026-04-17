@@ -21,15 +21,15 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
-  read: 'bg-slate-100 text-slate-700 ring-slate-200',
-  sent: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  queued: 'bg-amber-50 text-amber-700 ring-amber-200',
-  partial: 'bg-orange-50 text-orange-700 ring-orange-200',
-  failed: 'bg-rose-50 text-rose-700 ring-rose-200',
-  'payment.paid': 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  'payment.failed': 'bg-rose-50 text-rose-700 ring-rose-200',
-  'appointment.reminder': 'bg-blue-50 text-blue-700 ring-blue-200',
-  'appointment.booked': 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+  read: 'bg-slate-700/30 text-slate-300 ring-slate-600/50',
+  sent: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  queued: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  partial: 'bg-orange-600/30 text-orange-300 ring-orange-600/50',
+  failed: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  'payment.paid': 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  'payment.failed': 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  'appointment.reminder': 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
+  'appointment.booked': 'bg-cyan-600/30 text-cyan-300 ring-cyan-600/50',
 }
 
 const statusLabels = {
@@ -222,34 +222,34 @@ export default function Notifications() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-700 to-cyan-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Notifications</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Patient alerts and reminders</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80\">Notifications</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl\">Patient alerts and reminders</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base\">
           See booking confirmations, appointment reminders, and payment updates in one place.
         </p>
       </section>
 
       {error ? (
-        <section className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</section>
+        <section className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">{error}</section>
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-3">
-        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">Total</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : items.length}</p>
+        <article className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm backdrop-blur-md">
+          <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">Total</p>
+          <p className="mt-2 text-3xl font-bold text-slate-100">{loading ? '—' : items.length}</p>
         </article>
-        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">Unread</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : unreadCount}</p>
+        <article className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm backdrop-blur-md">
+          <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">Unread</p>
+          <p className="mt-2 text-3xl font-bold text-slate-100">{loading ? '—' : unreadCount}</p>
         </article>
-        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">Read</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : items.length - unreadCount}</p>
+        <article className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm backdrop-blur-md">
+          <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">Read</p>
+          <p className="mt-2 text-3xl font-bold text-slate-100">{loading ? '—' : items.length - unreadCount}</p>
         </article>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 shadow-sm backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
           {[
@@ -262,10 +262,10 @@ export default function Notifications() {
               type="button"
               onClick={() => setFilter(option.value)}
               className={[
-                'rounded-full px-4 py-2 text-sm font-medium transition',
+                'rounded-lg px-4 py-2 text-sm font-medium transition',
                 filter === option.value
-                  ? 'bg-blue-700 text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                  ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white'
+                  : 'bg-purple-600/20 text-slate-300 hover:bg-purple-600/40 border border-purple-500/20',
               ].join(' ')}
             >
               {option.label}
@@ -276,7 +276,7 @@ export default function Notifications() {
             type="button"
             onClick={markAllAsRead}
             disabled={markingAll || unreadCount === 0}
-            className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-purple-600/30 border border-purple-500/20 px-4 py-2 text-sm font-semibold text-purple-300 transition hover:bg-purple-600/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {markingAll ? 'Updating...' : 'Mark all as read'}
           </button>
@@ -285,32 +285,32 @@ export default function Notifications() {
 
       <section className="space-y-3">
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
             Loading notifications...
           </div>
         ) : visibleItems.length > 0 ? (
           visibleItems.map((item) => (
-            <article key={item._id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <article key={item._id} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm backdrop-blur-md sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={[
                         'rounded-full px-3 py-1 text-xs font-semibold ring-1',
-                        statusStyles[item.status] || 'bg-slate-100 text-slate-700 ring-slate-200',
+                        statusStyles[item.status] || 'bg-slate-700/30 text-slate-300 ring-slate-600/50',
                       ].join(' ')}
                     >
                       {statusLabels[item.status] || item.status?.replace(/[._-]+/g, ' ') || 'Update'}
                     </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                    <span className="rounded-full bg-slate-700/30 border border-slate-600/30 px-3 py-1 text-xs font-medium text-slate-300">
                       {item.type || 'general'}
                     </span>
                   </div>
 
-                  <h2 className="text-lg font-semibold text-slate-900">{item.title || 'Untitled notification'}</h2>
-                  <p className="text-sm leading-6 text-slate-600">{item.message?.replace(/\b[a-f0-9]{24}\b/gi, '').replace(/\s{2,}/g, ' ').trim() || 'No message available.'}</p>
+                  <h2 className="text-lg font-semibold text-slate-100">{item.title || 'Untitled notification'}</h2>
+                  <p className="text-sm leading-6 text-slate-300">{item.message?.replace(/\b[a-f0-9]{24}\b/gi, '').replace(/\s{2,}/g, ' ').trim() || 'No message available.'}</p>
 
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
                     <p>Created: {formatDateTime(item.createdAt)}</p>
                     <p>Read: {item.readAt ? formatDateTime(item.readAt) : 'Not read yet'}</p>
                   </div>
@@ -321,7 +321,7 @@ export default function Notifications() {
                     type="button"
                     onClick={() => markAsRead(item._id)}
                     disabled={markingId === item._id}
-                    className="rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:from-orange-700 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {markingId === item._id ? 'Updating...' : 'Mark as read'}
                   </button>
@@ -330,7 +330,7 @@ export default function Notifications() {
             </article>
           ))
         ) : (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+          <div className="rounded-lg border border-dashed border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
             No notifications in this view.
           </div>
         )}
