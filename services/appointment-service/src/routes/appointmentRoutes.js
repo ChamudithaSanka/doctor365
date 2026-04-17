@@ -7,8 +7,10 @@ const {
   updateAppointmentStatus,
   updateAppointment,
   deleteAppointment,
+  markAppointmentPaidInternal,
 } = require('../controllers/appointmentController');
 const { verifyToken, restrictTo, checkAccountActive } = require('../middleware/authMiddleware');
+const { verifyInternalToken } = require('../middleware/internalTokenMiddleware');
 
 // Health check - public
 router.get('/health', (req, res) => {
@@ -17,6 +19,9 @@ router.get('/health', (req, res) => {
     service: process.env.SERVICE_NAME || 'appointment-service',
   });
 });
+
+// Internal callback endpoint for payment service
+router.post('/internal/mark-paid', verifyInternalToken, markAppointmentPaidInternal);
 
 // Apply verifyToken middleware to all routes below
 router.use(verifyToken);

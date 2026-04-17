@@ -1,96 +1,10 @@
-import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import axios from 'axios'
-import { getToken, handleTokenError } from '../utils/tokenManager'
-
-const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:5000'
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('order_id')
-  const [creating, setCreating] = useState(true)
-  const [appointmentId, setAppointmentId] = useState('')
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    const createAppointmentAfterPayment = async () => {
-      if (!orderId) {
-        setCreating(false)
-        setError('Missing order id in return URL. Unable to confirm appointment creation.')
-        return
-      }
-
-      const createdKey = `appointment_created_${orderId}`
-      const createdAppointmentId = sessionStorage.getItem(createdKey)
-      if (createdAppointmentId) {
-        setAppointmentId(createdAppointmentId)
-        setCreating(false)
-        return
-      }
-
-      const pendingRaw = sessionStorage.getItem('pendingAppointmentAfterPayment')
-      if (!pendingRaw) {
-        setCreating(false)
-        setError('No pending appointment data found. Please contact support if payment was charged.')
-        return
-      }
-
-      let pending
-      try {
-        pending = JSON.parse(pendingRaw)
-      } catch {
-        setCreating(false)
-        setError('Pending appointment data is invalid. Please try booking again.')
-        return
-      }
-
-      if (pending.orderId !== orderId) {
-        setCreating(false)
-        setError('Order mismatch detected. Please try booking again.')
-        return
-      }
-
-      const token = getToken()
-      if (!token) {
-        setCreating(false)
-        setError('You are not logged in. Please log in and check your appointments.')
-        return
-      }
-
-      try {
-        const response = await axios.post(
-          `${gatewayBaseUrl}/api/appointments`,
-          {
-            doctorId: pending.doctorId,
-            appointmentDate: pending.appointmentDate,
-            appointmentTime: pending.appointmentTime,
-            reason: pending.reason,
-            notes: pending.notes || '',
-            paymentOrderId: orderId,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
-        const createdId = response?.data?.data?._id || ''
-        if (createdId) {
-          setAppointmentId(createdId)
-          sessionStorage.setItem(createdKey, createdId)
-        }
-        sessionStorage.removeItem('pendingAppointmentAfterPayment')
-      } catch (requestError) {
-        handleTokenError(requestError)
-        setError(requestError?.response?.data?.error?.message || 'Payment succeeded, but appointment creation failed.')
-      } finally {
-        setCreating(false)
-      }
-    }
-
-    createAppointmentAfterPayment()
-  }, [orderId])
+  const message =
+    'Your payment was received. The appointment status will update automatically to pending doctor approval.'
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6 py-12 text-slate-900">
@@ -101,20 +15,11 @@ export default function PaymentSuccess() {
 
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">Thank you. Your payment was completed.</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          We have received your payment confirmation from PayHere. Your appointment booking will continue in the
-          background.
+          We have received your payment confirmation from PayHere.
         </p>
 
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-          {creating ? (
-            <p>Creating your appointment now...</p>
-          ) : error ? (
-            <p className="text-red-700">{error}</p>
-          ) : (
-            <p className="text-emerald-700">
-              Appointment created successfully{appointmentId ? ` (ID: ${appointmentId})` : ''}.
-            </p>
-          )}
+          <p className="text-emerald-700">{message}</p>
         </div>
 
         <div className="mt-6 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">

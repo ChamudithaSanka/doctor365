@@ -97,7 +97,10 @@ export default function DoctorAppointments() {
         })
 
         const appointmentList = Array.isArray(response.data?.data) ? response.data.data : []
-        setAppointments(appointmentList)
+        const paidAppointments = appointmentList.filter(
+          (appointment) => appointment?.status !== 'awaiting_payment'
+        )
+        setAppointments(paidAppointments)
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {
           // Handle token errors

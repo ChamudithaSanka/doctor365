@@ -202,7 +202,7 @@ exports.createAppointment = async (req, res, next) => {
       appointmentTime,
       reason,
       notes: notes || '',
-      status: 'pending',
+      status: 'awaiting_payment',
     });
 
     const [patientPhone, doctorContact] = await Promise.all([
@@ -419,6 +419,7 @@ exports.updateAppointmentStatus = async (req, res, next) => {
 
     if (req.user.role === 'doctor') {
       const allowedTransitions = {
+        awaiting_payment: [],
         pending: ['confirmed', 'cancelled'],
         confirmed: ['completed', 'cancelled'],
         cancelled: [],
@@ -512,13 +513,13 @@ exports.updateAppointment = async (req, res, next) => {
     if (
       req.user.role === 'patient' &&
       (appointment.patientId !== req.user.userId ||
-        appointment.status !== 'pending')
+        !['pending', 'awaiting_payment'].includes(appointment.status))
     ) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'You can only update your own pending appointments',
+          message: 'You can only update your own pending or awaiting payment appointments',
         },
       });
     }
@@ -575,13 +576,13 @@ exports.deleteAppointment = async (req, res, next) => {
     if (
       req.user.role === 'patient' &&
       (appointment.patientId !== req.user.userId ||
-        appointment.status !== 'pending')
+        !['pending', 'awaiting_payment'].includes(appointment.status))
     ) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'You can only delete your own pending appointments',
+          message: 'You can only delete your own pending or awaiting payment appointments',
         },
       });
     }
@@ -648,6 +649,78 @@ exports.deleteAppointment = async (req, res, next) => {
       success: true,
       data: appointment,
       message: 'Appointment cancelled successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Mark appointment as paid (internal service)
+// @route   POST /api/appointments/internal/mark-paid
+// @access  Internal token only
+exports.markAppointmentPaidInternal = async (req, res, next) => {
+  try {
+    const { appointmentId, patientId, paymentOrderId } = req.body;
+
+    if (!appointmentId || !patientId || !paymentOrderId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Please provide appointmentId, patientId, and paymentOrderId',
+        },
+      });
+    }
+
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      patientId,
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found for payment confirmation',
+        },
+      });
+    }
+
+    if (appointment.status === 'cancelled') {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'INVALID_STATUS',
+          message: 'Cannot confirm payment for a cancelled appointment',
+        },
+      });
+    }
+
+    if (appointment.paymentOrderId && appointment.paymentOrderId !== paymentOrderId) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_ORDER_MISMATCH',
+          message: 'Appointment already has a different payment order',
+        },
+      });
+    }
+
+    if (!appointment.paymentOrderId) {
+      appointment.paymentOrderId = paymentOrderId;
+    }
+
+    if (appointment.status === 'awaiting_payment') {
+      appointment.status = 'pending';
+    }
+
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      data: appointment,
+      message: 'Appointment payment confirmed successfully',
     });
   } catch (error) {
     next(error);

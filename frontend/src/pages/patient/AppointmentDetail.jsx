@@ -17,6 +17,7 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
+  awaiting_payment: 'bg-orange-50 text-orange-700 ring-orange-200',
   pending: 'bg-amber-50 text-amber-700 ring-amber-200',
   confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
@@ -37,6 +38,7 @@ export default function AppointmentDetail() {
   const [loadingSession, setLoadingSession] = useState(false)
   const [showVideoCall, setShowVideoCall] = useState(false)
   const [activeSessionData, setActiveSessionData] = useState(null)
+  const [paying, setPaying] = useState(false)
 
   useEffect(() => {
     const token = getToken()
@@ -213,6 +215,107 @@ export default function AppointmentDetail() {
   const handleVideoCallLeave = () => {
     setShowVideoCall(false)
     setActiveSessionData(null)
+  }
+
+  const handlePayNow = async () => {
+    const token = getToken()
+    if (!token) {
+      navigate('/login')
+      return
+    }
+
+    const consultationFee = Number(doctor?.consultationFee)
+    if (Number.isNaN(consultationFee) || consultationFee <= 0) {
+      setError('Unable to determine consultation fee for this doctor. Please refresh and try again.')
+      return
+    }
+
+    setPaying(true)
+    setError('')
+
+    try {
+      const patientResponse = await axios.get(`${gatewayBaseUrl}/api/patients/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const patient = patientResponse.data?.data
+      if (!patient) {
+        setError('Unable to fetch patient details. Please try again.')
+        return
+      }
+
+      const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city']
+      const missingFields = requiredFields.filter((field) => !patient[field])
+
+      if (missingFields.length > 0) {
+        setError(
+          `Please complete your profile first. Missing: ${missingFields.join(', ')}. ` +
+          'Visit your profile settings to update this information.'
+        )
+        return
+      }
+
+      const paymentResponse = await axios.post(
+        `${gatewayBaseUrl}/api/payments/checkout/payhere`,
+        {
+          appointmentId: appointment._id,
+          amount: consultationFee,
+          currency: 'LKR',
+          items: `Consultation for appointment ${appointment._id}`,
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          email: patient.email,
+          phone: patient.phone,
+          address: patient.address,
+          city: patient.city,
+          country: patient.country || 'Sri Lanka',
+          metadata: {
+            doctorId: appointment.doctorId,
+            appointmentDate: appointment.appointmentDate,
+            appointmentTime: appointment.appointmentTime,
+            reason: appointment.reason,
+            notes: appointment.notes || '',
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const paymentData = paymentResponse.data?.data
+      if (!paymentData?.actionUrl || !paymentData?.fields) {
+        setError('Failed to initiate payment. Please try again.')
+        return
+      }
+
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = paymentData.actionUrl
+      form.style.display = 'none'
+
+      Object.entries(paymentData.fields).forEach(([key, value]) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = key
+        input.value = value
+        form.appendChild(input)
+      })
+
+      document.body.appendChild(form)
+      form.submit()
+      document.body.removeChild(form)
+    } catch (requestError) {
+      handleTokenError(requestError)
+      setError(
+        requestError?.response?.data?.error?.message || 'Failed to proceed to payment. Please try again.'
+      )
+    } finally {
+      setPaying(false)
+    }
   }
 
   const handleCancel = async () => {
@@ -410,7 +513,11 @@ export default function AppointmentDetail() {
                 />
                 <div>
                   <p className="font-medium text-slate-900">
-                    {appointment.status === 'pending' ? 'Awaiting confirmation' : 'Status updated'}
+                    {appointment.status === 'awaiting_payment'
+                      ? 'Awaiting payment'
+                      : appointment.status === 'pending'
+                        ? 'Pending doctor approval'
+                        : 'Status updated'}
                   </p>
                   <p className="text-xs text-slate-500">
                     {new Intl.DateTimeFormat('en-LK', {
@@ -447,6 +554,16 @@ export default function AppointmentDetail() {
                 </button>
               )}
             </>
+          )}
+
+          {appointment.status === 'awaiting_payment' && (
+            <button
+              onClick={handlePayNow}
+              disabled={paying}
+              className="w-full rounded-2xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {paying ? 'Preparing payment...' : 'Pay now'}
+            </button>
           )}
 
           {isUpcoming && appointment.status !== 'cancelled' && appointment.status !== 'confirmed' && (
