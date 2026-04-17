@@ -23,10 +23,10 @@ const formatDateTime = (value) => {
 const getToken = () => localStorage.getItem('doctor365_accessToken')
 
 const statusStyles = {
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  completed: 'bg-blue-50 text-blue-700 ring-blue-200',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  confirmed: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  cancelled: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  completed: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 export default function PatientDashboard() {
@@ -126,21 +126,21 @@ export default function PatientDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[2rem] bg-gradient-to-r from-blue-700 to-green-600 p-6 text-white shadow-lg sm:p-8">
+      <section className="overflow-hidden rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-slate-100 shadow-lg backdrop-blur-md sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Your health dashboard</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Your health dashboard</p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
               {loading ? 'Loading your care summary...' : `Welcome back, ${fullName}`}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               Keep track of your upcoming care, health records, and prescriptions in one place.
             </p>
           </div>
 
-          <div className="rounded-3xl bg-white/10 p-4 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Profile snapshot</p>
-            <div className="mt-3 space-y-1 text-sm text-white/90">
+          <div className="rounded-lg bg-purple-600/10 border border-purple-500/20 p-4 backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/70">Profile snapshot</p>
+            <div className="mt-3 space-y-1 text-sm text-slate-300">
               <p>Phone: {patient?.phone || 'Not set'}</p>
               <p>Gender: {patient?.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'Not set'}</p>
               <p>Age: {age !== null ? `${age} years old` : 'Not set'}</p>
@@ -150,10 +150,10 @@ export default function PatientDashboard() {
       </section>
 
       {error ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>{error}</p>
-            <Link to="/login" className="font-semibold text-red-800 underline-offset-4 hover:underline">
+            <Link to="/login" className="font-semibold text-red-200 underline-offset-4 hover:underline">
               Go to login
             </Link>
           </div>
@@ -162,43 +162,43 @@ export default function PatientDashboard() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {quickStats.map((item) => (
-          <div key={item.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">{item.label}</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : item.value}</p>
+          <div key={item.label} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-lg backdrop-blur-md hover:border-purple-500/40 transition">
+            <p className="text-sm font-medium text-slate-300">{item.label}</p>
+            <p className="mt-2 text-3xl font-bold text-slate-100">{loading ? '—' : item.value}</p>
           </div>
         ))}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-lg backdrop-blur-md">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold text-slate-900">Upcoming appointments</h2>
-              <p className="mt-1 text-sm text-slate-500">Your next scheduled visits</p>
+              <h2 className="text-xl font-semibold text-slate-100">Upcoming appointments</h2>
+              <p className="mt-1 text-sm text-slate-400">Your next scheduled visits</p>
             </div>
-            <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+            <span className="rounded-full bg-green-600/20 px-3 py-1 text-xs font-semibold text-green-300 border border-green-500/30">
               {upcomingAppointments.length} scheduled
             </span>
           </div>
 
           <div className="mt-6 space-y-4">
             {loading ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+              <div className="rounded-lg border border-indigo-500/20 bg-indigo-600/10 p-4 text-sm text-slate-400 backdrop-blur-sm">
                 Loading appointments...
               </div>
             ) : upcomingAppointments.length > 0 ? (
               upcomingAppointments.slice(0, 3).map((item) => (
-                <article key={item._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <article key={item._id} className="rounded-lg border border-indigo-500/20 bg-indigo-600/10 p-4 backdrop-blur-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-slate-100">
                         Doctor: {item.doctorName || item.doctor?.name || item.doctor?.fullName || 'Assigned doctor'}
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">{formatDateTime(item.appointmentDate)}</p>
-                      <p className="mt-1 text-sm text-slate-500">Visit reason: {item.reason || 'Not provided'}</p>
+                      <p className="mt-1 text-sm text-slate-400">{formatDateTime(item.appointmentDate)}</p>
+                      <p className="mt-1 text-sm text-slate-400">Visit reason: {item.reason || 'Not provided'}</p>
                     </div>
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[item.status] || 'bg-slate-100 text-slate-700 ring-slate-200'}`}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[item.status] || 'bg-slate-700 text-slate-300 ring-slate-600'}`}
                     >
                       {item.status
                         ? `${String(item.status).charAt(0).toUpperCase()}${String(item.status).slice(1).toLowerCase()}`
@@ -208,7 +208,7 @@ export default function PatientDashboard() {
                 </article>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-purple-500/30 bg-slate-800/40 p-6 text-sm text-slate-400 backdrop-blur-sm">
                 You do not have any upcoming appointments yet.
               </div>
             )}
@@ -216,30 +216,30 @@ export default function PatientDashboard() {
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-900">Quick actions</h2>
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-lg backdrop-blur-md">
+            <h2 className="text-xl font-semibold text-slate-100">Quick actions</h2>
             <div className="mt-4 space-y-3">
               <Link
                 to="/doctors"
-                className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="block rounded-lg border border-indigo-500/40 bg-indigo-600/20 px-4 py-3 text-left text-sm font-semibold text-indigo-200 transition hover:border-indigo-500/60 hover:bg-indigo-600/30 hover:text-indigo-100"
               >
                 Book Appointment
               </Link>
               <Link
                 to="/appointments"
-                className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="block rounded-lg border border-indigo-500/40 bg-indigo-600/20 px-4 py-3 text-left text-sm font-semibold text-indigo-200 transition hover:border-indigo-500/60 hover:bg-indigo-600/30 hover:text-indigo-100"
               >
                 My appointments
               </Link>
               <Link
                 to="/patient/prescriptions"
-                className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="block rounded-lg border border-indigo-500/40 bg-indigo-600/20 px-4 py-3 text-left text-sm font-semibold text-indigo-200 transition hover:border-indigo-500/60 hover:bg-indigo-600/30 hover:text-indigo-100"
               >
                 Prescriptions
               </Link>
               <Link
                 to="/patient/reports"
-                className="block rounded-2xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="block rounded-lg border border-indigo-500/40 bg-indigo-600/20 px-4 py-3 text-left text-sm font-semibold text-indigo-200 transition hover:border-indigo-500/60 hover:bg-indigo-600/30 hover:text-indigo-100"
               >
                 Medical reports
               </Link>

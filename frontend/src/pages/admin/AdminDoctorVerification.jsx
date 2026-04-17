@@ -81,8 +81,9 @@ export default function AdminDoctorVerification() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-slate-950 to-blue-700 p-6 text-white shadow-lg sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6">
+      <div className="space-y-6">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-white shadow-lg backdrop-blur-md sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Admin tools</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Doctor verification</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
@@ -90,25 +91,25 @@ export default function AdminDoctorVerification() {
         </p>
       </section>
 
-      {error ? <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div> : null}
-      {success ? <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{success}</div> : null}
+      {error ? <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-sm text-red-300 backdrop-blur-md">{error}</div> : null}
+      {success ? <div className="rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 text-sm text-emerald-300 backdrop-blur-md">{success}</div> : null}
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Verification queue</h2>
+          <h2 className="text-lg font-semibold text-slate-100">Verification queue</h2>
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by name, specialization, or license"
-            className="w-full rounded-2xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 sm:max-w-sm"
+            className="w-full rounded-lg border border-slate-600/30 px-4 py-2.5 text-sm bg-slate-800/30 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/30 sm:max-w-sm"
           />
         </div>
 
-        {loading ? <p className="text-sm text-slate-600">Loading doctors...</p> : null}
+        {loading ? <p className="text-sm text-slate-400">Loading doctors...</p> : null}
 
         {!loading && filteredDoctors.length === 0 ? (
-          <p className="text-sm text-slate-600">No doctors found for this filter.</p>
+          <p className="text-sm text-slate-400">No doctors found for this filter.</p>
         ) : null}
 
         {!loading && filteredDoctors.length > 0 ? (
@@ -116,27 +117,27 @@ export default function AdminDoctorVerification() {
             {filteredDoctors.map((doctor) => {
               const busy = Boolean(pendingMap[doctor._id])
               return (
-                <article key={doctor._id} className="rounded-2xl border border-slate-200 p-4">
+                <article key={doctor._id} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 backdrop-blur-md">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-slate-900">
+                      <h3 className="text-base font-semibold text-slate-100">
                         Dr. {doctor.firstName} {doctor.lastName}
                       </h3>
-                      <p className="mt-1 text-sm text-slate-600">{doctor.specialization}</p>
-                      <p className="mt-1 text-sm text-slate-600">License: {doctor.licenseNumber}</p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-slate-400">{doctor.specialization}</p>
+                      <p className="mt-1 text-sm text-slate-400">License: {doctor.licenseNumber}</p>
+                      <p className="mt-1 text-sm text-slate-400">
                         Experience: {doctor.yearsOfExperience} years | Fee: {doctor.consultationFee}
                       </p>
                     </div>
 
                     <span
                       className={[
-                        'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold',
+                        'inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold',
                         doctor.verificationStatus === 'approved' || doctor.isVerified
-                          ? 'bg-emerald-100 text-emerald-700'
+                          ? 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50'
                           : doctor.verificationStatus === 'rejected'
-                            ? 'bg-rose-100 text-rose-700'
-                            : 'bg-amber-100 text-amber-700',
+                            ? 'bg-rose-600/30 text-rose-300 ring-rose-600/50'
+                            : 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
                       ].join(' ')}
                     >
                       {doctor.verificationStatus === 'approved' || doctor.isVerified
@@ -154,7 +155,7 @@ export default function AdminDoctorVerification() {
                           type="button"
                           disabled={busy}
                           onClick={() => updateVerification(doctor, true)}
-                          className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {busy ? 'Updating...' : 'Approve'}
                         </button>
@@ -162,7 +163,7 @@ export default function AdminDoctorVerification() {
                           type="button"
                           disabled={busy}
                           onClick={() => updateVerification(doctor, false)}
-                          className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {busy ? 'Updating...' : 'Reject'}
                         </button>
@@ -175,6 +176,7 @@ export default function AdminDoctorVerification() {
           </div>
         ) : null}
       </section>
+    </div>
     </div>
   )
 }

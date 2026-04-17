@@ -215,30 +215,30 @@ export default function DoctorProfile() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950">
       <div className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Doctor portal</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Profile & Availability</h1>
-          <p className="mt-1 text-sm text-slate-500">Update your professional info and manage your weekly schedule.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Doctor portal</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100">Profile & Availability</h1>
+          <p className="mt-1 text-sm text-slate-400">Update your professional info and manage your weekly schedule.</p>
         </div>
 
         {/* Hero banner */}
-        <div className="mb-6 rounded-[2rem] bg-gradient-to-r from-blue-700 to-green-600 p-6 text-white shadow-lg sm:p-8">
+        <div className="mb-6 rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-white shadow-lg backdrop-blur-md sm:p-8">
           <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold text-white ring-2 ring-white/30">
+            <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white/20 text-2xl font-bold text-white ring-2 ring-white/30">
               {formData.avatar || '?'}
             </div>
             <div>
               <h2 className="text-2xl font-bold">Dr. {formData.firstName} {formData.lastName}</h2>
               <p className="mt-1 text-sm text-white/80">{formData.specialty} · {formData.hospital}</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
+                <span className="inline-flex rounded-lg bg-white/15 px-3 py-1 text-xs font-semibold">
                   {formData.qualifications}
                 </span>
-                <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
+                <span className="inline-flex rounded-lg bg-white/15 px-3 py-1 text-xs font-semibold">
                   {formData.experience}
                 </span>
               </div>
@@ -247,20 +247,20 @@ export default function DoctorProfile() {
         </div>
 
         {profileSaved && (
-          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700">
+          <div className="mb-6 rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 text-sm font-medium text-emerald-300">
             Profile updated successfully.
           </div>
         )}
 
         {/* Profile form */}
-        <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mb-8 rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900">Professional information</h3>
+            <h3 className="text-lg font-semibold text-slate-100">Professional information</h3>
             {!profileEdit && (
               <button
                 type="button"
                 onClick={() => setProfileEdit(true)}
-                className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                className="rounded-lg border border-purple-500/30 px-4 py-2 text-sm font-semibold text-purple-300 transition hover:bg-purple-600/20"
               >
                 Edit
               </button>
@@ -271,7 +271,7 @@ export default function DoctorProfile() {
             <div className="grid gap-5 sm:grid-cols-2">
               {profileFields.map((f) => (
                 <div key={f.name}>
-                  <label htmlFor={f.name} className="block text-sm font-medium text-slate-700">{f.label}</label>
+                  <label htmlFor={f.name} className="block text-sm font-medium text-slate-300">{f.label}</label>
                   {profileEdit ? (
                     <input
                       id={f.name}
@@ -279,10 +279,10 @@ export default function DoctorProfile() {
                       type={f.type}
                       value={formData[f.name]}
                       onChange={handleChange}
-                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/30"
                     />
                   ) : (
-                    <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                    <p className="mt-2 rounded-lg border border-purple-500/20 bg-purple-600/10 px-4 py-3 text-sm text-slate-300 backdrop-blur-md">
                       {formData[f.name] || '—'}
                     </p>
                   )}
@@ -290,7 +290,7 @@ export default function DoctorProfile() {
               ))}
 
               <div className="sm:col-span-2">
-                <label htmlFor="bio" className="block text-sm font-medium text-slate-700">Bio</label>
+                <label htmlFor="bio" className="block text-sm font-medium text-slate-300">Bio</label>
                 {profileEdit ? (
                   <textarea
                     id="bio"
@@ -298,10 +298,10 @@ export default function DoctorProfile() {
                     rows={3}
                     value={formData.bio}
                     onChange={handleChange}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/30"
                   />
                 ) : (
-                  <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                  <p className="mt-2 rounded-lg border border-purple-500/20 bg-purple-600/10 px-4 py-3 text-sm text-slate-300 backdrop-blur-md">
                     {formData.bio}
                   </p>
                 )}
@@ -310,10 +310,10 @@ export default function DoctorProfile() {
 
             {profileEdit && (
               <div className="mt-6 flex flex-wrap gap-3">
-                <button type="submit" className="rounded-full bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
+                <button type="submit" className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-orange-700 hover:to-orange-600">
                   Save changes
                 </button>
-                <button type="button" onClick={() => { setProfileEdit(false); setFormData(savedFormData) }} className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                <button type="button" onClick={() => { setProfileEdit(false); setFormData(savedFormData) }} className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-600/30">
                   Cancel
                 </button>
               </div>
@@ -322,16 +322,16 @@ export default function DoctorProfile() {
         </div>
 
         {/* Availability manager */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900">Weekly availability</h3>
-              <p className="mt-1 text-sm text-slate-500">Set the days and hours you're available for appointments.</p>
+              <h3 className="text-lg font-semibold text-slate-100">Weekly availability</h3>
+              <p className="mt-1 text-sm text-slate-400">Set the days and hours you're available for appointments.</p>
             </div>
           </div>
 
           {availSaved && (
-            <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700">
+            <div className="mb-5 rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 text-sm font-medium text-emerald-300">
               Availability saved successfully.
             </div>
           )}
@@ -342,8 +342,8 @@ export default function DoctorProfile() {
               return (
                 <div
                   key={day}
-                  className={`rounded-2xl border p-4 transition ${
-                    slot.enabled ? 'border-blue-200 bg-blue-50/30' : 'border-slate-200 bg-white'
+                  className={`rounded-lg border p-4 transition ${
+                    slot.enabled ? 'border-purple-500/30 bg-purple-600/20' : 'border-slate-600/30 bg-slate-700/10'
                   }`}
                 >
                   <div className="flex flex-wrap items-center gap-4">
@@ -352,7 +352,7 @@ export default function DoctorProfile() {
                       type="button"
                       onClick={() => handleSlotToggle(day)}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        slot.enabled ? 'bg-blue-700' : 'bg-slate-200'
+                        slot.enabled ? 'bg-orange-600' : 'bg-slate-600'
                       }`}
                     >
                       <span
@@ -362,7 +362,7 @@ export default function DoctorProfile() {
                       />
                     </button>
 
-                    <span className={`w-24 text-sm font-semibold ${slot.enabled ? 'text-slate-900' : 'text-slate-400'}`}>
+                    <span className={`w-24 text-sm font-semibold ${slot.enabled ? 'text-slate-100' : 'text-slate-500'}`}>
                       {day}
                     </span>
 
@@ -372,18 +372,18 @@ export default function DoctorProfile() {
                           type="time"
                           value={slot.start}
                           onChange={(e) => handleSlotTime(day, 'start', e.target.value)}
-                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                          className="rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-sm text-slate-100 outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/30"
                         />
                         <span className="text-sm text-slate-400">to</span>
                         <input
                           type="time"
                           value={slot.end}
                           onChange={(e) => handleSlotTime(day, 'end', e.target.value)}
-                          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                          className="rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-sm text-slate-100 outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/30"
                         />
                       </div>
                     ) : (
-                      <span className="text-sm text-slate-400">Unavailable</span>
+                      <span className="text-sm text-slate-500">Unavailable</span>
                     )}
                   </div>
                 </div>
@@ -393,7 +393,7 @@ export default function DoctorProfile() {
 
           <button
             onClick={handleAvailSave}
-            className="mt-6 rounded-full bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+            className="mt-6 rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-orange-700 hover:to-orange-600"
           >
             Save availability
           </button>

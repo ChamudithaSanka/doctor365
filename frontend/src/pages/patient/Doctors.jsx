@@ -125,18 +125,18 @@ export default function Doctors() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-700 to-cyan-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Find a doctor</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Browse specialists and book your next consultation</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Find a doctor</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl">Browse specialists and book your next consultation</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
           Search by doctor name or specialty, filter by fee and availability, then move to details or booking.
         </p>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 backdrop-blur-md shadow-sm sm:p-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div>
-            <label htmlFor="doctor-search" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="doctor-search" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Search
             </label>
             <input
@@ -145,19 +145,19 @@ export default function Doctors() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Name, specialty, clinic"
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             />
           </div>
 
           <div>
-            <label htmlFor="doctor-specialty" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="doctor-specialty" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Specialty
             </label>
             <select
               id="doctor-specialty"
               value={specialty}
               onChange={(event) => setSpecialty(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             >
               <option value="all">All specialties</option>
               {specialties.map((item) => (
@@ -169,7 +169,7 @@ export default function Doctors() {
           </div>
 
           <div>
-            <label htmlFor="doctor-fee" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="doctor-fee" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Max fee (LKR)
             </label>
             <input
@@ -179,12 +179,12 @@ export default function Doctors() {
               value={maxFee}
               onChange={(event) => setMaxFee(event.target.value)}
               placeholder="Any"
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             />
           </div>
 
           <div>
-            <label htmlFor="doctor-date" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="doctor-date" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Pick a date
             </label>
             <input
@@ -193,28 +193,28 @@ export default function Doctors() {
               min={minDate}
               value={selectedDate}
               onChange={(event) => setSelectedDate(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             />
           </div>
         </div>
       </section>
 
       {error ? (
-        <section className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</section>
+        <section className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">{error}</section>
       ) : null}
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-900">Doctors</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-semibold text-slate-100">Doctors</h2>
+          <p className="text-sm text-slate-400">
             {loading ? 'Loading...' : `${filteredDoctors.length} verified match${filteredDoctors.length === 1 ? '' : 'es'}`}
           </p>
         </div>
 
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">Loading doctor list...</div>
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 text-sm text-slate-400 backdrop-blur-md">Loading doctor list...</div>
         ) : filteredDoctors.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+          <div className="rounded-lg border border-dashed border-purple-500/20 bg-purple-600/10 p-8 text-center text-sm text-slate-400 backdrop-blur-md">
             No doctors found for the current filters.
           </div>
         ) : (
@@ -230,38 +230,38 @@ export default function Doctors() {
                 !selectedDay || (Array.isArray(doctor.workingDays) && doctor.workingDays.includes(selectedDay))
 
               return (
-                <article key={doctor._id || doctor.userId} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <article key={doctor._id || doctor.userId} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900">{fullName}</h3>
-                      <p className="mt-1 text-sm font-medium text-blue-700">{doctor.specialization || 'Specialty not listed'}</p>
-                      <p className="mt-1 text-sm text-slate-500">{doctor.hospitalOrClinic || 'Clinic not listed'}</p>
+                      <h3 className="text-lg font-semibold text-slate-100">{fullName}</h3>
+                      <p className="mt-1 text-sm font-medium text-orange-400">{doctor.specialization || 'Specialty not listed'}</p>
+                      <p className="mt-1 text-sm text-slate-400">{doctor.hospitalOrClinic || 'Clinic not listed'}</p>
                     </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${doctor.isVerified ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${doctor.isVerified ? 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50 ring-1' : 'bg-amber-600/30 text-amber-300 ring-amber-600/50 ring-1'}`}>
                       {doctor.isVerified ? 'Verified' : 'Pending verification'}
                     </span>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Consultation fee</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{formatCurrency(doctor.consultationFee)}</p>
+                    <div className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-3 backdrop-blur-sm">
+                      <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Consultation fee</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-100">{formatCurrency(doctor.consultationFee)}</p>
                     </div>
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Experience</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{doctor.yearsOfExperience ?? 'N/A'} years</p>
+                    <div className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-3 backdrop-blur-sm">
+                      <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Experience</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-100">{doctor.yearsOfExperience ?? 'N/A'} years</p>
                     </div>
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Availability</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{availabilityLabel}</p>
+                    <div className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-3 backdrop-blur-sm">
+                      <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Availability</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-100">{availabilityLabel}</p>
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Working days</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-900">{workingDaysLabel}</p>
+                  <div className="mt-4 rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 backdrop-blur-sm">
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Working days</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-100">{workingDaysLabel}</p>
                     {selectedDate ? (
-                      <p className={`mt-2 text-sm font-medium ${isBookableOnSelectedDate ? 'text-emerald-700' : 'text-amber-700'}`}>
+                      <p className={`mt-2 text-sm font-medium ${isBookableOnSelectedDate ? 'text-emerald-300' : 'text-amber-300'}`}>
                         {isBookableOnSelectedDate
                           ? `Bookable on ${selectedDate}`
                           : `Not bookable on ${selectedDate}`}
@@ -272,13 +272,13 @@ export default function Doctors() {
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link
                       to={`/doctors/${doctor._id || doctor.userId}`}
-                      className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      className="rounded-lg border border-purple-500/30 bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-purple-500/50 hover:bg-slate-700/50"
                     >
                       View details
                     </Link>
                     <Link
                       to={selectedDate ? `/appointments/book?doctorId=${doctor._id || doctor.userId}&date=${selectedDate}` : `/appointments/book?doctorId=${doctor._id || doctor.userId}`}
-                      className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+                      className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:from-orange-700 hover:to-orange-600"
                     >
                       Book appointment
                     </Link>

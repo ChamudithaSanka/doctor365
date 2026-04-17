@@ -118,8 +118,8 @@ export default function ManageDoctors() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8 sm:px-6 lg:px-8">
-      <section className="mb-8 rounded-3xl bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8 text-white sm:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mb-8 rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 px-6 py-8 text-white backdrop-blur-md sm:px-8">
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Manage Doctors</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
           View doctor accounts and manage their status by enabling, disabling, or deleting them.
@@ -127,36 +127,36 @@ export default function ManageDoctors() {
       </section>
 
       {error ? (
-        <div className="mb-4 rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-sm text-red-300 backdrop-blur-md">{error}</div>
       ) : null}
       {success ? (
-        <div className="mb-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{success}</div>
+        <div className="mb-4 rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 text-sm text-emerald-300 backdrop-blur-md">{success}</div>
       ) : null}
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="text"
             placeholder="Search by name, specialization, or license number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="flex-1 rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
           />
         </div>
 
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className="text-slate-600">Loading doctors...</div>
+            <div className="text-slate-400">Loading doctors...</div>
           </div>
         ) : filteredDoctors.length === 0 ? (
           <div className="flex justify-center py-8">
-            <div className="text-slate-600">No doctors found</div>
+            <div className="text-slate-400">No doctors found</div>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200 text-left text-sm font-semibold text-slate-700">
+                <tr className="border-b border-purple-500/20 text-left text-sm font-semibold text-slate-400">
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Specialization</th>
                   <th className="px-4 py-3">License</th>
@@ -167,20 +167,20 @@ export default function ManageDoctors() {
               </thead>
               <tbody>
                 {filteredDoctors.map((doctor) => (
-                  <tr key={doctor._id} className="border-b border-slate-200 hover:bg-slate-50">
+                  <tr key={doctor._id} className="border-b border-purple-500/20 hover:bg-purple-600/20 transition">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900">
+                      <div className="font-medium text-slate-100">
                         Dr. {doctor.firstName} {doctor.lastName}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-600">{doctor.specialization}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600">{doctor.licenseNumber}</td>
+                    <td className="px-4 py-3 text-sm text-slate-400">{doctor.specialization}</td>
+                    <td className="px-4 py-3 text-sm text-slate-400">{doctor.licenseNumber}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                        className={`inline-block rounded-lg px-3 py-1 text-xs font-semibold ${
                           doctor.isVerified
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-emerald-600/30 text-emerald-300'
+                            : 'bg-amber-600/30 text-amber-300'
                         }`}
                       >
                         {doctor.isVerified ? 'Verified' : 'Pending'}
@@ -188,10 +188,10 @@ export default function ManageDoctors() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                        className={`inline-block rounded-lg px-3 py-1 text-xs font-semibold ${
                           doctor.isActive
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-red-100 text-red-700'
+                            ? 'bg-emerald-600/30 text-emerald-300'
+                            : 'bg-red-600/30 text-red-300'
                         }`}
                       >
                         {doctor.isActive ? 'Active' : 'Disabled'}
@@ -201,7 +201,7 @@ export default function ManageDoctors() {
                       <button
                         type="button"
                         onClick={() => openModal(doctor)}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                        className="text-sm font-medium text-orange-400 hover:text-orange-300"
                       >
                         Manage
                       </button>
@@ -216,47 +216,47 @@ export default function ManageDoctors() {
 
       {/* Modal */}
       {showModal && selectedDoctor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-            <h2 className="text-xl font-bold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-lg backdrop-blur-md">
+            <h2 className="text-xl font-bold text-slate-100">
               Dr. {selectedDoctor.firstName} {selectedDoctor.lastName}
             </h2>
 
-            <div className="mt-4 space-y-2 text-sm text-slate-600">
+            <div className="mt-4 space-y-2 text-sm text-slate-400">
               <div>
-                <label className="font-semibold text-slate-700">Specialization:</label> {selectedDoctor.specialization}
+                <label className="font-semibold text-slate-300">Specialization:</label> {selectedDoctor.specialization}
               </div>
               <div>
-                <label className="font-semibold text-slate-700">License Number:</label> {selectedDoctor.licenseNumber}
+                <label className="font-semibold text-slate-300">License Number:</label> {selectedDoctor.licenseNumber}
               </div>
               <div>
-                <label className="font-semibold text-slate-700">Experience:</label> {selectedDoctor.yearsOfExperience} years
+                <label className="font-semibold text-slate-300">Experience:</label> {selectedDoctor.yearsOfExperience} years
               </div>
               <div>
-                <label className="font-semibold text-slate-700">Consultation Fee:</label> Rs. {selectedDoctor.consultationFee}
+                <label className="font-semibold text-slate-300">Consultation Fee:</label> Rs. {selectedDoctor.consultationFee}
               </div>
               <div>
-                <label className="font-semibold text-slate-700">Hospital/Clinic:</label> {selectedDoctor.hospitalOrClinic}
+                <label className="font-semibold text-slate-300">Hospital/Clinic:</label> {selectedDoctor.hospitalOrClinic}
               </div>
               <div>
-                <label className="font-semibold text-slate-700">Verified:</label>{' '}
+                <label className="font-semibold text-slate-300">Verified:</label>{' '}
                 <span
-                  className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
+                  className={`inline-block rounded-lg px-2 py-1 text-xs font-semibold ${
                     selectedDoctor.isVerified
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-yellow-100 text-yellow-700'
+                      ? 'bg-emerald-600/30 text-emerald-300'
+                      : 'bg-amber-600/30 text-amber-300'
                   }`}
                 >
                   {selectedDoctor.isVerified ? 'Verified' : 'Pending'}
                 </span>
               </div>
               <div>
-                <label className="font-semibold text-slate-700">Status:</label>{' '}
+                <label className="font-semibold text-slate-300">Status:</label>{' '}
                 <span
-                  className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
+                  className={`inline-block rounded-lg px-2 py-1 text-xs font-semibold ${
                     selectedDoctor.isActive
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-red-100 text-red-700'
+                      ? 'bg-emerald-600/30 text-emerald-300'
+                      : 'bg-red-600/30 text-red-300'
                   }`}
                 >
                   {selectedDoctor.isActive ? 'Active' : 'Disabled'}
@@ -268,10 +268,10 @@ export default function ManageDoctors() {
               <button
                 type="button"
                 onClick={() => handleToggleStatus(selectedDoctor)}
-                className={`flex-1 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   selectedDoctor.isActive
-                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                    : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                    ? 'bg-orange-600 text-white hover:bg-orange-700'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
                 }`}
               >
                 {selectedDoctor.isActive ? 'Disable' : 'Enable'}
@@ -279,14 +279,14 @@ export default function ManageDoctors() {
               <button
                 type="button"
                 onClick={() => handleDelete(selectedDoctor)}
-                className="flex-1 rounded-2xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition"
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
               >
                 Delete
               </button>
               <button
                 type="button"
                 onClick={closeModal}
-                className="flex-1 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="flex-1 rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-600/30"
               >
                 Close
               </button>

@@ -122,30 +122,30 @@ export default function Profile() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950">
       <div className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">My account</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Profile</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300">My account</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100">Profile</h1>
+          <p className="mt-1 text-sm text-slate-300">
             Your personal information — loaded from and saved to the patient database.
           </p>
         </div>
 
         {/* Avatar + Identity Card */}
-        <div className="mb-6 rounded-[2rem] bg-gradient-to-r from-blue-700 to-green-600 p-6 text-white shadow-lg sm:p-8">
+        <div className="mb-6 rounded-lg border border-purple-500/20 bg-gradient-to-r from-purple-950 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
           <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold text-white ring-2 ring-white/30">
+            <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-purple-600/30 text-2xl font-bold text-purple-300 ring-2 ring-purple-500/30">
               {loading ? '…' : initials}
             </div>
             <div>
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-2xl font-bold text-slate-100">
                 {loading ? 'Loading…' : `${formData.firstName} ${formData.lastName}`.trim() || 'Patient'}
               </h2>
-              <p className="mt-1 text-sm text-white/80">{formData.phone || 'Phone not set'}</p>
-              <span className="mt-2 inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
+              <p className="mt-1 text-sm text-slate-400">{formData.phone || 'Phone not set'}</p>
+              <span className="mt-2 inline-flex items-center rounded-full bg-purple-600/30 px-3 py-1 text-xs font-semibold text-purple-300 border border-purple-500/20">
                 Patient
               </span>
             </div>
@@ -154,24 +154,24 @@ export default function Profile() {
 
         {/* Success / Error */}
         {saved && (
-          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700">
+          <div className="mb-6 rounded-lg border border-green-500/30 bg-green-600/10 p-4 text-sm font-medium text-green-300 backdrop-blur-md">
             ✓ Profile updated successfully and saved to the database.
           </div>
         )}
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-6 rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">
             {error}
           </div>
         )}
 
         {/* Form Card */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900">Personal information</h3>
+            <h3 className="text-lg font-semibold text-slate-100">Personal information</h3>
             {!editMode && !loading && (
               <button
                 onClick={() => setEditMode(true)}
-                className="rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                className="rounded-lg border border-purple-500/30 px-4 py-2 text-sm font-semibold text-purple-300 transition hover:bg-purple-600/20"
               >
                 Edit
               </button>
@@ -182,7 +182,7 @@ export default function Profile() {
             <div className="grid gap-5 sm:grid-cols-2">
               {fields.map((field) => (
                 <div key={field.name} className={field.span ? 'sm:col-span-2' : ''}>
-                  <label htmlFor={field.name} className="block text-sm font-medium text-slate-700">
+                  <label htmlFor={field.name} className="block text-sm font-medium text-slate-300">
                     {field.label}
                   </label>
                   {editMode ? (
@@ -192,10 +192,10 @@ export default function Profile() {
                       type={field.type}
                       value={formData[field.name]}
                       onChange={handleChange}
-                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-md"
                     />
                   ) : (
-                    <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                    <p className="mt-2 rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-300 backdrop-blur-md">
                       {loading ? '…' : formData[field.name] || '—'}
                     </p>
                   )}
@@ -204,21 +204,21 @@ export default function Profile() {
 
               {/* Gender */}
               <div>
-                <label htmlFor="gender" className="block text-sm font-medium text-slate-700">Gender</label>
+                <label htmlFor="gender" className="block text-sm font-medium text-slate-300">Gender</label>
                 {editMode ? (
                   <select
                     id="gender"
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-slate-100 outline-none transition focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20 backdrop-blur-md"
                   >
                     <option value="">Select gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
                 ) : (
-                  <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm capitalize text-slate-700">
+                  <p className="mt-2 rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm capitalize text-slate-300 backdrop-blur-md">
                     {loading ? '…' : formData.gender || '—'}
                   </p>
                 )}
@@ -226,10 +226,10 @@ export default function Profile() {
 
               {/* Medical history summary */}
               <div className="sm:col-span-2">
-                <label htmlFor="medicalHistorySummary" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="medicalHistorySummary" className="block text-sm font-medium text-slate-300">
                   Medical history summary
                 </label>
-                <p className="mt-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 whitespace-pre-wrap">
+                <p className="mt-2 rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-300 whitespace-pre-wrap backdrop-blur-md">
                   {loading ? '…' : formData.medicalHistorySummary || '—'}
                 </p>
               </div>
@@ -240,14 +240,14 @@ export default function Profile() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-full bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-60"
+                  className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-orange-700 hover:to-orange-600 disabled:opacity-60"
                 >
                   {saving ? 'Saving…' : 'Save changes'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditMode(false)}
-                  className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-lg border border-slate-600/30 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-700/30"
                 >
                   Cancel
                 </button>
@@ -265,12 +265,12 @@ export default function Profile() {
             <Link
               key={item.label}
               to={item.href}
-              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-200 hover:shadow-md"
+              className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-5 shadow-sm transition hover:border-purple-500/40 hover:shadow-md backdrop-blur-md"
             >
-              <p className={`text-sm font-semibold ${item.color === 'blue' ? 'text-blue-700' : 'text-green-700'}`}>
+              <p className={`text-sm font-semibold ${item.color === 'blue' ? 'text-purple-300' : 'text-purple-300'}`}>
                 {item.label}
               </p>
-              <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
+              <p className="mt-1 text-sm text-slate-400">{item.desc}</p>
             </Link>
           ))}
         </div>

@@ -121,10 +121,10 @@ export default function PatientPrescriptions() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Your Prescriptions</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Manage your medical prescriptions</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Your Prescriptions</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl">Manage your medical prescriptions</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
           View and manage all prescriptions issued by your doctors. Keep track of your medications, dosages, and treatment
           instructions.
         </p>
@@ -132,7 +132,7 @@ export default function PatientPrescriptions() {
 
       {/* Error Alert */}
       {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">
           {error}
         </div>
       )}
@@ -140,7 +140,7 @@ export default function PatientPrescriptions() {
       {/* Content */}
       <section className="space-y-3">
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-center text-slate-400 backdrop-blur-md">
             Loading prescriptions...
           </div>
         ) : prescriptions.length > 0 ? (
@@ -148,29 +148,29 @@ export default function PatientPrescriptions() {
             {prescriptions.map((prescription, index) => (
               <div
                 key={index}
-                className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden transition hover:shadow-md"
+                className="rounded-lg border border-purple-500/20 bg-purple-600/10 shadow-sm overflow-hidden transition hover:border-purple-500/40 backdrop-blur-md"
               >
                 {/* Header */}
                 <button
                   onClick={() =>
                     setExpandedPrescription(expandedPrescription === index ? null : index)
                   }
-                  className="w-full px-6 py-4 sm:p-6 text-left hover:bg-slate-50 transition"
+                  className="w-full px-6 py-4 sm:p-6 text-left hover:bg-purple-600/20 transition"
                 >
                   <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
                     <div className="space-y-2">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold text-slate-100">
                           {getDoctorDisplayName(doctorNamesById[prescription.doctorId] || prescription.doctorName)}
                         </h3>
-                        <span className="text-sm text-slate-500">{formatDate(prescription.date)}</span>
+                        <span className="text-sm text-slate-400">{formatDate(prescription.date)}</span>
                       </div>
                       {prescription.diagnosis && (
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-slate-300">
                           <span className="font-medium">Diagnosis:</span> {prescription.diagnosis}
                         </p>
                       )}
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-300">
                         <span className="font-medium">Medications:</span> {prescription.medication?.length || 0}{' '}
                         medication{prescription.medication?.length === 1 ? '' : 's'}
                       </p>
@@ -197,24 +197,24 @@ export default function PatientPrescriptions() {
 
                 {/* Details */}
                 {expandedPrescription === index && (
-                  <div className="border-t border-slate-200 px-6 py-4 sm:p-6 bg-slate-50 space-y-4">
+                  <div className="border-t border-slate-600/30 px-6 py-4 sm:p-6 bg-slate-800/30 space-y-4">
                     {/* Medications */}
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900 mb-3">Medications</h4>
+                      <h4 className="text-sm font-semibold text-slate-100 mb-3">Medications</h4>
                       <div className="space-y-2">
                         {prescription.medication && prescription.medication.length > 0 ? (
                           prescription.medication.map((med, medIndex) => (
                             <div
                               key={medIndex}
-                              className="rounded-2xl bg-white border border-slate-200 p-4 space-y-2"
+                              className="rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 space-y-2 backdrop-blur-md"
                             >
                               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                <p className="font-medium text-slate-900">{med.name}</p>
-                                <span className="text-xs font-semibold bg-purple-100 text-purple-700 rounded-full px-2.5 py-0.5">
+                                <p className="font-medium text-slate-100">{med.name}</p>
+                                <span className="text-xs font-semibold bg-purple-600/30 text-purple-200 border border-purple-500/20 rounded-full px-2.5 py-0.5">
                                   {med.dosage}
                                 </span>
                               </div>
-                              <div className="grid gap-2 text-sm text-slate-600">
+                              <div className="grid gap-2 text-sm text-slate-300">
                                 <p>
                                   <span className="font-medium">Frequency:</span> {med.frequency}
                                 </p>
@@ -233,19 +233,19 @@ export default function PatientPrescriptions() {
                     {/* Instructions */}
                     {prescription.instructions && (
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-900 mb-2">Additional Instructions</h4>
-                        <p className="text-sm text-slate-600 rounded-2xl bg-white border border-slate-200 p-4">
+                        <h4 className="text-sm font-semibold text-slate-100 mb-2">Additional Instructions</h4>
+                        <p className="text-sm text-slate-300 rounded-lg bg-indigo-600/10 border border-indigo-500/20 p-4 backdrop-blur-md">
                           {prescription.instructions}
                         </p>
                       </div>
                     )}
 
                     {/* Doctor Info */}
-                    <div className="pt-2 border-t border-slate-200">
-                      <p className="text-xs text-slate-500">
+                    <div className="pt-2 border-t border-slate-600/30">
+                      <p className="text-xs text-slate-400">
                         <span className="font-medium">Doctor ID:</span> {prescription.doctorId}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-400">
                         <span className="font-medium">Issued on:</span> {new Intl.DateTimeFormat('en-LK', {
                           dateStyle: 'full',
                           timeStyle: 'short',
@@ -257,7 +257,7 @@ export default function PatientPrescriptions() {
                     <div className="pt-2">
                       <button
                         onClick={() => window.print()}
-                        className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition"
+                        className="rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2 text-xs font-semibold text-white hover:from-orange-700 hover:to-orange-600 transition"
                       >
                         🖨️ Print Prescription
                       </button>
@@ -268,8 +268,8 @@ export default function PatientPrescriptions() {
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
-            <svg className="mx-auto w-16 h-16 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="rounded-lg border border-dashed border-purple-500/20 bg-purple-600/10 p-12 text-center backdrop-blur-md">
+            <svg className="mx-auto w-16 h-16 text-purple-300/60 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -277,8 +277,8 @@ export default function PatientPrescriptions() {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <p className="text-slate-900 font-medium">No prescriptions yet</p>
-            <p className="text-slate-500 text-sm mt-1">Your prescriptions from doctors will appear here</p>
+            <p className="text-slate-100 font-medium">No prescriptions yet</p>
+            <p className="text-slate-400 text-sm mt-1">Your prescriptions from doctors will appear here</p>
           </div>
         )}
       </section>

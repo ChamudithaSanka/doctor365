@@ -16,10 +16,10 @@ const formatDateTime = (value) => {
 }
 
 const statusStyles = {
-  sent: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  partial: 'bg-orange-50 text-orange-700 ring-orange-200',
-  failed: 'bg-red-50 text-red-700 ring-red-200',
-  queued: 'bg-amber-50 text-amber-700 ring-amber-200',
+  sent: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  partial: 'bg-orange-600/30 text-orange-300 ring-orange-600/50',
+  failed: 'bg-red-600/30 text-red-300 ring-red-600/50',
+  queued: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
 }
 
 const statusLabels = {
@@ -175,42 +175,42 @@ export default function AdminNotifications() {
   }, [notifications])
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Notifications Center</h1>
-          <p className="mt-2 text-slate-600">Monitor all system notifications across the platform</p>
+          <h1 className="text-3xl font-bold text-slate-100">Notifications Center</h1>
+          <p className="mt-2 text-slate-400">Monitor all system notifications across the platform</p>
         </div>
 
         {/* Stats Cards */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-sm font-medium text-slate-600">Total</div>
-            <div className="mt-2 text-2xl font-bold text-slate-900">{statusBreakdown.all}</div>
+          <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-slate-400">Total</div>
+            <div className="mt-2 text-2xl font-bold text-slate-100">{statusBreakdown.all}</div>
           </div>
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-            <div className="text-sm font-medium text-emerald-700">Sent</div>
-            <div className="mt-2 text-2xl font-bold text-emerald-900">{statusBreakdown.sent}</div>
+          <div className="rounded-lg border border-emerald-600/50 bg-emerald-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-emerald-300">Sent</div>
+            <div className="mt-2 text-2xl font-bold text-emerald-200">{statusBreakdown.sent}</div>
           </div>
-          <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
-            <div className="text-sm font-medium text-orange-700">Partial</div>
-            <div className="mt-2 text-2xl font-bold text-orange-900">{statusBreakdown.partial}</div>
+          <div className="rounded-lg border border-orange-600/50 bg-orange-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-orange-300">Partial</div>
+            <div className="mt-2 text-2xl font-bold text-orange-200">{statusBreakdown.partial}</div>
           </div>
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <div className="text-sm font-medium text-red-700">Failed</div>
-            <div className="mt-2 text-2xl font-bold text-red-900">{statusBreakdown.failed}</div>
+          <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-4 backdrop-blur-md">
+            <div className="text-sm font-medium text-red-300">Failed</div>
+            <div className="mt-2 text-2xl font-bold text-red-200">{statusBreakdown.failed}</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6">
+        <div className="mb-8 rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
+            <h2 className="text-lg font-semibold text-slate-100">Filters</h2>
             {(typeFilter !== 'all' || statusFilter !== 'all' || dateFrom || dateTo) && (
               <button
                 onClick={handleClearFilters}
-                className="text-sm text-blue-600 hover:text-blue-700"
+                className="text-sm text-orange-400 hover:text-orange-300"
               >
                 Clear all filters
               </button>
@@ -220,11 +220,11 @@ export default function AdminNotifications() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Type Filter */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">Notification Type</label>
+              <label className="block text-sm font-medium text-slate-300">Notification Type</label>
               <select
                 value={typeFilter}
                 onChange={handleTypeChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               >
                 <option value="all">All Types</option>
                 <option value="appointment.booked">Appointment Booked</option>
@@ -237,11 +237,11 @@ export default function AdminNotifications() {
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">Status</label>
+              <label className="block text-sm font-medium text-slate-300">Status</label>
               <select
                 value={statusFilter}
                 onChange={handleStatusChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               >
                 <option value="all">All Statuses</option>
                 <option value="sent">Sent</option>
@@ -253,23 +253,23 @@ export default function AdminNotifications() {
 
             {/* Date From */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">From Date</label>
+              <label className="block text-sm font-medium text-slate-300">From Date</label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={handleDateFromChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 
             {/* Date To */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">To Date</label>
+              <label className="block text-sm font-medium text-slate-300">To Date</label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={handleDateToChange}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-3 py-2 text-slate-100 focus:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function AdminNotifications() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+          <div className="mb-6 rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-red-300 backdrop-blur-md">
             {error}
           </div>
         )}
@@ -285,11 +285,11 @@ export default function AdminNotifications() {
         {/* List View */}
         <div className="space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-8">
-              <div className="text-slate-600">Loading notifications...</div>
+            <div className="flex items-center justify-center rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 backdrop-blur-md">
+              <div className="text-slate-400">Loading notifications...</div>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-8 text-slate-600">
+            <div className="flex items-center justify-center rounded-lg border border-purple-500/20 bg-purple-600/10 p-8 text-slate-400 backdrop-blur-md">
               No notifications found
             </div>
           ) : (
@@ -297,11 +297,11 @@ export default function AdminNotifications() {
               {notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className="rounded-lg border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300"
+                  className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 transition-colors hover:border-purple-500/40 backdrop-blur-md"
                 >
                   <div className="flex gap-4">
                     {/* Icon */}
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-xl">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-600/20 text-xl">
                       {typeIcons[notification.type] || '•'}
                     </div>
 
@@ -309,11 +309,11 @@ export default function AdminNotifications() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-slate-900">{notification.title}</h3>
-                          <p className="mt-1 text-sm text-slate-600">{notification.message}</p>
+                          <h3 className="font-semibold text-slate-100">{notification.title}</h3>
+                          <p className="mt-1 text-sm text-slate-400">{notification.message}</p>
                         </div>
                         <span
-                          className={`ml-4 inline-flex rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${
+                          className={`ml-4 inline-flex rounded-lg px-3 py-1 text-xs font-medium ring-1 ring-inset ${
                             statusStyles[notification.status] || statusStyles.queued
                           }`}
                         >
@@ -322,7 +322,7 @@ export default function AdminNotifications() {
                       </div>
 
                       {/* Meta Info */}
-                      <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-600">
+                      <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400">
                         <div>
                           <span className="font-medium">Type:</span> {typeLabels[notification.type] || notification.type}
                         </div>
@@ -344,25 +344,25 @@ export default function AdminNotifications() {
 
                       {/* Delivery Status */}
                       {notification.deliveryStatus && (
-                        <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                          <div className="text-xs font-medium text-slate-700 mb-2">Delivery Status:</div>
+                        <div className="mt-3 rounded-lg bg-purple-600/10 p-3 border border-purple-500/20">
+                          <div className="text-xs font-medium text-slate-300 mb-2">Delivery Status:</div>
                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                             {notification.deliveryStatus.inApp && (
-                              <div className="text-xs">
+                              <div className="text-xs text-slate-400">
                                 <span className="font-medium">In-App:</span> {notification.deliveryStatus.inApp.status}
                               </div>
                             )}
                             {notification.deliveryStatus.email && (
-                              <div className="text-xs">
+                              <div className="text-xs text-slate-400">
                                 <span className="font-medium">Email:</span> {notification.deliveryStatus.email.status}
                               </div>
                             )}
                             {notification.deliveryStatus.sms && (
-                              <div className="text-xs">
+                              <div className="text-xs text-slate-400">
                                 <span className="font-medium">SMS:</span> {notification.deliveryStatus.sms.status}
                               </div>
                             )}
-                            <div className="text-xs">
+                            <div className="text-xs text-slate-400">
                               <span className="font-medium">Overall:</span> {notification.deliveryStatus.overall}
                             </div>
                           </div>
@@ -374,22 +374,22 @@ export default function AdminNotifications() {
               ))}
 
               {/* Pagination */}
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-6 py-4">
-                <div className="text-sm text-slate-600">
+              <div className="flex items-center justify-between rounded-lg border border-purple-500/20 bg-purple-600/10 px-6 py-4 backdrop-blur-md">
+                <div className="text-sm text-slate-400">
                   Page {page} of {totalPages}
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handlePreviousPage}
                     disabled={page === 1}
-                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-600/30 transition disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={handleNextPage}
                     disabled={page >= totalPages}
-                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="rounded-lg border border-slate-600/30 bg-slate-700/30 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-600/30 transition disabled:opacity-50"
                   >
                     Next
                   </button>

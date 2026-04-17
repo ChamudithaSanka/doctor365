@@ -24,10 +24,10 @@ const getAppointmentPatientName = (appointment) => {
 }
 
 const statusStyles = {
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  completed: 'bg-blue-50 text-blue-700 ring-blue-200',
+  pending: 'bg-amber-600/30 text-amber-300 ring-amber-600/50',
+  confirmed: 'bg-emerald-600/30 text-emerald-300 ring-emerald-600/50',
+  cancelled: 'bg-rose-600/30 text-rose-300 ring-rose-600/50',
+  completed: 'bg-blue-600/30 text-blue-300 ring-blue-600/50',
 }
 
 export default function DoctorDashboard() {
@@ -134,7 +134,7 @@ export default function DoctorDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-700 to-green-600 p-6 text-white shadow-lg sm:p-8">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 text-white shadow-lg backdrop-blur-md sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Doctor dashboard</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
           Manage your schedule and consultation flow
@@ -145,7 +145,7 @@ export default function DoctorDashboard() {
       </section>
 
       {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-600/50 bg-red-600/30 p-4 text-sm text-red-300">
           {error}
         </div>
       )}
@@ -154,37 +154,37 @@ export default function DoctorDashboard() {
         {stats.map((item) => (
           <div
             key={item.label}
-            className="rounded-3xl border border-transparent bg-white p-6 shadow-sm hover:shadow-2xl hover:border-slate-200 transform hover:-translate-y-1 transition-all duration-300 ease-in-out"
+            className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm hover:shadow-2xl hover:border-purple-500/40 transform hover:-translate-y-1 transition-all duration-300 ease-in-out backdrop-blur-md"
           >
-            <p className="text-sm font-medium text-slate-500">{item.label}</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">
+            <p className="text-sm font-medium text-slate-400">{item.label}</p>
+            <p className="mt-2 text-3xl font-bold text-slate-100">
               {loading ? '—' : item.value}
             </p>
           </div>
         ))}
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Today's appointments</h2>
-        <p className="mt-1 text-sm text-slate-500">Live from the appointment service</p>
+      <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 shadow-sm backdrop-blur-md">
+        <h2 className="text-xl font-semibold text-slate-100">Today's appointments</h2>
+        <p className="mt-1 text-sm text-slate-400">Live from the appointment service</p>
 
         <div className="mt-5 space-y-4">
           {loading ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+            <div className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-4 text-sm text-slate-400 backdrop-blur-md">
               Loading appointments...
             </div>
           ) : todaysAppointments.length > 0 ? (
             todaysAppointments.map((apt) => (
               <div
                 key={apt._id}
-                className="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:bg-white hover:shadow-md hover:-translate-y-0.5 duration-200"
+                className="rounded-lg border border-purple-500/20 bg-indigo-600/10 p-4 transition hover:bg-indigo-600/20 hover:shadow-md hover:-translate-y-0.5 duration-200 backdrop-blur-md"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-semibold text-slate-100">
                       {apt.appointmentTime || '—'} &mdash; {getAppointmentPatientName(apt)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-slate-300">
                       Reason: {apt.reason || 'Not provided'}
                     </p>
                     {apt.patientEmail && (
@@ -192,7 +192,7 @@ export default function DoctorDashboard() {
                     )}
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[apt.status] || 'bg-slate-100 text-slate-600 ring-slate-200'}`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[apt.status] || 'bg-slate-700/30 text-slate-300 ring-slate-600/50'}`}
                   >
                     {apt.status}
                   </span>
@@ -200,7 +200,7 @@ export default function DoctorDashboard() {
               </div>
             ))
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+            <div className="rounded-lg border border-dashed border-purple-500/30 bg-purple-600/10 p-6 text-sm text-slate-400 backdrop-blur-md">
               No appointments scheduled for today.
             </div>
           )}

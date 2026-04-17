@@ -344,24 +344,24 @@ export default function AppShell() {
   const notificationsPath = role === 'admin' ? '/admin/notifications' : '/notifications'
 
   return (
-    <div className="flex h-screen bg-slate-100 text-slate-900">
-      <aside className="hidden fixed inset-y-0 left-0 z-30 w-72 shrink-0 border-r border-slate-200 bg-white overflow-y-auto lg:flex lg:flex-col">
-        <div className="border-b border-slate-200 px-6 py-6">
-          <Link to="/" className="block">
-            <img src="/logo.png" alt="Doctor365" className="h-10 w-auto transition hover:opacity-80" />
-            <p className="text-xs text-slate-500 mt-2">
+    <div className="flex h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 text-slate-100">
+      <aside className="hidden fixed inset-y-0 left-0 z-30 w-72 shrink-0 border-r border-purple-500/20 bg-slate-950/40 backdrop-blur-xl overflow-y-auto lg:flex lg:flex-col">
+        <div className="border-b border-purple-500/20 px-6 py-6 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 backdrop-blur-sm">
+          <Link to="/" className="block group">
+            <img src="/logo.png" alt="Doctor365" className="h-10 w-auto transition group-hover:opacity-100 opacity-90" />
+            <p className="text-xs text-purple-200 mt-2 font-medium opacity-80">
               {role === 'doctor'
                 ? doctorVerified
-                  ? 'Doctor workspace'
-                  : 'Verification pending'
+                  ? '⚕️ Medical Professional'
+                  : '⏳ Credential Review'
                 : role === 'admin'
-                  ? 'Admin workspace'
-                  : 'Patient workspace'}
+                  ? '🛡️ Administration'
+                  : '👥 Care Portal'}
             </p>
           </Link>
         </div>
 
-        <nav className="flex-1 space-y-2 px-4 py-6">
+        <nav className="flex-1 space-y-1 px-3 py-6">
           {navigation.map((item) => {
             if (item.submenu) {
               const isOpen = expandedSubmenu === item.label
@@ -373,27 +373,27 @@ export default function AppShell() {
                     type="button"
                     onClick={() => setExpandedSubmenu(isOpen ? null : item.label)}
                     className={[
-                      'w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition',
+                      'w-full flex items-center justify-between rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-200',
                       hasActiveSubitem || isOpen
-                        ? 'bg-blue-700 text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                        ? 'bg-purple-600/40 text-purple-100 backdrop-blur-md border border-purple-500/30'
+                        : 'text-slate-300 hover:bg-slate-700/40 hover:text-purple-200 hover:backdrop-blur-sm',
                     ].join(' ')}
                   >
                     <span>{item.label}</span>
                     <span className={`transition ${isOpen ? 'rotate-180' : ''}`}>▼</span>
                   </button>
                   {isOpen && (
-                    <div className="mt-1 space-y-1 pl-4">
+                    <div className="mt-2 space-y-1 pl-3 border-l border-purple-500/20">
                       {item.submenu.map((subitem) => (
                         <NavLink
                           key={subitem.to}
                           to={subitem.to}
                           className={({ isActive }) =>
                             [
-                              'flex items-center rounded-xl px-4 py-2 text-sm font-medium transition',
+                              'flex items-center rounded-lg px-4 py-2 text-sm font-medium transition duration-200',
                               isActive
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                                ? 'bg-indigo-600/50 text-indigo-100 backdrop-blur-md border border-indigo-500/40'
+                                : 'text-slate-400 hover:bg-slate-700/30 hover:text-indigo-200',
                             ].join(' ')
                           }
                         >
@@ -412,10 +412,10 @@ export default function AppShell() {
                 to={item.to}
                 className={({ isActive }) =>
                   [
-                    'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
+                    'flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-200',
                     (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
-                      ? 'bg-blue-700 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                      ? 'bg-purple-600/40 text-purple-100 backdrop-blur-md border border-purple-500/30'
+                      : 'text-slate-300 hover:bg-slate-700/40 hover:text-purple-200 hover:backdrop-blur-sm',
                   ].join(' ')
                 }
               >
@@ -425,11 +425,11 @@ export default function AppShell() {
           })}
         </nav>
 
-        <div className="border-t border-slate-200 p-4">
+        <div className="border-t border-purple-500/20 bg-slate-900/40 backdrop-blur-sm p-4">
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+            className="w-full rounded-lg border border-orange-500/40 bg-orange-600/10 hover:bg-orange-600/20 px-4 py-2.5 text-sm font-semibold text-orange-300 transition duration-200 hover:text-orange-200 hover:border-orange-500/60 backdrop-blur-sm"
           >
             Logout
           </button>
@@ -438,28 +438,28 @@ export default function AppShell() {
 
       {mobileOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <button type="button" className="absolute inset-0 bg-slate-950/40" aria-label="Close menu overlay" onClick={() => setMobileOpen(false)} />
+          <button type="button" className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm" aria-label="Close menu overlay" onClick={() => setMobileOpen(false)} />
 
-          <div className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <div className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-slate-950/60 backdrop-blur-xl border-r border-purple-500/20 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 backdrop-blur-sm px-5 py-4">
               <Link to="/" className="block" onClick={() => setMobileOpen(false)}>
-                <img src="/logo.png" alt="Doctor365" className="h-8 w-auto transition hover:opacity-80" />
-                <p className="text-xs text-slate-500 mt-1">
+                <img src="/logo.png" alt="Doctor365" className="h-8 w-auto transition opacity-90 hover:opacity-100" />
+                <p className="text-xs text-purple-200 mt-1 font-medium opacity-80">
                   {role === 'doctor'
                     ? doctorVerified
-                      ? 'Doctor workspace'
-                      : 'Verification pending'
+                      ? '⚕️ Professional'
+                      : '⏳ Review'
                     : role === 'admin'
-                      ? 'Admin workspace'
-                      : 'Patient workspace'}
+                      ? '🛡️ Admin'
+                      : '👥 Care'}
                 </p>
               </Link>
-              <button type="button" className="rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600" onClick={() => setMobileOpen(false)}>
-                Close
+              <button type="button" className="rounded-full border border-purple-500/40 bg-slate-800/50 hover:bg-slate-800/70 px-3 py-2 text-sm font-semibold text-purple-300 transition backdrop-blur-sm" onClick={() => setMobileOpen(false)}>
+                ✕
               </button>
             </div>
 
-            <nav className="space-y-2 px-4 py-5">
+            <nav className="space-y-1 px-3 py-5">
               {navigation.map((item) => {
                 if (item.submenu) {
                   const isOpen = expandedSubmenu === item.label
@@ -471,17 +471,17 @@ export default function AppShell() {
                         type="button"
                         onClick={() => setExpandedSubmenu(isOpen ? null : item.label)}
                         className={[
-                          'w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition',
+                          'w-full flex items-center justify-between rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-200',
                           hasActiveSubitem || isOpen
-                            ? 'bg-blue-700 text-white shadow-sm'
-                            : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                            ? 'bg-purple-600/40 text-purple-100 backdrop-blur-md border border-purple-500/30'
+                            : 'text-slate-300 hover:bg-slate-700/40 hover:text-purple-200 hover:backdrop-blur-sm',
                         ].join(' ')}
                       >
                         <span>{item.label}</span>
-                        <span className={`transition ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+                        <span className={`text-purple-300 transition ${isOpen ? 'rotate-180' : ''}`}>▼</span>
                       </button>
                       {isOpen && (
-                        <div className="mt-1 space-y-1 pl-4">
+                        <div className="mt-2 space-y-1 pl-3 border-l border-purple-500/20">
                           {item.submenu.map((subitem) => (
                             <NavLink
                               key={subitem.to}
@@ -489,10 +489,10 @@ export default function AppShell() {
                               onClick={() => setMobileOpen(false)}
                               className={({ isActive }) =>
                                 [
-                                  'flex items-center rounded-xl px-4 py-2 text-sm font-medium transition',
+                                  'flex items-center rounded-lg px-4 py-2 text-sm font-medium transition duration-200',
                                   isActive
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                                    ? 'bg-indigo-600/50 text-indigo-100 backdrop-blur-md border border-indigo-500/40'
+                                    : 'text-slate-400 hover:bg-slate-700/30 hover:text-indigo-200',
                                 ].join(' ')
                               }
                             >
@@ -512,10 +512,10 @@ export default function AppShell() {
                     onClick={() => setMobileOpen(false)}
                     className={({ isActive }) =>
                       [
-                        'flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition',
+                        'flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-200',
                         (isActive && !isDoctorsBookingPage) || (isDoctorsBookingPage && item.to === '/doctors')
-                          ? 'bg-blue-700 text-white shadow-sm'
-                          : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                          ? 'bg-purple-600/40 text-purple-100 backdrop-blur-md border border-purple-500/30'
+                          : 'text-slate-300 hover:bg-slate-700/40 hover:text-purple-200 hover:backdrop-blur-sm',
                       ].join(' ')
                     }
                   >
@@ -525,11 +525,11 @@ export default function AppShell() {
               })}
             </nav>
 
-            <div className="border-t border-slate-200 p-4">
+            <div className="border-t border-purple-500/20 bg-slate-900/40 backdrop-blur-sm p-4">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                className="w-full rounded-lg border border-orange-500/40 bg-orange-600/10 hover:bg-orange-600/20 px-4 py-2.5 text-sm font-semibold text-orange-300 transition duration-200 hover:text-orange-200 hover:border-orange-500/60 backdrop-blur-sm"
               >
                 Logout
               </button>
@@ -539,12 +539,12 @@ export default function AppShell() {
       ) : null}
 
       <div className="flex flex-1 flex-col lg:ml-72">
-        <header className="fixed top-0 left-0 right-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur lg:left-72">
+        <header className="fixed top-0 left-0 right-0 z-40 border-b border-purple-500/20 bg-slate-950/40 backdrop-blur-xl lg:left-72">
           <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm lg:hidden"
+                className="inline-flex items-center justify-center rounded-lg border border-purple-500/40 bg-slate-800/50 hover:bg-slate-800/70 px-3 py-2 text-sm font-semibold text-purple-300 transition backdrop-blur-sm lg:hidden"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Open navigation menu"
               >
@@ -552,8 +552,8 @@ export default function AppShell() {
               </button>
 
               <div>
-                <p className="text-sm font-semibold text-slate-900">Workspace</p>
-                <p className="text-xs text-slate-500">{role === 'doctor' && !doctorVerified ? 'Limited access workspace' : 'Responsive shell layout'}</p>
+                <p className="text-sm font-semibold text-slate-100">Workspace</p>
+                <p className="text-xs text-purple-300/70">{role === 'doctor' && !doctorVerified ? 'Credential Review' : 'Professional Portal'}</p>
               </div>
             </div>
 
@@ -561,23 +561,23 @@ export default function AppShell() {
               <NavLink
                 to={notificationsPath}
                 aria-label="Open notifications"
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-purple-500/40 bg-slate-800/50 text-purple-300 transition hover:border-purple-500/60 hover:bg-purple-600/20 hover:text-purple-200"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9a6 6 0 1 0-12 0v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.568 1.082 5.454 1.31m5.715 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                 </svg>
                 {unreadCount > 0 ? (
-                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" aria-hidden="true" />
+                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-orange-500 ring-2 ring-slate-900" aria-hidden="true" />
                 ) : null}
               </NavLink>
               <div className="hidden items-center gap-3 sm:flex">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700 text-sm font-semibold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-sm font-semibold text-white">
                   {user?.firstName?.[0] || 'U'}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User'}</p>
-                  <p className="text-xs text-slate-500">
-                    {role === 'doctor' && !doctorVerified ? 'doctor · pending verification' : role}
+                  <p className="text-sm font-semibold text-slate-100">{user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User'}</p>
+                  <p className="text-xs text-purple-300/70">
+                    {role === 'doctor' && !doctorVerified ? '⏳ Pending Verification' : `👤 ${role}`}
                   </p>
                 </div>
               </div>

@@ -225,16 +225,16 @@ export default function BookAppointment() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white shadow-lg sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Book consultation</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Schedule your appointment</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+      <section className="rounded-lg border border-purple-500/20 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 p-6 backdrop-blur-md shadow-lg sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-300/80">Book consultation</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl">Schedule your appointment</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
           Select your preferred date and time, then confirm your booking.
         </p>
       </section>
 
       {error && (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-500/30 bg-red-600/10 p-4 text-sm text-red-300 backdrop-blur-md">
           {error}
         </div>
       )}
@@ -242,17 +242,17 @@ export default function BookAppointment() {
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-slate-600">Loading doctor details...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-slate-400">Loading doctor details...</p>
           </div>
         </div>
       ) : selectedDoctor ? (
         <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
           {/* Doctor Details Preview */}
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm overflow-y-auto max-h-screen">
+          <section className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md shadow-sm overflow-y-auto max-h-screen">
             <button
               onClick={() => navigate('/doctors')}
-              className="mb-4 text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1"
+              className="mb-4 text-sm text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1"
             >
               ← Back to doctors
             </button>
@@ -260,17 +260,17 @@ export default function BookAppointment() {
             <div className="space-y-5">
               {/* Doctor Header */}
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">
+                <h3 className="text-2xl font-bold text-slate-100">
                   Dr. {selectedDoctor.firstName} {selectedDoctor.lastName}
                 </h3>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedDoctor.specialization && (
-                    <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full">
+                    <span className="inline-block px-3 py-1 text-xs font-semibold text-orange-300 bg-orange-600/30 border border-orange-500/20 rounded-full">
                       {selectedDoctor.specialization}
                     </span>
                   )}
                   {selectedDoctor.isVerified && (
-                    <span className="inline-block px-3 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">
+                    <span className="inline-block px-3 py-1 text-xs font-semibold text-emerald-300 bg-emerald-600/30 border border-emerald-500/20 rounded-full">
                       Verified doctor
                     </span>
                   )}
@@ -279,15 +279,15 @@ export default function BookAppointment() {
 
               {/* Key Stats */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-2xl p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Consultation Fee</p>
-                  <p className="text-lg font-bold text-slate-900 mt-2">{formatCurrency(selectedDoctor.consultationFee)}</p>
+                <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-lg p-4 backdrop-blur-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Consultation Fee</p>
+                  <p className="text-lg font-bold text-slate-100 mt-2">{formatCurrency(selectedDoctor.consultationFee)}</p>
                 </div>
 
                 {selectedDoctor.experience && (
-                  <div className="bg-slate-50 rounded-2xl p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Experience</p>
-                    <p className="text-lg font-bold text-slate-900 mt-2">
+                  <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-lg p-4 backdrop-blur-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Experience</p>
+                    <p className="text-lg font-bold text-slate-100 mt-2">
                       {selectedDoctor.experience} {selectedDoctor.experience === 1 ? 'year' : 'years'}
                     </p>
                   </div>
@@ -297,37 +297,37 @@ export default function BookAppointment() {
               {/* Hospital/Clinic */}
               {selectedDoctor.hospital && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Hospital / Clinic</p>
-                  <p className="text-sm font-semibold text-slate-900 mt-2">{selectedDoctor.hospital}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Hospital / Clinic</p>
+                  <p className="text-sm font-semibold text-slate-100 mt-2">{selectedDoctor.hospital}</p>
                 </div>
               )}
 
               {/* Qualifications */}
               {selectedDoctor.qualifications && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Qualifications</p>
-                  <p className="text-sm text-slate-700 mt-2">{selectedDoctor.qualifications}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Qualifications</p>
+                  <p className="text-sm text-slate-300 mt-2">{selectedDoctor.qualifications}</p>
                 </div>
               )}
 
               {/* Bio */}
               {selectedDoctor.bio && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Bio</p>
-                  <p className="text-sm text-slate-700 mt-2">{selectedDoctor.bio}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Bio</p>
+                  <p className="text-sm text-slate-300 mt-2">{selectedDoctor.bio}</p>
                 </div>
               )}
 
               {/* Weekly Schedule */}
               <div>
-                <p className="text-sm font-semibold text-slate-900 mb-4">Weekly schedule</p>
+                <p className="text-sm font-semibold text-slate-100 mb-4">Weekly schedule</p>
                 <div className="grid grid-cols-2 gap-3">
                   {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => {
                     const isWorking = Array.isArray(selectedDoctor.workingDays) && selectedDoctor.workingDays.includes(day)
                     return (
-                      <div key={day} className="bg-slate-50 rounded-2xl p-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{day}</p>
-                        <p className="text-xs font-semibold text-slate-900 mt-2">
+                      <div key={day} className="bg-indigo-600/10 border border-indigo-500/20 rounded-lg p-3 backdrop-blur-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{day}</p>
+                        <p className="text-xs font-semibold text-slate-100 mt-2">
                           {isWorking
                             ? `${selectedDoctor.availabilityStartTime || '08:00'} – ${selectedDoctor.availabilityEndTime || '18:00'} (${selectedDoctor.slotMinutes || 30} min slots)`
                             : 'Unavailable'}
@@ -341,11 +341,11 @@ export default function BookAppointment() {
           </section>
 
         {/* Booking Form */}
-        <form onSubmit={handleCreateAppointment} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Appointment details</h2>
+        <form onSubmit={handleCreateAppointment} className="rounded-lg border border-purple-500/20 bg-purple-600/10 p-6 backdrop-blur-md shadow-sm space-y-4">
+          <h2 className="text-lg font-semibold text-slate-100">Appointment details</h2>
 
           <div>
-            <label htmlFor="date" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="date" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Appointment date *
             </label>
             <input
@@ -358,12 +358,12 @@ export default function BookAppointment() {
               }}
               min={minDate}
               required
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             />
           </div>
 
           <div>
-            <label htmlFor="time" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="time" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Time slot *
             </label>
             <select
@@ -372,7 +372,7 @@ export default function BookAppointment() {
               onChange={(e) => setAppointmentTime(e.target.value)}
               disabled={!appointmentDate}
               required
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-400"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20 disabled:bg-slate-800/50 disabled:text-slate-500"
             >
               <option value="">Choose a time</option>
               {availableSlots.map((slot) => (
@@ -382,14 +382,14 @@ export default function BookAppointment() {
               ))}
             </select>
             {appointmentDate && availableSlots.length === 0 && (
-              <p className="mt-2 text-xs text-amber-700">
+              <p className="mt-2 text-xs text-amber-400">
                 No slots are available for the selected date.
               </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="reason" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="reason" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Reason for visit *
             </label>
             <input
@@ -399,12 +399,12 @@ export default function BookAppointment() {
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g., Routine checkup, back pain..."
               required
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             />
           </div>
 
           <div>
-            <label htmlFor="notes" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <label htmlFor="notes" className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
               Additional notes
             </label>
             <textarea
@@ -413,14 +413,14 @@ export default function BookAppointment() {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional information for the doctor..."
               rows="3"
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-lg border border-slate-600/30 bg-slate-800/30 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-purple-500/30 focus:ring-4 focus:ring-purple-500/20"
             />
           </div>
 
           <button
             type="submit"
             disabled={!appointmentDate || !appointmentTime || !reason || submitting}
-            className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
+            className="w-full rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-3 font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:from-orange-700 hover:to-orange-600"
           >
             {submitting ? 'Creating...' : 'Create appointment'}
           </button>
@@ -428,7 +428,7 @@ export default function BookAppointment() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-slate-600">Unable to load doctor details. Please select a doctor from the doctors list.</p>
+          <p className="text-slate-400">Unable to load doctor details. Please select a doctor from the doctors list.</p>
         </div>
       )}
     </div>
