@@ -108,7 +108,7 @@ export default function SymptomChecker() {
             <h3 className="font-semibold text-blue-900 text-sm">Important Medical Disclaimer</h3>
             <p className="mt-1 text-xs text-blue-800">
               This AI analysis is for educational purposes only and is <strong>NOT a medical diagnosis</strong>. 
-              Always consult with a qualified healthcare provider. In emergencies, call 911.
+              Always consult with a qualified healthcare provider. In emergencies.
             </p>
           </div>
         </div>
@@ -197,24 +197,6 @@ export default function SymptomChecker() {
               </div>
             )}
           </div>
-
-          {/* Find Doctors */}
-          {result.specialties && result.specialties.length > 0 && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Find Specialists</h3>
-              <div className="grid gap-2">
-                {result.specialties.map((specialty) => (
-                  <a
-                    key={specialty}
-                    href="/doctors"
-                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-center font-semibold text-blue-700 hover:bg-blue-100 transition"
-                  >
-                    Find {specialty}s →
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
 
           <button
             onClick={handleReset}
