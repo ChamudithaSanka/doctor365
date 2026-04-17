@@ -21,13 +21,11 @@ export default function PatientMedicalHistory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [editSummary, setEditSummary] = useState(false)
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     condition: '',
     treatment: '',
   })
-  const [editSummaryText, setEditSummaryText] = useState('')
 
   // Load medical history
   useEffect(() => {
@@ -52,7 +50,6 @@ export default function PatientMedicalHistory() {
         if (response.data?.success) {
           setMedicalHistory(response.data.data?.medicalHistory || [])
           setSummary(response.data.data?.medicalHistorySummary || '')
-          setEditSummaryText(response.data.data?.medicalHistorySummary || '')
         }
       } catch (requestError) {
         if (requestError.name !== 'CanceledError') {
@@ -129,36 +126,6 @@ export default function PatientMedicalHistory() {
     }
   }
 
-  const handleSaveSummary = async () => {
-    const token = getToken()
-
-    try {
-      const response = await axios.put(
-        `${gatewayBaseUrl}/api/patients/me`,
-        {
-          medicalHistorySummary: editSummaryText,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-
-      if (response.data?.success) {
-        setSummary(editSummaryText)
-        setEditSummary(false)
-        setError('')
-      }
-    } catch (requestError) {
-      if (handleTokenError(requestError)) {
-        return
-      }
-      setError(
-        requestError?.response?.data?.error?.message ||
-          'Unable to save summary. Please try again.'
-      )
-    }
-  }
-
   const handleDeleteEntry = async (index) => {
     const token = getToken()
 
@@ -209,50 +176,12 @@ export default function PatientMedicalHistory() {
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Medical Summary</h2>
-            {!editSummary && (
-              <button
-                onClick={() => setEditSummary(true)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                Edit
-              </button>
-            )}
           </div>
-
-          {editSummary ? (
-            <div className="space-y-4">
-              <textarea
-                value={editSummaryText}
-                onChange={(e) => setEditSummaryText(e.target.value)}
-                rows="4"
-                placeholder="Write a summary of your medical history..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSaveSummary}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    setEditSummary(false)
-                    setEditSummaryText(summary)
-                  }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-50 rounded-lg p-4 min-h-24">
-              <p className="text-gray-700 whitespace-pre-wrap">
-                {summary || 'No medical summary added yet.'}
-              </p>
-            </div>
-          )}
+          <div className="bg-gray-50 rounded-lg p-4 min-h-24">
+            <p className="text-gray-700 whitespace-pre-wrap">
+              {summary || 'No medical summary added yet.'}
+            </p>
+          </div>
         </div>
 
         {/* Add Medical History Form */}
