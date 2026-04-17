@@ -53,6 +53,13 @@ const getAppointmentPatientId = (appointment) => {
   return ''
 }
 
+const getAppointmentPatientName = (appointment) => {
+  if (appointment.patientName) return appointment.patientName
+  const patientId = appointment?.patientId
+  if (typeof patientId === 'object' && patientId?.name) return patientId.name
+  if (typeof patientId === 'object' && patientId?.fullName) return patientId.fullName
+  return 'Unknown Patient'
+}
 export default function DoctorAppointments() {
   const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
@@ -68,6 +75,7 @@ export default function DoctorAppointments() {
   const [prescriptionAppointmentId, setPrescriptionAppointmentId] = useState(null)
   const [showVideoCall, setShowVideoCall] = useState(false)
   const [activeSessionData, setActiveSessionData] = useState(null)
+  const [activeAppointmentId, setActiveAppointmentId] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -156,6 +164,41 @@ export default function DoctorAppointments() {
     return () => controller.abort()
   }, [appointments])
 
+  // Fetch patient details to get patient names
+  useEffect(() => {
+    const fetchPatientDetails = async () => {
+      const token = getToken()
+      if (!token || appointments.length === 0) return
+
+      for (const appointment of appointments) {
+        // Skip if already has patient name
+        if (appointment.patientName) continue
+
+        const patientId = typeof appointment.patientId === 'string' ? appointment.patientId : appointment.patientId?._id
+        if (!patientId) continue
+
+        try {
+          const response = await axios.get(`${gatewayBaseUrl}/api/patients/${patientId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+
+          const patientData = response.data?.data
+          if (patientData?.firstName) {
+            const fullName = `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim()
+            setAppointments((prev) =>
+              prev.map((apt) =>
+                apt._id === appointment._id ? { ...apt, patientName: fullName } : apt
+              )
+            )
+          }
+        } catch (error) {
+          console.log('Could not fetch patient details for:', patientId)
+        }
+      }
+    }
+
+    fetchPatientDetails()
+  }, [appointments.length])
   const filteredAppointments = useMemo(() => {
     const now = new Date()
 
@@ -169,11 +212,6 @@ export default function DoctorAppointments() {
       filtered = appointments.filter((apt) => apt.status === 'completed')
     } else if (filter === 'cancelled') {
       filtered = appointments.filter((apt) => apt.status === 'cancelled')
-    } else if (filter === 'upcoming') {
-      filtered = appointments.filter((apt) => {
-        const aptDate = new Date(apt.appointmentDate)
-        return !Number.isNaN(aptDate.getTime()) && aptDate >= now && apt.status !== 'cancelled'
-      })
     }
 
     return filtered.sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate))
@@ -335,6 +373,9 @@ export default function DoctorAppointments() {
     try {
       console.log('Opening Agora video call for appointment:', appointmentId)
       
+      // Track which appointment is in active call
+      setActiveAppointmentId(appointmentId)
+      
       // First, start the session (change status to active)
       await startTelemedicineSession(appointmentId)
       
@@ -459,9 +500,15 @@ export default function DoctorAppointments() {
     }
   }
 
-  const handleVideoCallLeave = () => {
+  const handleVideoCallLeave = async () => {
+    // End the telemedicine session
+    if (activeAppointmentId) {
+      await endTelemedicineSession(activeAppointmentId)
+    }
+    
     setShowVideoCall(false)
     setActiveSessionData(null)
+    setActiveAppointmentId(null)
     setSuccessMessage('You left the video call')
     setTimeout(() => setSuccessMessage(''), 2000)
   }
@@ -530,7 +577,6 @@ export default function DoctorAppointments() {
             { value: 'all', label: 'All appointments' },
             { value: 'pending', label: 'Pending' },
             { value: 'confirmed', label: 'Confirmed' },
-            { value: 'upcoming', label: 'Upcoming' },
             { value: 'completed', label: 'Completed' },
             { value: 'cancelled', label: 'Cancelled' },
           ].map((btn) => (
@@ -571,22 +617,13 @@ export default function DoctorAppointments() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-semibold text-slate-900">
-                        Patient ID: {String(appointment.patientId || 'unknown').slice(0, 12)}...
+                        {getAppointmentPatientName(appointment)}
                       </p>
                       <p className="text-sm text-slate-500 mt-1">
                         {formatDateTime(appointment.appointmentDate)}
                       </p>
                       <p className="text-sm text-slate-500">Time: {appointment.appointmentTime || 'Not set'}</p>
                     </div>
-
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 w-fit ${
-                        statusStyles[appointment.status] ||
-                        'bg-slate-100 text-slate-700 ring-slate-200'
-                      }`}
-                    >
-                      {appointment.status}
-                    </span>
                   </div>
 
                   <div className="space-y-1 bg-slate-50 rounded-2xl p-3">
@@ -649,57 +686,9 @@ export default function DoctorAppointments() {
                   )}
 
                   {appointment.status === 'confirmed' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusUpdate(appointment._id, 'completed')}
-                        disabled={updating === appointment._id}
-                        className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {updating === appointment._id ? 'Updating...' : 'Mark Complete'}
-                      </button>
-                      
-                      {telemedicineSessions[appointment._id]?.status === 'ended' ? (
-                        <button
-                          disabled={true}
-                          className="rounded-2xl bg-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 cursor-not-allowed"
-                        >
-                          ✅ Meeting Ended
-                        </button>
-                      ) : telemedicineSessions[appointment._id]?.status === 'active' ? (
-                        <button
-                          onClick={() => endTelemedicineSession(appointment._id)}
-                          className="rounded-2xl bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          🔴 End Meeting
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => openVideoCall(appointment._id)}
-                          disabled={loadingSession === appointment._id || creatingSession === appointment._id}
-                          className="rounded-2xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {loadingSession === appointment._id ? 'Loading...' : '🎥 Join Meeting'}
-                        </button>
-                      )}
-                      
-                      <button
-                        onClick={() => {
-                          setPrescriptionAppointmentId(appointment._id)
-                          setShowPrescriptionForm(true)
-                        }}
-                        className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition"
-                      >
-                        💊 Prescribe
-                      </button>
-                      
-                      <button
-                        onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
-                        disabled={updating === appointment._id}
-                        className="rounded-2xl border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {updating === appointment._id ? 'Updating...' : 'Reject / Cancel'}
-                      </button>
-                    </>
+                    <div className="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 text-center">
+                      Confirmed
+                    </div>
                   )}
 
 
