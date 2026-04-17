@@ -7,4 +7,5 @@ docker build -t doctor365/appointment-service:latest -f services/appointment-ser
 docker build -t doctor365/telemedicine-service:latest -f services/telemedicine-service/Dockerfile .
 docker build -t doctor365/payment-service:latest -f services/payment-service/Dockerfile .
 docker build -t doctor365/notification-service:latest -f services/notification-service/Dockerfile .
+docker build -t doctor365/symptom-checker-service:latest -f services/symptom-checker-service/Dockerfile .
 docker build -t doctor365/gateway:latest ./gateway
