@@ -552,30 +552,6 @@ export default function MyAppointments() {
                     {appointment.status || 'unknown'}
                   </span>
 
-                  {appointment.status === 'confirmed' && (
-                    <>
-                      {telemedicineSessions[appointment._id]?.status === 'ended' ? (
-                        <button
-                          disabled={true}
-                          className="whitespace-nowrap rounded-2xl bg-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 cursor-not-allowed"
-                        >
-                          ✅ Meeting Ended
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            openVideoCall(appointment._id)
-                          }}
-                          disabled={loadingSession === appointment._id}
-                          className="whitespace-nowrap rounded-2xl bg-purple-600 px-3 py-1 text-xs font-semibold text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {loadingSession === appointment._id ? 'Loading...' : '🎥 Join Meeting'}
-                        </button>
-                      )}
-                    </>
-                  )}
-
                   {appointment.status === 'awaiting_payment' && (
                     <button
                       onClick={(e) => {
