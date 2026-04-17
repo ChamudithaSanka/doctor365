@@ -66,8 +66,6 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
-.env.*
 !.env.example
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -144,3 +142,4 @@ SERVICE_VERIFICATION_REPORT.md
 frontend/FULL_PAGE_SET_IMPLEMENTATION_GUIDE.md
 
 services/patient-service/src/uploads/
+config.bat
