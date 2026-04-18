@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: patient-config
-  namespace: default
-data:
-  node-env: "development"
