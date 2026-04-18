@@ -70,6 +70,8 @@ spec:
                 secretKeyRef:
                   name: notification-secret
                   key: SENDER_EMAIL
+            - name: DISABLE_OUTBOUND_NOTIFICATIONS
+              value: "false"
           livenessProbe:
             httpGet:
               path: /health
