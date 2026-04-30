@@ -6,6 +6,7 @@ $folders = @(
   "services/telemedicine-service",
   "services/payment-service",
   "services/notification-service"
+  "services/symptom-checker-service"
 )
 
 foreach ($f in $folders) {
