@@ -17,3 +17,12 @@ The system is designed to run locally with Docker Compose or in Kubernetes using
 - AI-powered symptom checking
 - Docker-based local development and Kubernetes deployment support
 
+## Technology Stack
+
+- Frontend: React, Vite, React Router, Axios, Tailwind CSS
+- Gateway: Node.js, Express, http-proxy-middleware, CORS
+- Backend services: Node.js, Express, MongoDB, JWT, Mongoose
+- Telemedicine: Agora RTC, agora-rtc-sdk-ng, Agora token utilities
+- Payments: PayHere integration and callback handling
+- Notifications: Twilio and Nodemailer
+- Deployment: Docker, Docker Compose, Kubernetes, Kustomize, Nginx Ingress
